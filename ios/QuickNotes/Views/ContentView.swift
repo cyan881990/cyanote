@@ -25,56 +25,93 @@ struct ContentView: View {
 
     var body: some View {
         let current = store.current
-        VStack(spacing: 0) {
-            HeaderView(
+        GeometryReader { geo in
+            let w = geo.size.width
+            let h = geo.size.height                       // đã trừ bàn phím
+            let typing = keyboard.isVisible
+            let wide = w >= 720                           // iPad, iPhone ngang cỡ lớn
+            let compactHeader = typing || h < 520
+            let showTabs = !typing || h >= 400
+            let typingCalcRow = typing && !wide && h >= 300
+            let adWidth: CGFloat = wide ? (w >= 1000 ? 356 : 306) : min(w - 24, 480)
+            let header = HeaderView(
                 onLanguage: { showLanguages = true },
                 onCalendar: { showMonth = true },
                 updateLabel: available == nil ? nil : s("update_now"),
-                onUpdate: { update = available }
+                onUpdate: { update = available },
+                compact: compactHeader,
+                onHideKeyboard: (typing && !typingCalcRow) ? { hideKeyboard() } : nil
             )
-            TabBarView(menu: AnyView(menu(current)))
-            editorCard(current)
-            VStack(spacing: 8) {
-                // Không đang gõ: máy tính ở trên, quảng cáo ở đáy.
-                if !keyboard.isVisible {
-                    if calcOpen {
-                        CalculatorPanel(calc: store.calc, onCollapse: { withAnimation(.easeOut(duration: 0.2)) { calcOpen = false } }) { text in
-                            insert(text, into: current)
-                        }
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
-                    } else {
-                        CalculatorBar(calc: store.calc) {
-                            hideKeyboard()
-                            withAnimation(.easeOut(duration: 0.2)) { calcOpen = true }
-                        }
+            if wide {
+                HStack(spacing: 0) {
+                    VStack(spacing: 0) {
+                        header
+                        if typing { BannerAdView(width: adWidth).padding(.horizontal, 12).padding(.bottom, 6) }
+                        if showTabs { TabBarView(menu: AnyView(menu(current))) }
+                        editorCard(current)
+                        Spacer().frame(height: 10)
                     }
+                    VStack(spacing: 8) {
+                        ScrollView {
+                            CalculatorPanel(calc: store.calc, onCollapse: nil) { text in insert(text, into: current) }
+                        }
+                        if !typing { BannerAdView(width: adWidth) }
+                    }
+                    .frame(width: w >= 1000 ? 380 : 330)
+                    .padding(.top, 10)
+                    .padding(.trailing, 12)
+                    .padding(.bottom, 6)
                 }
-                // Một banner duy nhất, luôn hiện (không tạo lại khi bàn phím bật/tắt).
-                BannerAdView()
-                // Đang gõ: thanh máy tính + nút ẩn bàn phím nằm sát bàn phím, ngăn cách quảng cáo với phím.
-                if keyboard.isVisible {
-                    HStack(spacing: 8) {
-                        CalculatorBar(calc: store.calc) {
-                            hideKeyboard()
-                            withAnimation(.easeOut(duration: 0.2)) { calcOpen = true }
+            } else {
+                VStack(spacing: 0) {
+                    header
+                    // Đang gõ: quảng cáo lên đầu màn hình, xa bàn phím.
+                    if typing { BannerAdView(width: adWidth).padding(.horizontal, 12).padding(.bottom, 6) }
+                    if showTabs { TabBarView(menu: AnyView(menu(current))) }
+                    editorCard(current)
+                    VStack(spacing: 8) {
+                        if !typing {
+                            if calcOpen {
+                                // Màn hình thấp: máy tính tối đa ~60% chiều cao, cuộn được.
+                                ViewThatFits(in: .vertical) {
+                                    calcPanel(current)
+                                    ScrollView { calcPanel(current) }
+                                }
+                                .frame(maxHeight: h * 0.62)
+                                .transition(.move(edge: .bottom).combined(with: .opacity))
+                            } else {
+                                CalculatorBar(calc: store.calc) {
+                                    hideKeyboard()
+                                    withAnimation(.easeOut(duration: 0.2)) { calcOpen = true }
+                                }
+                            }
+                            BannerAdView(width: adWidth)
                         }
-                        Button(action: hideKeyboard) {
-                            Image(systemName: "keyboard.chevron.compact.down")
-                                .font(.system(size: 19, weight: .semibold))
-                                .foregroundColor(p.accent)
-                                .frame(width: 56, height: 60)
-                                .background(p.surface)
-                                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(p.line, lineWidth: 1))
+                        if typingCalcRow {
+                            HStack(spacing: 8) {
+                                CalculatorBar(calc: store.calc, compact: true) {
+                                    hideKeyboard()
+                                    withAnimation(.easeOut(duration: 0.2)) { calcOpen = true }
+                                }
+                                Button(action: hideKeyboard) {
+                                    Image(systemName: "keyboard.chevron.compact.down")
+                                        .font(.system(size: 18, weight: .semibold))
+                                        .foregroundColor(p.accent)
+                                        .frame(width: 56, height: 48)
+                                        .background(p.surface)
+                                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(p.line, lineWidth: 1))
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityLabel(s("hide_keyboard"))
+                            }
                         }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel(s("hide_keyboard"))
                     }
+                    .padding(.horizontal, 12)
+                    .padding(.top, typing ? 6 : 10)
+                    .padding(.bottom, 6)
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.top, 10)
-            .padding(.bottom, 6)
         }
         .background(p.bg.ignoresSafeArea())
         .onChange(of: keyboard.isVisible) { visible in
@@ -180,6 +217,12 @@ struct ContentView: View {
         .padding(.horizontal, 12)
     }
 
+    private func calcPanel(_ current: Note) -> some View {
+        CalculatorPanel(calc: store.calc, onCollapse: { withAnimation(.easeOut(duration: 0.2)) { calcOpen = false } }) { text in
+            insert(text, into: current)
+        }
+    }
+
     // MARK: Menu ⋮
 
     private func menu(_ current: Note) -> some View {
@@ -240,6 +283,8 @@ struct HeaderView: View {
     var onCalendar: () -> Void
     var updateLabel: String? = nil
     var onUpdate: () -> Void = {}
+    var compact: Bool = false                 // 1 dòng (đang gõ / màn hình thấp)
+    var onHideKeyboard: (() -> Void)? = nil
 
     var body: some View {
         let s = settings.strings
@@ -250,6 +295,9 @@ struct HeaderView: View {
             let lang = s.languageCode
             let lunar = LunarCalendar.fromSolar(comps.day ?? 1, comps.month ?? 1, comps.year ?? 2026, tz: LunarCalendar.timeZone(for: lang))
             let yearName = LunarCalendar.yearName(lunar.year, style: LunarCalendar.style(for: lang), zodiac: s.zodiac)
+            if compact {
+                compactRow(now, s, p, lunarText: s.f(lunar.leap ? "lunar_date_leap" : "lunar_date", lunar.day, lunar.month))
+            } else {
             HStack(alignment: .bottom, spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(alignment: .lastTextBaseline, spacing: 6) {
@@ -338,7 +386,68 @@ struct HeaderView: View {
             .padding(.horizontal, 18)
             .padding(.top, 8)
             .padding(.bottom, 10)
+            }
         }
+    }
+
+    @ViewBuilder
+    private func compactRow(_ now: Date, _ s: Strings, _ p: Palette, lunarText: String) -> some View {
+        HStack(spacing: 6) {
+            Text(timeString(now, s.locale) + (amPm(now, s.locale).map { " " + $0 } ?? ""))
+                .font(.system(size: 20, weight: .bold).monospacedDigit())
+                .foregroundColor(p.ink)
+                .lineLimit(1)
+                .fixedSize()
+            Text(shortDate(now, s.locale))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(p.muted)
+                .lineLimit(1)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Button(action: onCalendar) {
+                HStack(spacing: 4) {
+                    Image(systemName: "calendar").font(.system(size: 11, weight: .semibold)).foregroundColor(p.accent)
+                    Text(lunarText).font(.system(size: 12, weight: .bold)).foregroundColor(p.ink).lineLimit(1)
+                }
+                .padding(.horizontal, 8)
+                .frame(height: 32)
+                .background(p.accentSoft)
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .fixedSize()
+            if updateLabel != nil {
+                smallButton("arrow.down.to.line", p, tint: p.accent, bg: p.accentSoft, action: onUpdate)
+            }
+            smallButton("globe", p, action: onLanguage)
+            smallButton(colorScheme == .dark ? "sun.max" : "moon", p) {
+                settings.themeMode = (colorScheme == .dark) ? "LIGHT" : "DARK"
+            }
+            if let onHideKeyboard {
+                smallButton("keyboard.chevron.compact.down", p, tint: p.accent, action: onHideKeyboard)
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 6)
+    }
+
+    private func smallButton(_ icon: String, _ p: Palette, tint: Color? = nil, bg: Color? = nil, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: icon)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(tint ?? p.ink)
+                .frame(width: 32, height: 32)
+                .background(bg ?? p.surface)
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(p.line, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func shortDate(_ d: Date, _ locale: Locale) -> String {
+        let f = DateFormatter()
+        f.locale = locale
+        f.setLocalizedDateFormatFromTemplate("EEEdMMM")
+        return f.string(from: d)
     }
 
     private func uses24h(_ locale: Locale) -> Bool {

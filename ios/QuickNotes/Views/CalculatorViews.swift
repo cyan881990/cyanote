@@ -18,6 +18,7 @@ struct CalculatorBar: View {
     @ObservedObject var calc: CalcState
     @EnvironmentObject private var settings: AppSettings
     @Environment(\.colorScheme) private var colorScheme
+    var compact: Bool = false
     var onExpand: () -> Void
 
     var body: some View {
@@ -28,11 +29,13 @@ struct CalculatorBar: View {
                 Image(systemName: "plus.forwardslash.minus")
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundColor(p.accent)
-                    .frame(width: 40, height: 40)
+                    .frame(width: compact ? 32 : 40, height: compact ? 32 : 40)
                     .background(p.accentSoft)
                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(s("calc_holding")).font(.system(size: 12, weight: .medium)).foregroundColor(p.muted).lineLimit(1)
+                    if !compact {
+                        Text(s("calc_holding")).font(.system(size: 12, weight: .medium)).foregroundColor(p.muted).lineLimit(1)
+                    }
                     Text(calc.miniExpression() ?? s("calc_empty"))
                         .font(.system(size: 15, weight: .semibold)).foregroundColor(p.ink).lineLimit(1)
                 }
@@ -45,7 +48,7 @@ struct CalculatorBar: View {
             }
             .padding(.leading, 10)
             .padding(.trailing, 14)
-            .frame(height: 60)
+            .frame(height: compact ? 48 : 60)
             .background(p.surface)
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(p.line, lineWidth: 1))
@@ -60,7 +63,7 @@ struct CalculatorPanel: View {
     @ObservedObject var calc: CalcState
     @EnvironmentObject private var settings: AppSettings
     @Environment(\.colorScheme) private var colorScheme
-    var onCollapse: () -> Void
+    var onCollapse: (() -> Void)?   // nil: không có nút Thu gọn (màn hình rộng)
     var onInsert: (String) -> Void
 
     var body: some View {
@@ -96,7 +99,7 @@ struct CalculatorPanel: View {
                 .background(p.keyBg)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
 
-                Button(action: onCollapse) {
+                if let onCollapse { Button(action: onCollapse) {
                     VStack(spacing: 1) {
                         Image(systemName: "chevron.down").font(.system(size: 15, weight: .semibold))
                         Text(s("calc_collapse")).font(.system(size: 10, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.7)
@@ -107,7 +110,7 @@ struct CalculatorPanel: View {
                     .background(p.keyBg)
                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.plain) }
             }
             .fixedSize(horizontal: false, vertical: true)
 

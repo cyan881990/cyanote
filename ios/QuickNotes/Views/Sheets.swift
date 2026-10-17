@@ -257,9 +257,11 @@ enum AdConfig {
     static let bannerUnitID = "ca-app-pub-3940256099942544/2435281174"
 }
 
+/// Banner thích ứng, tối đa [width] điểm. Chỉ có MỘT GADBannerView dùng chung: khi banner
+/// đổi chỗ (đáy ↔ đầu màn hình lúc gõ) nó được gắn sang chỗ mới, không tải lại quảng cáo.
 struct BannerAdView: View {
+    var width: CGFloat
     var body: some View {
-        let width = UIScreen.main.bounds.width - 24
         let size = GADCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(width)
         BannerRepresentable(adSize: size)
             .frame(width: size.size.width, height: size.size.height)
@@ -267,18 +269,46 @@ struct BannerAdView: View {
     }
 }
 
+final class SharedBanner {
+    static let shared = SharedBanner()
+    private var banner: GADBannerView?
+
+    func view(for size: GADAdSize) -> GADBannerView {
+        if let banner, CGSizeEqualToSize(banner.adSize.size, size.size) { return banner }
+        banner?.removeFromSuperview()
+        let b = GADBannerView(adSize: size)
+        b.adUnitID = AdConfig.bannerUnitID
+        b.rootViewController = UIApplication.shared.connectedScenes
+            .compactMap { ($0 as? UIWindowScene)?.keyWindow?.rootViewController }
+            .first
+        b.load(GADRequest())
+        banner = b
+        return b
+    }
+}
+
 private struct BannerRepresentable: UIViewRepresentable {
     let adSize: GADAdSize
 
-    func makeUIView(context: Context) -> GADBannerView {
-        let banner = GADBannerView(adSize: adSize)
-        banner.adUnitID = AdConfig.bannerUnitID
-        banner.rootViewController = UIApplication.shared.connectedScenes
-            .compactMap { ($0 as? UIWindowScene)?.keyWindow?.rootViewController }
-            .first
-        banner.load(GADRequest())
-        return banner
+    func makeUIView(context: Context) -> UIView {
+        let container = UIView()
+        attach(to: container)
+        return container
     }
 
-    func updateUIView(_ uiView: GADBannerView, context: Context) {}
+    func updateUIView(_ container: UIView, context: Context) {
+        attach(to: container)
+    }
+
+    private func attach(to container: UIView) {
+        let banner = SharedBanner.shared.view(for: adSize)
+        guard banner.superview !== container else { return }
+        banner.removeFromSuperview()
+        banner.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(banner)
+        NSLayoutConstraint.activate([
+            banner.centerXAnchor.constraint(equalTo: container.centerXAnchor),
+            banner.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+        ])
+    }
 }
