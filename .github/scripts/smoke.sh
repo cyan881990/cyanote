@@ -35,7 +35,7 @@ adb shell input keyevent 111; sleep 1
 adb shell settings put system accelerometer_rotation 0
 adb shell settings put system user_rotation 1; sleep 4
 adb exec-out screencap -p > smoke-out/api$api-landscape.png
-adb shell input tap 300 300; sleep 3
+adb shell input tap 160 200; sleep 3
 adb exec-out screencap -p > smoke-out/api$api-landscape-typing.png
 adb shell input keyevent 111
 adb shell settings put system user_rotation 0; sleep 3

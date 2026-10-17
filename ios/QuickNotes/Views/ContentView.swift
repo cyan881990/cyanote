@@ -29,11 +29,12 @@ struct ContentView: View {
             let w = geo.size.width
             let h = geo.size.height                       // đã trừ bàn phím
             let typing = keyboard.isVisible
-            let wide = w >= 720                           // iPad, iPhone ngang cỡ lớn
+            let wide = w >= 720 || (w > h && w >= 560)    // iPad, iPhone xoay ngang → 2 cột
+            let sideWidth: CGFloat = w >= 1000 ? 380 : (w >= 720 ? 330 : 320)
             let compactHeader = typing || h < 520
             let showTabs = !typing || h >= 400
             let typingCalcRow = typing && !wide && h >= 300
-            let adWidth: CGFloat = wide ? (w >= 1000 ? 356 : 306) : min(w - 24, 480)
+            let adWidth: CGFloat = wide ? sideWidth : min(w - 24, 480)
             let header = HeaderView(
                 onLanguage: { showLanguages = true },
                 onCalendar: { showMonth = true },
@@ -57,7 +58,7 @@ struct ContentView: View {
                         }
                         if !typing { BannerAdView(width: adWidth) }
                     }
-                    .frame(width: w >= 1000 ? 380 : 330)
+                    .frame(width: sideWidth)
                     .padding(.top, 10)
                     .padding(.trailing, 12)
                     .padding(.bottom, 6)

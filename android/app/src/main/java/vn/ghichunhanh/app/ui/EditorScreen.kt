@@ -348,14 +348,20 @@ fun EditorScreen(
             // maxHeight đã trừ bàn phím. Chia bố cục theo chỗ thực có:
             val screenW = maxWidth
             val screenH = maxHeight
-            val wide = maxWidth >= 720.dp                         // máy tính bảng, điện thoại gập mở, ngang màn hình rộng
+            // Hai cột: máy tính bảng, điện thoại gập mở, hoặc điện thoại xoay ngang.
+            val wide = maxWidth >= 720.dp || (maxWidth > maxHeight && maxWidth >= 560.dp)
+            val sideWidth = when {
+                maxWidth >= 1000.dp -> 380.dp
+                maxWidth >= 720.dp -> 330.dp
+                else -> 320.dp
+            }
             val compactHeader = imeVisible || maxHeight < 520.dp  // đang gõ hoặc màn hình thấp → đồng hồ 1 dòng
             val showTabs = !imeVisible || maxHeight >= 400.dp
             val typingCalcRow = imeVisible && !wide && maxHeight >= 300.dp
             val headerHideButton = imeVisible && !typingCalcRow
             val adOnTop = imeVisible
             // Bề rộng banner: tối đa 480dp (để không quá cao trên màn hình rộng), vừa cột máy tính khi 2 cột.
-            val adWidth = if (wide) (if (maxWidth >= 1000.dp) 356 else 306) else minOf(maxWidth.value.toInt() - 24, 480)
+            val adWidth = if (wide) sideWidth.value.toInt() else minOf(maxWidth.value.toInt() - 24, 480)
 
             val header: @Composable () -> Unit = {
                 if (compactHeader) {
@@ -395,7 +401,7 @@ fun EditorScreen(
                     }
                     Column(
                         Modifier
-                            .width(if (screenW >= 1000.dp) 380.dp else 330.dp)
+                            .width(sideWidth)
                             .fillMaxHeight()
                             .padding(top = 10.dp, end = 12.dp, bottom = 10.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
