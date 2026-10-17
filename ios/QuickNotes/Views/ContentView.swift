@@ -362,7 +362,10 @@ struct HeaderView: View {
                             Button(action: onUpdate) {
                                 HStack(spacing: 4) {
                                     Image(systemName: "arrow.down.to.line").font(.system(size: 13, weight: .bold))
-                                    Text(updateLabel).font(.system(size: 12, weight: .bold)).lineLimit(1)
+                                    // iPhone hẹp: chỉ biểu tượng
+                                    if UIScreen.main.bounds.width >= 380 {
+                                        Text(updateLabel).font(.system(size: 12, weight: .bold)).lineLimit(1)
+                                    }
                                 }
                                 .foregroundColor(p.accent)
                                 .padding(.leading, 8)

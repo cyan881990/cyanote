@@ -707,6 +707,8 @@ private fun ClockHeader(
             delay(60_000L - System.currentTimeMillis() % 60_000L + 50L)
         }
     }
+    // Màn hình hẹp (< 380dp): nhãn cập nhật chỉ còn biểu tượng để đồng hồ và logo không bị ép
+    val narrow = LocalConfiguration.current.screenWidthDp < 380
     val is24h = DateFormat.is24HourFormat(context)
     val time = now.format(DateTimeFormatter.ofPattern(if (is24h) "HH:mm" else "h:mm", locale))
     val amPm = if (is24h) "" else now.format(DateTimeFormatter.ofPattern("a", locale))
@@ -753,8 +755,10 @@ private fun ClockHeader(
             Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
                     time,
-                    fontSize = 44.sp,
+                    fontSize = if (narrow) 38.sp else 44.sp,
                     lineHeight = 46.sp,
+                    maxLines = 1,
+                    softWrap = false,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = (-1.5).sp,
                     color = scheme.onBackground,
@@ -766,6 +770,8 @@ private fun ClockHeader(
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = scheme.onSurfaceVariant,
+                        maxLines = 1,
+                        softWrap = false,
                         modifier = Modifier.padding(bottom = 6.dp),
                     )
                 }
@@ -790,12 +796,12 @@ private fun ClockHeader(
                         modifier = Modifier.height(36.dp),
                     ) {
                         Row(
-                            modifier = Modifier.padding(start = 8.dp, end = 10.dp),
+                            modifier = Modifier.padding(start = if (narrow) 10.dp else 8.dp, end = 10.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                         ) {
-                            Icon(UpdateIcon, contentDescription = null, tint = scheme.primary, modifier = Modifier.size(16.dp))
-                            Text(
+                            Icon(UpdateIcon, contentDescription = updateLabel, tint = scheme.primary, modifier = Modifier.size(16.dp))
+                            if (!narrow) Text(
                                 updateLabel,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
