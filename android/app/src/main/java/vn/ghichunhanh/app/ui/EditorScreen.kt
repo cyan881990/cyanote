@@ -96,6 +96,7 @@ import vn.ghichunhanh.app.LunarCalendar
 import vn.ghichunhanh.app.Note
 import vn.ghichunhanh.app.NotesStore
 import vn.ghichunhanh.app.R
+import androidx.compose.ui.platform.LocalFocusManager
 import vn.ghichunhanh.app.ads.BannerAd
 import vn.ghichunhanh.app.displayTitle
 import java.time.DayOfWeek
@@ -118,6 +119,7 @@ fun EditorScreen(
 ) {
     val context = LocalContext.current
     val keyboard = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
     val scheme = MaterialTheme.colorScheme
     val untitled = stringResource(R.string.untitled)
 
@@ -182,6 +184,12 @@ fun EditorScreen(
                         )
                     }
                     DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                        if (imeVisible) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.hide_keyboard)) },
+                                onClick = { menuOpen = false; keyboard?.hide(); focusManager.clearFocus() },
+                            )
+                        }
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.menu_rename)) },
                             onClick = { menuOpen = false; renameTarget = current },
@@ -274,30 +282,71 @@ fun EditorScreen(
                 }
             }
 
-            // Máy tính + quảng cáo (quảng cáo luôn ở đáy, chỉ ẩn khi bàn phím đang mở)
+            // Máy tính + quảng cáo. Khi đang gõ: quảng cáo nằm trên thanh máy tính,
+            // thanh máy tính có nút ẩn bàn phím và ngăn cách quảng cáo với bàn phím (tránh bấm nhầm).
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 12.dp, end = 12.dp, top = 10.dp, bottom = 10.dp)
+                    .padding(start = 12.dp, end = 12.dp, top = 10.dp, bottom = if (imeVisible) 6.dp else 10.dp)
                     .animateContentSize(),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                if (calcOpen) {
-                    CalculatorPanel(
-                        calc = store.calc,
-                        onCollapse = { calcOpen = false },
-                        onInsert = { text -> applyValue(insertAtCursor(value, text)) },
-                    )
-                } else {
-                    CalculatorBar(
-                        calc = store.calc,
-                        onExpand = {
-                            keyboard?.hide()
-                            calcOpen = true
-                        },
-                    )
+                // Không đang gõ: máy tính ở trên, quảng cáo ở đáy.
+                if (!imeVisible) {
+                    if (calcOpen) {
+                        CalculatorPanel(
+                            calc = store.calc,
+                            onCollapse = { calcOpen = false },
+                            onInsert = { text -> applyValue(insertAtCursor(value, text)) },
+                        )
+                    } else {
+                        CalculatorBar(
+                            calc = store.calc,
+                            onExpand = {
+                                keyboard?.hide()
+                                calcOpen = true
+                            },
+                        )
+                    }
                 }
-                BannerAd(visible = !imeVisible)
+                // Chỉ một banner duy nhất (không tạo lại khi bàn phím bật/tắt → không tải quảng cáo thừa).
+                BannerAd(visible = true)
+                // Đang gõ: thanh máy tính + nút ẩn bàn phím nằm sát bàn phím.
+                if (imeVisible) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Box(Modifier.weight(1f)) {
+                            CalculatorBar(
+                                calc = store.calc,
+                                onExpand = {
+                                    keyboard?.hide()
+                                    focusManager.clearFocus()
+                                    calcOpen = true
+                                },
+                            )
+                        }
+                        Surface(
+                            onClick = {
+                                keyboard?.hide()
+                                focusManager.clearFocus()
+                            },
+                            shape = RoundedCornerShape(18.dp),
+                            color = scheme.surface,
+                            border = BorderStroke(1.dp, scheme.outlineVariant),
+                            modifier = Modifier.size(width = 56.dp, height = 60.dp),
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    KeyboardHideIcon,
+                                    contentDescription = stringResource(R.string.hide_keyboard),
+                                    tint = scheme.primary,
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }

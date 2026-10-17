@@ -80,6 +80,7 @@
     <string name="update_later">Later</string>
     <string name="update_downloaded">Update downloaded</string>
     <string name="update_restart">Restart</string>
+    <string name="hide_keyboard">Hide keyboard</string>
     <string-array name="zodiac">
         <item>Rat</item>
         <item>Ox</item>

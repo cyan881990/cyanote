@@ -80,6 +80,7 @@
     <string name="update_later">बाद में</string>
     <string name="update_downloaded">अपडेट डाउनलोड हो गया</string>
     <string name="update_restart">फिर से शुरू करें</string>
+    <string name="hide_keyboard">कीबोर्ड छिपाएँ</string>
     <string-array name="zodiac">
         <item>चूहा</item>
         <item>बैल</item>

@@ -80,6 +80,7 @@
     <string name="update_later">稍后</string>
     <string name="update_downloaded">更新已下载</string>
     <string name="update_restart">重新启动</string>
+    <string name="hide_keyboard">隐藏键盘</string>
     <string-array name="zodiac">
         <item>鼠</item>
         <item>牛</item>

@@ -80,6 +80,7 @@
     <string name="update_later">Позже</string>
     <string name="update_downloaded">Обновление загружено</string>
     <string name="update_restart">Перезапустить</string>
+    <string name="hide_keyboard">Скрыть клавиатуру</string>
     <string-array name="zodiac">
         <item>Крысы</item>
         <item>Быка</item>

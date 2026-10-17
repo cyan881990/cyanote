@@ -80,6 +80,7 @@
     <string name="update_later">後で</string>
     <string name="update_downloaded">アップデートをダウンロードしました</string>
     <string name="update_restart">再起動</string>
+    <string name="hide_keyboard">キーボードを閉じる</string>
     <string-array name="zodiac">
         <item>子</item>
         <item>丑</item>

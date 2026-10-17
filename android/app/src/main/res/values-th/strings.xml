@@ -80,6 +80,7 @@
     <string name="update_later">ไว้ทีหลัง</string>
     <string name="update_downloaded">ดาวน์โหลดอัปเดตแล้ว</string>
     <string name="update_restart">เริ่มใหม่</string>
+    <string name="hide_keyboard">ซ่อนแป้นพิมพ์</string>
     <string-array name="zodiac">
         <item>ชวด</item>
         <item>ฉลู</item>

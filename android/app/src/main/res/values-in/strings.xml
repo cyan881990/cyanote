@@ -80,6 +80,7 @@
     <string name="update_later">Nanti</string>
     <string name="update_downloaded">Pembaruan sudah diunduh</string>
     <string name="update_restart">Mulai ulang</string>
+    <string name="hide_keyboard">Sembunyikan keyboard</string>
     <string-array name="zodiac">
         <item>Tikus</item>
         <item>Kerbau</item>

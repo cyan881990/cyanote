@@ -72,3 +72,23 @@ val GlobeIcon: ImageVector by lazy {
         close()
     }
 }
+
+/** Bàn phím + mũi tên xuống: "ẩn bàn phím". */
+val KeyboardHideIcon: ImageVector by lazy {
+    strokeIcon("KeyboardHide") {
+        // khung bàn phím
+        moveTo(5f, 3f); horizontalLineTo(19f)
+        arcTo(2f, 2f, 0f, false, true, 21f, 5f); verticalLineTo(13f)
+        arcTo(2f, 2f, 0f, false, true, 19f, 15f); horizontalLineTo(5f)
+        arcTo(2f, 2f, 0f, false, true, 3f, 13f); verticalLineTo(5f)
+        arcTo(2f, 2f, 0f, false, true, 5f, 3f); close()
+        // phím
+        moveTo(7f, 7f); lineTo(7.01f, 7f)
+        moveTo(10.5f, 7f); lineTo(10.51f, 7f)
+        moveTo(14f, 7f); lineTo(14.01f, 7f)
+        moveTo(17.5f, 7f); lineTo(17.51f, 7f)
+        moveTo(8f, 11f); lineTo(16f, 11f)
+        // mũi tên xuống
+        moveTo(9f, 18.5f); lineTo(12f, 21.5f); lineTo(15f, 18.5f)
+    }
+}

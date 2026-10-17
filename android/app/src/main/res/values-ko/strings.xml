@@ -80,6 +80,7 @@
     <string name="update_later">나중에</string>
     <string name="update_downloaded">업데이트를 다운로드했습니다</string>
     <string name="update_restart">다시 시작</string>
+    <string name="hide_keyboard">키보드 숨기기</string>
     <string-array name="zodiac">
         <item>쥐</item>
         <item>소</item>

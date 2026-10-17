@@ -80,6 +80,7 @@
     <string name="update_later">Để sau</string>
     <string name="update_downloaded">Đã tải xong bản cập nhật</string>
     <string name="update_restart">Khởi động lại</string>
+    <string name="hide_keyboard">Ẩn bàn phím</string>
     <string-array name="zodiac">
         <item>Tý</item>
         <item>Sửu</item>

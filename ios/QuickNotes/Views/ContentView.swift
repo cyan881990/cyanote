@@ -32,20 +32,41 @@ struct ContentView: View {
             TabBarView(menu: AnyView(menu(current)))
             editorCard(current)
             VStack(spacing: 8) {
-                if calcOpen {
-                    CalculatorPanel(calc: store.calc, onCollapse: { withAnimation(.easeOut(duration: 0.2)) { calcOpen = false } }) { text in
-                        insert(text, into: current)
-                    }
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-                } else {
-                    CalculatorBar(calc: store.calc) {
-                        hideKeyboard()
-                        withAnimation(.easeOut(duration: 0.2)) { calcOpen = true }
+                // Không đang gõ: máy tính ở trên, quảng cáo ở đáy.
+                if !keyboard.isVisible {
+                    if calcOpen {
+                        CalculatorPanel(calc: store.calc, onCollapse: { withAnimation(.easeOut(duration: 0.2)) { calcOpen = false } }) { text in
+                            insert(text, into: current)
+                        }
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                    } else {
+                        CalculatorBar(calc: store.calc) {
+                            hideKeyboard()
+                            withAnimation(.easeOut(duration: 0.2)) { calcOpen = true }
+                        }
                     }
                 }
-                // Quảng cáo luôn ở đáy; chỉ tạm ẩn khi bàn phím đang mở.
-                if !keyboard.isVisible {
-                    BannerAdView()
+                // Một banner duy nhất, luôn hiện (không tạo lại khi bàn phím bật/tắt).
+                BannerAdView()
+                // Đang gõ: thanh máy tính + nút ẩn bàn phím nằm sát bàn phím, ngăn cách quảng cáo với phím.
+                if keyboard.isVisible {
+                    HStack(spacing: 8) {
+                        CalculatorBar(calc: store.calc) {
+                            hideKeyboard()
+                            withAnimation(.easeOut(duration: 0.2)) { calcOpen = true }
+                        }
+                        Button(action: hideKeyboard) {
+                            Image(systemName: "keyboard.chevron.compact.down")
+                                .font(.system(size: 19, weight: .semibold))
+                                .foregroundColor(p.accent)
+                                .frame(width: 56, height: 60)
+                                .background(p.surface)
+                                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(p.line, lineWidth: 1))
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(s("hide_keyboard"))
+                    }
                 }
             }
             .padding(.horizontal, 12)
@@ -156,6 +177,9 @@ struct ContentView: View {
 
     private func menu(_ current: Note) -> some View {
         Menu {
+            if keyboard.isVisible {
+                Button { hideKeyboard() } label: { Label(s("hide_keyboard"), systemImage: "keyboard.chevron.compact.down") }
+            }
             Button { renameText = current.title; renaming = current } label: { Label(s("menu_rename"), systemImage: "pencil") }
             Button { UIPasteboard.general.string = current.content } label: { Label(s("menu_copy"), systemImage: "doc.on.doc") }
             ShareLink(item: current.content, subject: Text(current.displayTitle(untitled: s("untitled")))) {

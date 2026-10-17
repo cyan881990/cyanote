@@ -80,6 +80,7 @@
     <string name="update_later">Depois</string>
     <string name="update_downloaded">Atualização baixada</string>
     <string name="update_restart">Reiniciar</string>
+    <string name="hide_keyboard">Ocultar teclado</string>
     <string-array name="zodiac">
         <item>do Rato</item>
         <item>do Boi</item>

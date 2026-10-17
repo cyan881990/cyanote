@@ -463,3 +463,14 @@ UPDATE = {
 for _lang, _vals in UPDATE.items():
     T[_lang].update(dict(zip(UPDATE_KEYS, _vals)))
 KEYS += UPDATE_KEYS
+
+# Nút ẩn bàn phím
+KB = {
+    "en": "Hide keyboard", "vi": "Ẩn bàn phím", "es": "Ocultar teclado", "pt": "Ocultar teclado",
+    "fr": "Masquer le clavier", "de": "Tastatur ausblenden", "in": "Sembunyikan keyboard",
+    "th": "ซ่อนแป้นพิมพ์", "ja": "キーボードを閉じる", "ko": "키보드 숨기기", "zh-rCN": "隐藏键盘",
+    "hi": "कीबोर्ड छिपाएँ", "ru": "Скрыть клавиатуру",
+}
+for _lang, _val in KB.items():
+    T[_lang]["hide_keyboard"] = _val
+KEYS += ["hide_keyboard"]
