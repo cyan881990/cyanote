@@ -25,17 +25,23 @@ jobs:
 
       - name: Build cho máy ảo iOS (Simulator)
         run: |
-          set -o pipefail
+          set +e
           xcodebuild -project Cyanote.xcodeproj -scheme Cyanote -configuration Debug \
             -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
-            -derivedDataPath build CODE_SIGNING_ALLOWED=NO build | tail -n 80
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO build > build-sim.log 2>&1
+          code=$?
+          ../.github/scripts/report-errors.sh build-sim.log "Simulator"
+          exit $code
 
       - name: Build cho iPhone (chưa ký)
         run: |
-          set -o pipefail
+          set +e
           xcodebuild -project Cyanote.xcodeproj -scheme Cyanote -configuration Release \
             -sdk iphoneos -destination 'generic/platform=iOS' \
-            -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build | tail -n 80
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build > build-device.log 2>&1
+          code=$?
+          ../.github/scripts/report-errors.sh build-device.log "iPhone"
+          exit $code
 
       - name: Đóng gói .ipa (chưa ký) và bản Simulator
         run: |
