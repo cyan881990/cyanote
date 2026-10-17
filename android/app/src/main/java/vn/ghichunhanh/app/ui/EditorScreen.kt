@@ -100,6 +100,12 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.runtime.movableContentOf
+import androidx.compose.ui.unit.Dp
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.ui.graphics.vector.ImageVector
 import vn.ghichunhanh.app.ads.BannerAd
 import vn.ghichunhanh.app.displayTitle
 import java.time.DayOfWeek
@@ -160,226 +166,278 @@ fun EditorScreen(
         if (current.content.isEmpty()) runCatching { focusRequester.requestFocus() }
     }
 
+    // ----- Các khối giao diện (ghép lại theo kích thước màn hình bên dưới) -----
+    val hideKeyboard = { keyboard?.hide(); focusManager.clearFocus() }
+    val openCalc = { hideKeyboard(); calcOpen = true }
+    val tabBar: @Composable () -> Unit = {
+        TabBar(
+            notes = notes,
+            selectedId = current.id,
+            untitled = untitled,
+            onSelect = { store.select(it) },
+            onAdd = { store.newNote() },
+        ) {
+            Box {
+                IconButton(onClick = { menuOpen = true }) {
+                    Icon(
+                        Icons.Filled.MoreVert,
+                        contentDescription = stringResource(R.string.more_options),
+                        tint = scheme.onSurfaceVariant,
+                    )
+                }
+                DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                    if (imeVisible) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.hide_keyboard)) },
+                            onClick = { menuOpen = false; keyboard?.hide(); focusManager.clearFocus() },
+                        )
+                    }
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.menu_rename)) },
+                        onClick = { menuOpen = false; renameTarget = current },
+                    )
+                    val copiedText = stringResource(R.string.copied)
+                    val clipLabel = stringResource(R.string.clip_label)
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.menu_copy)) },
+                        onClick = {
+                            menuOpen = false
+                            copyToClipboard(context, current.content, clipLabel, copiedText)
+                        },
+                    )
+                    val shareTitle = stringResource(R.string.share_title)
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.menu_share)) },
+                        onClick = {
+                            menuOpen = false
+                            shareNote(context, current.displayTitle(untitled), current.content, shareTitle)
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.menu_calendar)) },
+                        onClick = { menuOpen = false; showMonth = true },
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.language)) },
+                        onClick = { menuOpen = false; showLanguages = true },
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.backup_menu)) },
+                        onClick = { menuOpen = false; showBackup = true },
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.menu_monospace)) },
+                        trailingIcon = { Checkbox(checked = store.monospace, onCheckedChange = null) },
+                        onClick = { store.updateMonospace(!store.monospace) },
+                    )
+                    HorizontalDivider()
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.menu_close), color = MaterialTheme.colorScheme.error) },
+                        onClick = {
+                            menuOpen = false
+                            if (current.content.isBlank()) store.delete(current.id) else deleteTarget = current
+                        },
+                    )
+                }
+            }
+        }
+
+    }
+    val editorCard: @Composable (Modifier) -> Unit = { modifier ->
+        // Vùng ghi chú
+        Surface(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp),
+            shape = RoundedCornerShape(22.dp),
+            color = scheme.surface,
+            border = BorderStroke(1.dp, scheme.outlineVariant),
+        ) {
+            Column {
+                val textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    color = scheme.onSurface,
+                    fontSize = 16.sp,
+                    lineHeight = 26.sp,
+                    fontFamily = if (store.monospace) FontFamily.Monospace else FontFamily.Default,
+                )
+                val hint = stringResource(R.string.editor_hint)
+                // Tự cuộn tới chỗ đang gõ (kể cả khi bàn phím vừa bật làm vùng ghi chú thu nhỏ).
+                val scroll = rememberScrollState()
+                var viewportPx by remember { mutableStateOf(0) }
+                var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
+                val density = LocalDensity.current
+                val padTopPx = with(density) { 16.dp.toPx() }
+                val marginPx = with(density) { 28.dp.toPx() }
+                LaunchedEffect(value.text, value.selection, viewportPx, layout) {
+                    val l = layout ?: return@LaunchedEffect
+                    if (viewportPx <= 0) return@LaunchedEffect
+                    val offset = value.selection.end.coerceIn(0, l.layoutInput.text.length)
+                    val rect = l.getCursorRect(offset)
+                    val top = padTopPx + rect.top
+                    val bottom = padTopPx + rect.bottom
+                    val target = when {
+                        bottom + marginPx > scroll.value + viewportPx -> (bottom + marginPx - viewportPx).toInt()
+                        top - marginPx < scroll.value -> (top - marginPx).toInt().coerceAtLeast(0)
+                        else -> return@LaunchedEffect
+                    }
+                    scroll.animateScrollTo(target.coerceIn(0, scroll.maxValue.coerceAtLeast(target)))
+                }
+                Box(
+                    Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .onSizeChanged { viewportPx = it.height }
+                        .verticalScroll(scroll)
+                ) {
+                    BasicTextField(
+                        value = value,
+                        onValueChange = { applyValue(it) },
+                        onTextLayout = { layout = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .defaultMinSize(minHeight = with(density) { viewportPx.toDp() })
+                            .focusRequester(focusRequester)
+                            .padding(horizontal = 20.dp, vertical = 16.dp),
+                        textStyle = textStyle,
+                        cursorBrush = SolidColor(scheme.primary),
+                        decorationBox = { inner ->
+                            Box {
+                                if (value.text.isEmpty()) {
+                                    Text(hint, style = textStyle.copy(color = scheme.onSurfaceVariant))
+                                }
+                                inner()
+                            }
+                        },
+                    )
+                }
+                HorizontalDivider(color = scheme.outlineVariant)
+                StatusRow(text = value.text, saving = store.isSaving)
+            }
+        }
+
+    }
+    val calcPanel: @Composable (Boolean) -> Unit = { collapsible ->
+        CalculatorPanel(
+            calc = store.calc,
+            onCollapse = if (collapsible) ({ calcOpen = false }) else null,
+            onInsert = { text -> applyValue(insertAtCursor(value, text)) },
+        )
+    }
+    val hideKeyboardButton: @Composable (Dp) -> Unit = { size ->
+        Surface(
+            onClick = hideKeyboard,
+            shape = RoundedCornerShape(14.dp),
+            color = scheme.surface,
+            border = BorderStroke(1.dp, scheme.outlineVariant),
+            modifier = Modifier.size(width = size + 8.dp, height = size),
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(KeyboardHideIcon, contentDescription = stringResource(R.string.hide_keyboard), tint = scheme.primary)
+            }
+        }
+    }
+    // Chỉ MỘT banner, di chuyển giữa đáy (bình thường) và đầu màn hình (khi gõ) mà không bị tạo lại.
+    val banner = remember { movableContentOf { widthDp: Int -> BannerAd(visible = true, widthDp = widthDp) } }
+
     Surface(Modifier.fillMaxSize(), color = scheme.background) {
-        Column(
+        BoxWithConstraints(
             Modifier
                 .fillMaxSize()
                 .windowInsetsPadding(WindowInsets.safeDrawing)
         ) {
-            ClockHeader(
-                isDark = isDark,
-                onToggleTheme = onToggleTheme,
-                onLanguageClick = { showLanguages = true },
-                onCalendarClick = { showMonth = true },
-                updateLabel = updateLabel,
-                onUpdateClick = onUpdateClick,
-            )
+            // maxHeight đã trừ bàn phím. Chia bố cục theo chỗ thực có:
+            val wide = maxWidth >= 720.dp                         // máy tính bảng, điện thoại gập mở, ngang màn hình rộng
+            val compactHeader = imeVisible || maxHeight < 520.dp  // đang gõ hoặc màn hình thấp → đồng hồ 1 dòng
+            val showTabs = !imeVisible || maxHeight >= 400.dp
+            val typingCalcRow = imeVisible && !wide && maxHeight >= 300.dp
+            val headerHideButton = imeVisible && !typingCalcRow
+            val adOnTop = imeVisible
+            // Bề rộng banner: tối đa 480dp (để không quá cao trên màn hình rộng), vừa cột máy tính khi 2 cột.
+            val adWidth = if (wide) (if (maxWidth >= 1000.dp) 356 else 306) else minOf(maxWidth.value.toInt() - 24, 480)
 
-            TabBar(
-                notes = notes,
-                selectedId = current.id,
-                untitled = untitled,
-                onSelect = { store.select(it) },
-                onAdd = { store.newNote() },
-            ) {
-                Box {
-                    IconButton(onClick = { menuOpen = true }) {
-                        Icon(
-                            Icons.Filled.MoreVert,
-                            contentDescription = stringResource(R.string.more_options),
-                            tint = scheme.onSurfaceVariant,
-                        )
-                    }
-                    DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                        if (imeVisible) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.hide_keyboard)) },
-                                onClick = { menuOpen = false; keyboard?.hide(); focusManager.clearFocus() },
-                            )
-                        }
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.menu_rename)) },
-                            onClick = { menuOpen = false; renameTarget = current },
-                        )
-                        val copiedText = stringResource(R.string.copied)
-                        val clipLabel = stringResource(R.string.clip_label)
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.menu_copy)) },
-                            onClick = {
-                                menuOpen = false
-                                copyToClipboard(context, current.content, clipLabel, copiedText)
-                            },
-                        )
-                        val shareTitle = stringResource(R.string.share_title)
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.menu_share)) },
-                            onClick = {
-                                menuOpen = false
-                                shareNote(context, current.displayTitle(untitled), current.content, shareTitle)
-                            },
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.menu_calendar)) },
-                            onClick = { menuOpen = false; showMonth = true },
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.language)) },
-                            onClick = { menuOpen = false; showLanguages = true },
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.backup_menu)) },
-                            onClick = { menuOpen = false; showBackup = true },
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.menu_monospace)) },
-                            trailingIcon = { Checkbox(checked = store.monospace, onCheckedChange = null) },
-                            onClick = { store.updateMonospace(!store.monospace) },
-                        )
-                        HorizontalDivider()
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.menu_close), color = MaterialTheme.colorScheme.error) },
-                            onClick = {
-                                menuOpen = false
-                                if (current.content.isBlank()) store.delete(current.id) else deleteTarget = current
-                            },
-                        )
-                    }
-                }
-            }
-
-            // Vùng ghi chú
-            Surface(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
-                shape = RoundedCornerShape(22.dp),
-                color = scheme.surface,
-                border = BorderStroke(1.dp, scheme.outlineVariant),
-            ) {
-                Column {
-                    val textStyle = MaterialTheme.typography.bodyLarge.copy(
-                        color = scheme.onSurface,
-                        fontSize = 16.sp,
-                        lineHeight = 26.sp,
-                        fontFamily = if (store.monospace) FontFamily.Monospace else FontFamily.Default,
+            val header: @Composable () -> Unit = {
+                if (compactHeader) {
+                    CompactHeader(
+                        isDark = isDark,
+                        onToggleTheme = onToggleTheme,
+                        onLanguageClick = { showLanguages = true },
+                        onCalendarClick = { showMonth = true },
+                        updateLabel = updateLabel,
+                        onUpdateClick = onUpdateClick,
+                        onHideKeyboard = if (headerHideButton) hideKeyboard else null,
                     )
-                    val hint = stringResource(R.string.editor_hint)
-                    // Tự cuộn tới chỗ đang gõ (kể cả khi bàn phím vừa bật làm vùng ghi chú thu nhỏ).
-                    val scroll = rememberScrollState()
-                    var viewportPx by remember { mutableStateOf(0) }
-                    var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
-                    val density = LocalDensity.current
-                    val padTopPx = with(density) { 16.dp.toPx() }
-                    val marginPx = with(density) { 28.dp.toPx() }
-                    LaunchedEffect(value.text, value.selection, viewportPx, layout) {
-                        val l = layout ?: return@LaunchedEffect
-                        if (viewportPx <= 0) return@LaunchedEffect
-                        val offset = value.selection.end.coerceIn(0, l.layoutInput.text.length)
-                        val rect = l.getCursorRect(offset)
-                        val top = padTopPx + rect.top
-                        val bottom = padTopPx + rect.bottom
-                        val target = when {
-                            bottom + marginPx > scroll.value + viewportPx -> (bottom + marginPx - viewportPx).toInt()
-                            top - marginPx < scroll.value -> (top - marginPx).toInt().coerceAtLeast(0)
-                            else -> return@LaunchedEffect
-                        }
-                        scroll.animateScrollTo(target.coerceIn(0, scroll.maxValue.coerceAtLeast(target)))
-                    }
-                    Box(
-                        Modifier
-                            .weight(1f)
-                            .fillMaxWidth()
-                            .onSizeChanged { viewportPx = it.height }
-                            .verticalScroll(scroll)
-                    ) {
-                        BasicTextField(
-                            value = value,
-                            onValueChange = { applyValue(it) },
-                            onTextLayout = { layout = it },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .defaultMinSize(minHeight = with(density) { viewportPx.toDp() })
-                                .focusRequester(focusRequester)
-                                .padding(horizontal = 20.dp, vertical = 16.dp),
-                            textStyle = textStyle,
-                            cursorBrush = SolidColor(scheme.primary),
-                            decorationBox = { inner ->
-                                Box {
-                                    if (value.text.isEmpty()) {
-                                        Text(hint, style = textStyle.copy(color = scheme.onSurfaceVariant))
-                                    }
-                                    inner()
-                                }
-                            },
-                        )
-                    }
-                    HorizontalDivider(color = scheme.outlineVariant)
-                    StatusRow(text = value.text, saving = store.isSaving)
+                } else {
+                    ClockHeader(
+                        isDark = isDark,
+                        onToggleTheme = onToggleTheme,
+                        onLanguageClick = { showLanguages = true },
+                        onCalendarClick = { showMonth = true },
+                        updateLabel = updateLabel,
+                        onUpdateClick = onUpdateClick,
+                    )
                 }
             }
+            val topAd: @Composable () -> Unit = {
+                if (adOnTop) Box(Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, bottom = 6.dp)) { banner(adWidth) }
+            }
 
-            // Máy tính + quảng cáo. Khi đang gõ: quảng cáo nằm trên thanh máy tính,
-            // thanh máy tính có nút ẩn bàn phím và ngăn cách quảng cáo với bàn phím (tránh bấm nhầm).
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 12.dp, end = 12.dp, top = 10.dp, bottom = if (imeVisible) 6.dp else 10.dp)
-                    .animateContentSize(),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                // Không đang gõ: máy tính ở trên, quảng cáo ở đáy.
-                if (!imeVisible) {
-                    if (calcOpen) {
-                        CalculatorPanel(
-                            calc = store.calc,
-                            onCollapse = { calcOpen = false },
-                            onInsert = { text -> applyValue(insertAtCursor(value, text)) },
-                        )
-                    } else {
-                        CalculatorBar(
-                            calc = store.calc,
-                            onExpand = {
-                                keyboard?.hide()
-                                calcOpen = true
-                            },
-                        )
+            if (wide) {
+                // Hai cột: ghi chú bên trái, máy tính luôn mở bên phải.
+                Row(Modifier.fillMaxSize()) {
+                    Column(Modifier.weight(1f).fillMaxHeight()) {
+                        header()
+                        topAd()
+                        if (showTabs) tabBar()
+                        editorCard(Modifier.weight(1f))
+                        Spacer(Modifier.height(10.dp))
+                    }
+                    Column(
+                        Modifier
+                            .width(if (maxWidth >= 1000.dp) 380.dp else 330.dp)
+                            .fillMaxHeight()
+                            .padding(top = 10.dp, end = 12.dp, bottom = 10.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Column(
+                            Modifier.weight(1f).verticalScroll(rememberScrollState()),
+                            verticalArrangement = Arrangement.Bottom,
+                        ) { calcPanel(false) }
+                        if (!adOnTop) banner(adWidth)
                     }
                 }
-                // Chỉ một banner duy nhất (không tạo lại khi bàn phím bật/tắt → không tải quảng cáo thừa).
-                BannerAd(visible = true)
-                // Đang gõ: thanh máy tính + nút ẩn bàn phím nằm sát bàn phím.
-                if (imeVisible) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+            } else {
+                Column(Modifier.fillMaxSize()) {
+                    header()
+                    topAd()
+                    if (showTabs) tabBar()
+                    editorCard(Modifier.weight(1f))
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 12.dp, end = 12.dp, top = if (imeVisible) 6.dp else 10.dp, bottom = if (imeVisible) 6.dp else 10.dp)
+                            .animateContentSize(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        Box(Modifier.weight(1f)) {
-                            CalculatorBar(
-                                calc = store.calc,
-                                onExpand = {
-                                    keyboard?.hide()
-                                    focusManager.clearFocus()
-                                    calcOpen = true
-                                },
-                            )
+                        if (!imeVisible) {
+                            if (calcOpen) {
+                                // Màn hình thấp: máy tính không chiếm quá ~60% chiều cao, cuộn được.
+                                Box(Modifier.heightIn(max = maxHeight * 0.62f).verticalScroll(rememberScrollState())) {
+                                    calcPanel(true)
+                                }
+                            } else {
+                                CalculatorBar(calc = store.calc, onExpand = openCalc)
+                            }
+                            banner(adWidth)
                         }
-                        Surface(
-                            onClick = {
-                                keyboard?.hide()
-                                focusManager.clearFocus()
-                            },
-                            shape = RoundedCornerShape(18.dp),
-                            color = scheme.surface,
-                            border = BorderStroke(1.dp, scheme.outlineVariant),
-                            modifier = Modifier.size(width = 56.dp, height = 60.dp),
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    KeyboardHideIcon,
-                                    contentDescription = stringResource(R.string.hide_keyboard),
-                                    tint = scheme.primary,
-                                )
+                        if (typingCalcRow) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Box(Modifier.weight(1f)) {
+                                    CalculatorBar(calc = store.calc, onExpand = openCalc, compact = true)
+                                }
+                                hideKeyboardButton(48.dp)
                             }
                         }
                     }
@@ -459,6 +517,115 @@ fun EditorScreen(
 /** Ngôn ngữ đang hiển thị (dùng cho định dạng ngày giờ và âm lịch). */
 @Composable
 private fun currentLocale(): Locale = LocalConfiguration.current.locales[0]
+
+/** Đồng hồ thu gọn 1 dòng (khi đang gõ hoặc màn hình thấp): giờ · ngày · âm lịch · các nút nhanh. */
+@Composable
+private fun CompactHeader(
+    isDark: Boolean,
+    onToggleTheme: () -> Unit,
+    onLanguageClick: () -> Unit,
+    onCalendarClick: () -> Unit,
+    updateLabel: String?,
+    onUpdateClick: () -> Unit,
+    onHideKeyboard: (() -> Unit)?,
+) {
+    val context = LocalContext.current
+    val scheme = MaterialTheme.colorScheme
+    val extra = LocalExtraColors.current
+    val locale = currentLocale()
+    var now by remember { mutableStateOf(LocalDateTime.now()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            now = LocalDateTime.now()
+            delay(60_000L - System.currentTimeMillis() % 60_000L + 50L)
+        }
+    }
+    val is24h = DateFormat.is24HourFormat(context)
+    val time = now.format(DateTimeFormatter.ofPattern(if (is24h) "HH:mm" else "h:mm a", locale))
+    val date = now.toLocalDate()
+    val dateShort = date.format(
+        DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, "EEEdMMM"), locale)
+    )
+    val language = locale.language
+    val lunar = remember(date, language) {
+        LunarCalendar.fromSolar(date.dayOfMonth, date.monthValue, date.year, LunarCalendar.timeZoneFor(language))
+    }
+    val lunarText = stringResource(
+        if (lunar.leap) R.string.lunar_date_leap else R.string.lunar_date,
+        lunar.day,
+        lunar.month,
+    )
+    val small = 32.dp
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 12.dp, top = 6.dp, bottom = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Text(
+            time,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = scheme.onBackground,
+            maxLines = 1,
+            style = LocalTextStyle.current.copy(fontFeatureSettings = "tnum"),
+        )
+        Text(
+            dateShort,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            color = scheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+        )
+        Surface(onClick = onCalendarClick, shape = RoundedCornerShape(10.dp), color = extra.accentSoft, modifier = Modifier.height(small)) {
+            Row(
+                modifier = Modifier.padding(horizontal = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Icon(Icons.Filled.DateRange, contentDescription = stringResource(R.string.lunar_label), tint = scheme.primary, modifier = Modifier.size(13.dp))
+                Text(lunarText, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = scheme.onBackground, maxLines = 1)
+            }
+        }
+        if (updateLabel != null) {
+            Surface(
+                onClick = onUpdateClick,
+                shape = RoundedCornerShape(10.dp),
+                color = extra.accentSoft,
+                border = BorderStroke(1.dp, scheme.primary.copy(alpha = 0.35f)),
+                modifier = Modifier.size(small),
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(UpdateIcon, contentDescription = updateLabel, tint = scheme.primary, modifier = Modifier.size(16.dp))
+                }
+            }
+        }
+        val iconButton: @Composable (ImageVector, String, () -> Unit) -> Unit = { icon, label, onClick ->
+            Surface(
+                onClick = onClick,
+                shape = RoundedCornerShape(10.dp),
+                color = scheme.surface,
+                border = BorderStroke(1.dp, scheme.outlineVariant),
+                modifier = Modifier.size(small),
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(icon, contentDescription = label, tint = scheme.onSurface, modifier = Modifier.size(16.dp))
+                }
+            }
+        }
+        iconButton(GlobeIcon, stringResource(R.string.language), onLanguageClick)
+        iconButton(
+            if (isDark) SunIcon else MoonIcon,
+            stringResource(if (isDark) R.string.theme_to_light else R.string.theme_to_dark),
+            onToggleTheme,
+        )
+        if (onHideKeyboard != null) iconButton(KeyboardHideIcon, stringResource(R.string.hide_keyboard), onHideKeyboard)
+    }
+}
 
 /** Đồng hồ + ngày dương + ngày âm + nút ngôn ngữ và sáng/tối, luôn nằm trên cùng. */
 @Composable

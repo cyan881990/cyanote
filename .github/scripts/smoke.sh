@@ -30,6 +30,29 @@ adb shell input tap 540 900; sleep 3; adb shell input text "12%2b3"; sleep 3
 pid2=$(adb shell pidof app.cyanote | tr -d '\r')
 echo "::warning title=API $api after typing::pid=${pid2:-NONE}"
 adb exec-out screencap -p > smoke-out/api$api-typing.png
+# Màn hình ngang (điện thoại xoay)
+adb shell input keyevent 111; sleep 1
+adb shell settings put system accelerometer_rotation 0
+adb shell settings put system user_rotation 1; sleep 4
+adb exec-out screencap -p > smoke-out/api$api-landscape.png
+adb shell input tap 300 300; sleep 3
+adb exec-out screencap -p > smoke-out/api$api-landscape-typing.png
+adb shell input keyevent 111
+adb shell settings put system user_rotation 0; sleep 3
+# Máy tính bảng / điện thoại gập mở (giả lập màn hình lớn)
+adb shell wm size 1600x2560; adb shell wm density 320; sleep 5
+adb exec-out screencap -p > smoke-out/api$api-tablet.png
+adb shell input tap 500 1200; sleep 3
+adb exec-out screencap -p > smoke-out/api$api-tablet-typing.png
+adb shell wm size reset; adb shell wm density reset
+# Màn hình nhỏ
+adb shell input keyevent 111
+adb shell wm size 720x1280; adb shell wm density 320; sleep 5
+adb shell input tap 360 700; sleep 3
+adb exec-out screencap -p > smoke-out/api$api-small-typing.png
+adb shell wm size reset; adb shell wm density reset
+pid3=$(adb shell pidof app.cyanote | tr -d '\r')
+echo "::warning title=API $api after resize::pid=${pid3:-NONE}"
 # Lưu kết quả vào nhánh smoke-results (ghi đè mỗi lần) để đọc được từ ngoài
 hdr=$(git config --get http.https://github.com/.extraheader)
 ( cd smoke-out && git init -q && git checkout -q -b smoke-results && git add -A \

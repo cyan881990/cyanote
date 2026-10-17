@@ -12,7 +12,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -41,9 +43,8 @@ object AdConfig {
  * không bị tạo lại, nên không gửi yêu cầu quảng cáo mới mỗi lần đóng/mở.
  */
 @Composable
-fun BannerAd(visible: Boolean, modifier: Modifier = Modifier) {
+fun BannerAd(visible: Boolean, widthDp: Int, modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val widthDp = LocalConfiguration.current.screenWidthDp - 24
     val adSize = remember(widthDp) {
         AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, widthDp)
     }
@@ -66,12 +67,14 @@ fun BannerAd(visible: Boolean, modifier: Modifier = Modifier) {
     DisposableEffect(adView) {
         onDispose { adView.destroy() }
     }
-    key(adView) {
-        AndroidView(
-            factory = { adView },
-            modifier = modifier
-                .fillMaxWidth()
-                .height(height),
-        )
+    Box(modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+        key(adView) {
+            AndroidView(
+                factory = { adView },
+                modifier = Modifier
+                    .width(adSize.width.dp)
+                    .height(height),
+            )
+        }
     }
 }

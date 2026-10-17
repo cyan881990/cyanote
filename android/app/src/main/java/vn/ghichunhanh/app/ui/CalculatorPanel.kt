@@ -74,7 +74,7 @@ private fun keyDescription(key: String): String = when (key) {
 
 /** Thanh máy tính thu gọn: luôn hiện phép tính đang giữ, bấm để mở rộng. */
 @Composable
-fun CalculatorBar(calc: CalcState, onExpand: () -> Unit) {
+fun CalculatorBar(calc: CalcState, onExpand: () -> Unit, compact: Boolean = false) {
     val scheme = MaterialTheme.colorScheme
     val extra = LocalExtraColors.current
     val openLabel = stringResource(R.string.calc_open)
@@ -85,7 +85,7 @@ fun CalculatorBar(calc: CalcState, onExpand: () -> Unit) {
         border = BorderStroke(1.dp, scheme.outlineVariant),
         modifier = Modifier
             .fillMaxWidth()
-            .height(60.dp)
+            .height(if (compact) 48.dp else 60.dp)
             .semantics { contentDescription = openLabel },
     ) {
         Row(
@@ -95,15 +95,15 @@ fun CalculatorBar(calc: CalcState, onExpand: () -> Unit) {
         ) {
             Box(
                 modifier = Modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .size(if (compact) 32.dp else 40.dp)
+                    .clip(RoundedCornerShape(if (compact) 10.dp else 12.dp))
                     .background(extra.accentSoft),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(CalculatorIcon, contentDescription = null, tint = scheme.primary, modifier = Modifier.size(22.dp))
             }
             Column(Modifier.weight(1f)) {
-                Text(
+                if (!compact) Text(
                     stringResource(R.string.calc_holding),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
@@ -137,7 +137,7 @@ fun CalculatorBar(calc: CalcState, onExpand: () -> Unit) {
 @Composable
 fun CalculatorPanel(
     calc: CalcState,
-    onCollapse: () -> Unit,
+    onCollapse: (() -> Unit)?,   // null: không có nút Thu gọn (màn hình rộng, máy tính luôn mở)
     onInsert: (String) -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -196,7 +196,7 @@ fun CalculatorPanel(
                         style = LocalTextStyle.current.copy(fontFeatureSettings = "tnum"),
                     )
                 }
-                Surface(
+                if (onCollapse != null) Surface(
                     onClick = onCollapse,
                     shape = RoundedCornerShape(12.dp),
                     color = extra.keyBg,
