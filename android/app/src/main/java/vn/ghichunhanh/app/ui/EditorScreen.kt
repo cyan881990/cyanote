@@ -135,6 +135,7 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.ui.platform.LocalView
 import vn.ghichunhanh.app.ads.AdSlot
 import vn.ghichunhanh.app.ads.Interstitials
 import vn.ghichunhanh.app.findActivity
@@ -167,6 +168,7 @@ fun EditorScreen(
     val context = LocalContext.current
     val keyboard = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
+    val rootView = LocalView.current
     val scheme = MaterialTheme.colorScheme
     val untitled = stringResource(R.string.untitled)
 
@@ -488,6 +490,9 @@ fun EditorScreen(
                                 if (up != null && (up.position - down.position).getDistance() < viewConfiguration.touchSlop) {
                                     runCatching { focusRequester.requestFocus() }
                                     keyboard?.show()
+                                    // Bấm trúng con trỏ có sẵn thì Compose chỉ hiện menu "Chọn tất cả"
+                                    // mà không bật lại bàn phím → nhờ hệ thống bật bàn phím sau một nhịp.
+                                    rootView.postDelayed({ showImeNow(rootView) }, 120)
                                 }
                             }
                         }
@@ -1411,6 +1416,17 @@ private fun EditorFooter(
                 }
             }
         }
+    }
+}
+
+/** Bật bàn phím cho ô chữ đang được chọn (dùng khi Compose không tự bật lại). */
+private fun showImeNow(view: android.view.View) {
+    runCatching {
+        val window = (view.context.findActivity())?.window ?: return
+        androidx.core.view.WindowCompat.getInsetsController(window, view).show(androidx.core.view.WindowInsetsCompat.Type.ime())
+    }
+    runCatching {
+        view.context.getSystemService(android.view.inputmethod.InputMethodManager::class.java)?.showSoftInput(view, 0)
     }
 }
 
