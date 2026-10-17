@@ -72,6 +72,12 @@
 "backup_replace_warning" = "모두 바꾸면 이 휴대폰에 있는 메모가 삭제됩니다.";
 "backup_import_done" = "메모 %1$d개를 가져왔습니다";
 "backup_import_failed" = "이 파일을 읽을 수 없습니다. 이 앱에서 만든 백업 .zip 파일을 선택하세요.";
+"update_title" = "업데이트 가능";
+"update_message" = "버전 %1$@이(가) 준비되었습니다. 지금 업데이트하고 최신 수정 사항과 기능을 받아보세요.";
+"update_now" = "업데이트";
+"update_later" = "나중에";
+"update_downloaded" = "업데이트를 다운로드했습니다";
+"update_restart" = "다시 시작";
 "zodiac_0" = "쥐";
 "zodiac_1" = "소";
 "zodiac_2" = "호랑이";

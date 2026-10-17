@@ -74,6 +74,12 @@
     <string name="backup_replace_warning">सब बदलने से इस फ़ोन के मौजूदा नोट्स हट जाएँगे।</string>
     <string name="backup_import_done">%1$d नोट्स इंपोर्ट हुए</string>
     <string name="backup_import_failed">यह फ़ाइल पढ़ी नहीं जा सकी। इस ऐप से बनी बैकअप .zip फ़ाइल चुनें।</string>
+    <string name="update_title">अपडेट उपलब्ध है</string>
+    <string name="update_message">वर्ज़न %1$s तैयार है। नए सुधार और फ़ीचर पाने के लिए अभी अपडेट करें।</string>
+    <string name="update_now">अपडेट करें</string>
+    <string name="update_later">बाद में</string>
+    <string name="update_downloaded">अपडेट डाउनलोड हो गया</string>
+    <string name="update_restart">फिर से शुरू करें</string>
     <string-array name="zodiac">
         <item>चूहा</item>
         <item>बैल</item>

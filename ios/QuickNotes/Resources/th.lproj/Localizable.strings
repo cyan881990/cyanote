@@ -72,6 +72,12 @@
 "backup_replace_warning" = "การแทนที่จะลบโน้ตที่มีอยู่ในเครื่องนี้";
 "backup_import_done" = "นำเข้า %1$d โน้ตแล้ว";
 "backup_import_failed" = "อ่านไฟล์นี้ไม่ได้ เลือกไฟล์ .zip สำรองที่สร้างจากแอปนี้";
+"update_title" = "มีอัปเดตใหม่";
+"update_message" = "เวอร์ชัน %1$@ พร้อมแล้ว อัปเดตตอนนี้เพื่อรับการแก้ไขและฟีเจอร์ล่าสุด";
+"update_now" = "อัปเดต";
+"update_later" = "ไว้ทีหลัง";
+"update_downloaded" = "ดาวน์โหลดอัปเดตแล้ว";
+"update_restart" = "เริ่มใหม่";
 "zodiac_0" = "ชวด";
 "zodiac_1" = "ฉลู";
 "zodiac_2" = "ขาล";

@@ -72,6 +72,12 @@
 "backup_replace_warning" = "Ganti semua akan menghapus catatan yang ada di ponsel ini.";
 "backup_import_done" = "%1$d catatan diimpor";
 "backup_import_failed" = "File ini tidak bisa dibaca. Pilih file .zip cadangan dari aplikasi ini.";
+"update_title" = "Pembaruan tersedia";
+"update_message" = "Versi %1$@ sudah siap. Perbarui sekarang untuk mendapatkan perbaikan dan fitur terbaru.";
+"update_now" = "Perbarui";
+"update_later" = "Nanti";
+"update_downloaded" = "Pembaruan sudah diunduh";
+"update_restart" = "Mulai ulang";
 "zodiac_0" = "Tikus";
 "zodiac_1" = "Kerbau";
 "zodiac_2" = "Macan";

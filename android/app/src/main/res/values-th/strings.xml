@@ -74,6 +74,12 @@
     <string name="backup_replace_warning">การแทนที่จะลบโน้ตที่มีอยู่ในเครื่องนี้</string>
     <string name="backup_import_done">นำเข้า %1$d โน้ตแล้ว</string>
     <string name="backup_import_failed">อ่านไฟล์นี้ไม่ได้ เลือกไฟล์ .zip สำรองที่สร้างจากแอปนี้</string>
+    <string name="update_title">มีอัปเดตใหม่</string>
+    <string name="update_message">เวอร์ชัน %1$s พร้อมแล้ว อัปเดตตอนนี้เพื่อรับการแก้ไขและฟีเจอร์ล่าสุด</string>
+    <string name="update_now">อัปเดต</string>
+    <string name="update_later">ไว้ทีหลัง</string>
+    <string name="update_downloaded">ดาวน์โหลดอัปเดตแล้ว</string>
+    <string name="update_restart">เริ่มใหม่</string>
     <string-array name="zodiac">
         <item>ชวด</item>
         <item>ฉลู</item>

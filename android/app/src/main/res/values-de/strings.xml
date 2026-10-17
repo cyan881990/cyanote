@@ -74,6 +74,12 @@
     <string name="backup_replace_warning">Ersetzen löscht die Notizen, die jetzt auf diesem Handy sind.</string>
     <string name="backup_import_done">%1$d Notizen importiert</string>
     <string name="backup_import_failed">Diese Datei kann nicht gelesen werden. Wähle eine Sicherungs-.zip dieser App.</string>
+    <string name="update_title">Update verfügbar</string>
+    <string name="update_message">Version %1$s ist bereit. Aktualisiere jetzt für die neuesten Fehlerbehebungen und Funktionen.</string>
+    <string name="update_now">Aktualisieren</string>
+    <string name="update_later">Später</string>
+    <string name="update_downloaded">Update heruntergeladen</string>
+    <string name="update_restart">Neu starten</string>
     <string-array name="zodiac">
         <item>der Ratte</item>
         <item>des Büffels</item>

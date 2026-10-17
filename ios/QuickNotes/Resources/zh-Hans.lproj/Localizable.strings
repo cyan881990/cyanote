@@ -72,6 +72,12 @@
 "backup_replace_warning" = "全部替换会删除此手机上现有的笔记。";
 "backup_import_done" = "已导入 %1$d 条笔记";
 "backup_import_failed" = "无法读取此文件。请选择由本应用创建的备份 .zip 文件。";
+"update_title" = "有可用更新";
+"update_message" = "版本 %1$@ 已就绪。立即更新以获取最新的修复和功能。";
+"update_now" = "更新";
+"update_later" = "稍后";
+"update_downloaded" = "更新已下载";
+"update_restart" = "重新启动";
 "zodiac_0" = "鼠";
 "zodiac_1" = "牛";
 "zodiac_2" = "虎";

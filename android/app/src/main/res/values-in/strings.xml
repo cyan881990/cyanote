@@ -74,6 +74,12 @@
     <string name="backup_replace_warning">Ganti semua akan menghapus catatan yang ada di ponsel ini.</string>
     <string name="backup_import_done">%1$d catatan diimpor</string>
     <string name="backup_import_failed">File ini tidak bisa dibaca. Pilih file .zip cadangan dari aplikasi ini.</string>
+    <string name="update_title">Pembaruan tersedia</string>
+    <string name="update_message">Versi %1$s sudah siap. Perbarui sekarang untuk mendapatkan perbaikan dan fitur terbaru.</string>
+    <string name="update_now">Perbarui</string>
+    <string name="update_later">Nanti</string>
+    <string name="update_downloaded">Pembaruan sudah diunduh</string>
+    <string name="update_restart">Mulai ulang</string>
     <string-array name="zodiac">
         <item>Tikus</item>
         <item>Kerbau</item>

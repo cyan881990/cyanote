@@ -74,6 +74,12 @@
     <string name="backup_replace_warning">При замене текущие заметки на этом телефоне будут удалены.</string>
     <string name="backup_import_done">Импортировано заметок: %1$d</string>
     <string name="backup_import_failed">Не удаётся прочитать файл. Выберите резервную копию .zip, созданную этим приложением.</string>
+    <string name="update_title">Доступно обновление</string>
+    <string name="update_message">Версия %1$s готова. Обновитесь, чтобы получить последние исправления и функции.</string>
+    <string name="update_now">Обновить</string>
+    <string name="update_later">Позже</string>
+    <string name="update_downloaded">Обновление загружено</string>
+    <string name="update_restart">Перезапустить</string>
     <string-array name="zodiac">
         <item>Крысы</item>
         <item>Быка</item>

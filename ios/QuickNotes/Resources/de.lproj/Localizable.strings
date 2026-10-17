@@ -72,6 +72,12 @@
 "backup_replace_warning" = "Ersetzen löscht die Notizen, die jetzt auf diesem Handy sind.";
 "backup_import_done" = "%1$d Notizen importiert";
 "backup_import_failed" = "Diese Datei kann nicht gelesen werden. Wähle eine Sicherungs-.zip dieser App.";
+"update_title" = "Update verfügbar";
+"update_message" = "Version %1$@ ist bereit. Aktualisiere jetzt für die neuesten Fehlerbehebungen und Funktionen.";
+"update_now" = "Aktualisieren";
+"update_later" = "Später";
+"update_downloaded" = "Update heruntergeladen";
+"update_restart" = "Neu starten";
 "zodiac_0" = "der Ratte";
 "zodiac_1" = "des Büffels";
 "zodiac_2" = "des Tigers";

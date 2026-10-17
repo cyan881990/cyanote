@@ -72,6 +72,12 @@
 "backup_replace_warning" = "Remplacer supprime les notes actuellement sur ce téléphone.";
 "backup_import_done" = "%1$d notes importées";
 "backup_import_failed" = "Impossible de lire ce fichier. Choisissez un .zip de sauvegarde créé par cette app.";
+"update_title" = "Mise à jour disponible";
+"update_message" = "La version %1$@ est prête. Mettez à jour pour profiter des derniers correctifs et fonctions.";
+"update_now" = "Mettre à jour";
+"update_later" = "Plus tard";
+"update_downloaded" = "Mise à jour téléchargée";
+"update_restart" = "Redémarrer";
 "zodiac_0" = "du Rat";
 "zodiac_1" = "du Buffle";
 "zodiac_2" = "du Tigre";

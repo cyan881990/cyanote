@@ -12,6 +12,8 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      SITE_DEPLOY_TOKEN: ${{ secrets.SITE_DEPLOY_TOKEN }}
     defaults:
       run:
         working-directory: android
@@ -47,12 +49,15 @@ jobs:
         run: |
           mkdir -p ../dist
           cp app/build/outputs/apk/debug/app-debug.apk ../dist/cyanote-android-test.apk
+          cp app/build/outputs/apk/debug/app-debug.apk ../dist/cyanote-android.apk
           cp app/build/outputs/bundle/release/app-release.aab ../dist/cyanote-android-release.aab
 
       - uses: actions/upload-artifact@v4
         with:
           name: cyanote-android
-          path: dist/*
+          path: |
+            dist/cyanote-android-test.apk
+            dist/cyanote-android-release.aab
 
       - name: Đăng lên trang Releases (tải thẳng về điện thoại)
         if: github.ref == 'refs/heads/main'
@@ -61,8 +66,36 @@ jobs:
           tag_name: test-build
           name: Bản thử mới nhất
           prerelease: true
-          files: dist/*
+          files: |
+            dist/cyanote-android-test.apk
+            dist/cyanote-android-release.aab
           body: |
             Bản build tự động từ nhánh main.
             • Android: tải **cyanote-android-test.apk** về điện thoại rồi mở để cài (cho phép "Cài ứng dụng không rõ nguồn gốc").
             • iOS: xem các file .ipa / .zip (do workflow iOS đăng lên).
+
+      # ---- Tự cập nhật: đưa APK lên kho trang web công khai + cập nhật update.json ----
+      # Cần secret SITE_DEPLOY_TOKEN (token có quyền ghi kho cyan881990.github.io). Không có thì bỏ qua.
+      - name: Đăng APK lên kho trang web (link tải công khai)
+        if: github.ref == 'refs/heads/main' && env.SITE_DEPLOY_TOKEN != ''
+        uses: softprops/action-gh-release@v2
+        with:
+          repository: cyan881990/cyan881990.github.io
+          token: ${{ secrets.SITE_DEPLOY_TOKEN }}
+          tag_name: latest-test
+          name: cyanote++ bản thử mới nhất
+          prerelease: true
+          files: dist/cyanote-android.apk
+
+      - name: Cập nhật update.json
+        if: github.ref == 'refs/heads/main' && env.SITE_DEPLOY_TOKEN != ''
+        working-directory: .
+        run: |
+          git clone --depth 1 "https://x-access-token:${SITE_DEPLOY_TOKEN}@github.com/cyan881990/cyan881990.github.io" site
+          python3 tools/publish_update.py site android ${{ github.run_number }}
+          cd site
+          git config user.name "cyanote-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add update.json
+          git commit -m "Android build ${{ github.run_number }}" || exit 0
+          for i in 1 2 3; do git push && break; git pull --rebase; done

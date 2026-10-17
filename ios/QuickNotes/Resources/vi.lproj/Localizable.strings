@@ -72,6 +72,12 @@
 "backup_replace_warning" = "Thay thế sẽ xóa các ghi chú đang có trên máy này.";
 "backup_import_done" = "Đã nhập %1$d ghi chú";
 "backup_import_failed" = "Không đọc được file này. Hãy chọn file .zip sao lưu từ app.";
+"update_title" = "Có bản cập nhật";
+"update_message" = "Phiên bản %1$@ đã sẵn sàng. Cập nhật ngay để có các bản sửa lỗi và tính năng mới nhất.";
+"update_now" = "Cập nhật";
+"update_later" = "Để sau";
+"update_downloaded" = "Đã tải xong bản cập nhật";
+"update_restart" = "Khởi động lại";
 "zodiac_0" = "Tý";
 "zodiac_1" = "Sửu";
 "zodiac_2" = "Dần";

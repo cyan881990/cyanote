@@ -74,6 +74,12 @@
     <string name="backup_replace_warning">Reemplazar borra las notas que hay ahora en este teléfono.</string>
     <string name="backup_import_done">Se importaron %1$d notas</string>
     <string name="backup_import_failed">No se puede leer este archivo. Elige un .zip de copia creado por esta app.</string>
+    <string name="update_title">Actualización disponible</string>
+    <string name="update_message">La versión %1$s está lista. Actualiza para obtener las últimas correcciones y funciones.</string>
+    <string name="update_now">Actualizar</string>
+    <string name="update_later">Más tarde</string>
+    <string name="update_downloaded">Actualización descargada</string>
+    <string name="update_restart">Reiniciar</string>
     <string-array name="zodiac">
         <item>de la Rata</item>
         <item>del Buey</item>

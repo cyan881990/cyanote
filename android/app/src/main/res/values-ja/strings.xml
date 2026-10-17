@@ -74,6 +74,12 @@
     <string name="backup_replace_warning">置き換えると、この端末にある今のメモは削除されます。</string>
     <string name="backup_import_done">%1$d 件のメモを読み込みました</string>
     <string name="backup_import_failed">このファイルは読み込めません。このアプリで作成したバックアップ .zip を選んでください。</string>
+    <string name="update_title">アップデートがあります</string>
+    <string name="update_message">バージョン %1$s の準備ができました。今すぐ更新して最新の修正と機能を利用しましょう。</string>
+    <string name="update_now">更新</string>
+    <string name="update_later">後で</string>
+    <string name="update_downloaded">アップデートをダウンロードしました</string>
+    <string name="update_restart">再起動</string>
     <string-array name="zodiac">
         <item>子</item>
         <item>丑</item>

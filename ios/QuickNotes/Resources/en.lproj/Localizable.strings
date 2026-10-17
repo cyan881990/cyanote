@@ -72,6 +72,12 @@
 "backup_replace_warning" = "Replace deletes the notes currently on this phone.";
 "backup_import_done" = "Imported %1$d notes";
 "backup_import_failed" = "This file can’t be read. Choose a backup .zip made by this app.";
+"update_title" = "Update available";
+"update_message" = "Version %1$@ is ready. Update now to get the latest fixes and features.";
+"update_now" = "Update";
+"update_later" = "Later";
+"update_downloaded" = "Update downloaded";
+"update_restart" = "Restart";
 "zodiac_0" = "Rat";
 "zodiac_1" = "Ox";
 "zodiac_2" = "Tiger";

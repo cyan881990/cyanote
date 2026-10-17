@@ -16,6 +16,8 @@ struct ContentView: View {
     @State private var showMonth = false
     @State private var showLanguages = false
     @State private var showBackup = false
+    @State private var update: IOSUpdateInfo?
+    @Environment(\.openURL) private var openURL
 
     private var s: Strings { settings.strings }
     private var p: Palette { Palette.of(colorScheme) }
@@ -74,6 +76,19 @@ struct ContentView: View {
             Button(s("action_keep"), role: .cancel) { deleting = nil }
         } message: {
             Text(s("close_message"))
+        }
+        .task { update = await UpdateChecker.check() }
+        .alert(s("update_title"), isPresented: Binding(get: { update != nil }, set: { if !$0 { update = nil } })) {
+            Button(s("update_now")) {
+                if let u = update { openURL(u.url) }
+                update = nil
+            }
+            Button(s("update_later"), role: .cancel) {
+                if let u = update { UpdateChecker.skip(u.build) }
+                update = nil
+            }
+        } message: {
+            Text(s.f("update_message", update?.version ?? ""))
         }
         .sheet(isPresented: $showMonth) { MonthCalendarView() }
         .sheet(isPresented: $showLanguages) { LanguageSheet() }

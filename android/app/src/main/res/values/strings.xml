@@ -74,6 +74,12 @@
     <string name="backup_replace_warning">Replace deletes the notes currently on this phone.</string>
     <string name="backup_import_done">Imported %1$d notes</string>
     <string name="backup_import_failed">This file can’t be read. Choose a backup .zip made by this app.</string>
+    <string name="update_title">Update available</string>
+    <string name="update_message">Version %1$s is ready. Update now to get the latest fixes and features.</string>
+    <string name="update_now">Update</string>
+    <string name="update_later">Later</string>
+    <string name="update_downloaded">Update downloaded</string>
+    <string name="update_restart">Restart</string>
     <string-array name="zodiac">
         <item>Rat</item>
         <item>Ox</item>

@@ -442,3 +442,24 @@ BACKUP = {
 for _lang, _vals in BACKUP.items():
     T[_lang].update(dict(zip(BACKUP_KEYS, _vals)))
 KEYS += BACKUP_KEYS
+
+# Chuỗi cho tự cập nhật
+UPDATE_KEYS = ["update_title", "update_message", "update_now", "update_later", "update_downloaded", "update_restart"]
+UPDATE = {
+    "en": ("Update available", "Version %1$s is ready. Update now to get the latest fixes and features.", "Update", "Later", "Update downloaded", "Restart"),
+    "vi": ("Có bản cập nhật", "Phiên bản %1$s đã sẵn sàng. Cập nhật ngay để có các bản sửa lỗi và tính năng mới nhất.", "Cập nhật", "Để sau", "Đã tải xong bản cập nhật", "Khởi động lại"),
+    "es": ("Actualización disponible", "La versión %1$s está lista. Actualiza para obtener las últimas correcciones y funciones.", "Actualizar", "Más tarde", "Actualización descargada", "Reiniciar"),
+    "pt": ("Atualização disponível", "A versão %1$s está pronta. Atualize para receber as correções e recursos mais recentes.", "Atualizar", "Depois", "Atualização baixada", "Reiniciar"),
+    "fr": ("Mise à jour disponible", "La version %1$s est prête. Mettez à jour pour profiter des derniers correctifs et fonctions.", "Mettre à jour", "Plus tard", "Mise à jour téléchargée", "Redémarrer"),
+    "de": ("Update verfügbar", "Version %1$s ist bereit. Aktualisiere jetzt für die neuesten Fehlerbehebungen und Funktionen.", "Aktualisieren", "Später", "Update heruntergeladen", "Neu starten"),
+    "in": ("Pembaruan tersedia", "Versi %1$s sudah siap. Perbarui sekarang untuk mendapatkan perbaikan dan fitur terbaru.", "Perbarui", "Nanti", "Pembaruan sudah diunduh", "Mulai ulang"),
+    "th": ("มีอัปเดตใหม่", "เวอร์ชัน %1$s พร้อมแล้ว อัปเดตตอนนี้เพื่อรับการแก้ไขและฟีเจอร์ล่าสุด", "อัปเดต", "ไว้ทีหลัง", "ดาวน์โหลดอัปเดตแล้ว", "เริ่มใหม่"),
+    "ja": ("アップデートがあります", "バージョン %1$s の準備ができました。今すぐ更新して最新の修正と機能を利用しましょう。", "更新", "後で", "アップデートをダウンロードしました", "再起動"),
+    "ko": ("업데이트 가능", "버전 %1$s이(가) 준비되었습니다. 지금 업데이트하고 최신 수정 사항과 기능을 받아보세요.", "업데이트", "나중에", "업데이트를 다운로드했습니다", "다시 시작"),
+    "zh-rCN": ("有可用更新", "版本 %1$s 已就绪。立即更新以获取最新的修复和功能。", "更新", "稍后", "更新已下载", "重新启动"),
+    "hi": ("अपडेट उपलब्ध है", "वर्ज़न %1$s तैयार है। नए सुधार और फ़ीचर पाने के लिए अभी अपडेट करें।", "अपडेट करें", "बाद में", "अपडेट डाउनलोड हो गया", "फिर से शुरू करें"),
+    "ru": ("Доступно обновление", "Версия %1$s готова. Обновитесь, чтобы получить последние исправления и функции.", "Обновить", "Позже", "Обновление загружено", "Перезапустить"),
+}
+for _lang, _vals in UPDATE.items():
+    T[_lang].update(dict(zip(UPDATE_KEYS, _vals)))
+KEYS += UPDATE_KEYS

@@ -74,6 +74,12 @@
     <string name="backup_replace_warning">Remplacer supprime les notes actuellement sur ce téléphone.</string>
     <string name="backup_import_done">%1$d notes importées</string>
     <string name="backup_import_failed">Impossible de lire ce fichier. Choisissez un .zip de sauvegarde créé par cette app.</string>
+    <string name="update_title">Mise à jour disponible</string>
+    <string name="update_message">La version %1$s est prête. Mettez à jour pour profiter des derniers correctifs et fonctions.</string>
+    <string name="update_now">Mettre à jour</string>
+    <string name="update_later">Plus tard</string>
+    <string name="update_downloaded">Mise à jour téléchargée</string>
+    <string name="update_restart">Redémarrer</string>
     <string-array name="zodiac">
         <item>du Rat</item>
         <item>du Buffle</item>

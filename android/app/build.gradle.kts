@@ -14,8 +14,10 @@ android {
         applicationId = "app.cyanote"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        // Trên GitHub Actions, số build tự tăng mỗi lần chạy → dùng làm versionCode để app biết có bản mới.
+        val runNumber = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull()
+        versionCode = runNumber ?: 1
+        versionName = if (runNumber != null) "1.0.$runNumber" else "1.0"
     }
 
     // Ký bản phát hành bằng keystore của bạn (dùng khi đăng Google Play).
@@ -23,6 +25,14 @@ android {
     // CYANOTE_KEY_ALIAS, CYANOTE_KEY_PASSWORD; không có thì bản release được build nhưng chưa ký.
     val keystorePath = System.getenv("CYANOTE_KEYSTORE")
     signingConfigs {
+        // Khóa ký CỐ ĐỊNH cho bản thử (debug), nằm trong kho code. Nhờ vậy bản build sau
+        // cài đè được lên bản trước mà không mất ghi chú. Không dùng khóa này cho Google Play.
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
         if (keystorePath != null) {
             create("release") {
                 storeFile = file(keystorePath)
@@ -79,6 +89,9 @@ dependencies {
     implementation("androidx.compose.material:material-icons-core")
     implementation("androidx.compose.ui:ui-tooling-preview")
     debugImplementation("androidx.compose.ui:ui-tooling")
+
+    // Cập nhật ngay trong app khi cài từ Google Play
+    implementation("com.google.android.play:app-update-ktx:2.1.0")
 
     // Quảng cáo Google AdMob
     implementation("com.google.android.gms:play-services-ads:23.6.0")
