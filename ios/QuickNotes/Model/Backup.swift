@@ -209,14 +209,24 @@ enum Zip {
 
     private static func u16(_ d: [UInt8], _ i: Int) -> UInt16 { UInt16(d[i]) | UInt16(d[i + 1]) << 8 }
     private static func u32(_ d: [UInt8], _ i: Int) -> UInt32 {
-        UInt32(d[i]) | UInt32(d[i + 1]) << 8 | UInt32(d[i + 2]) << 16 | UInt32(d[i + 3]) << 24
+        let b0 = UInt32(d[i])
+        let b1 = UInt32(d[i + 1]) << 8
+        let b2 = UInt32(d[i + 2]) << 16
+        let b3 = UInt32(d[i + 3]) << 24
+        return b0 | b1 | b2 | b3
     }
 
     private static func dosDateTime(_ date: Date) -> (UInt16, UInt16) {
         let c = Calendar(identifier: .gregorian).dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)
-        let time = UInt16((c.hour ?? 0) << 11 | (c.minute ?? 0) << 5 | (c.second ?? 0) / 2)
-        let date = UInt16(max(0, (c.year ?? 1980) - 1980) << 9 | (c.month ?? 1) << 5 | (c.day ?? 1))
-        return (time, date)
+        let hour: Int = c.hour ?? 0
+        let minute: Int = c.minute ?? 0
+        let second: Int = c.second ?? 0
+        let year: Int = max(0, (c.year ?? 1980) - 1980)
+        let month: Int = c.month ?? 1
+        let day: Int = c.day ?? 1
+        let timeValue: Int = (hour << 11) | (minute << 5) | (second / 2)
+        let dateValue: Int = (year << 9) | (month << 5) | day
+        return (UInt16(truncatingIfNeeded: timeValue), UInt16(truncatingIfNeeded: dateValue))
     }
 }
 
