@@ -30,10 +30,9 @@ adb shell input tap 540 900; sleep 3; adb shell input text "12%2b3"; sleep 3
 pid2=$(adb shell pidof app.cyanote | tr -d '\r')
 echo "::warning title=API $api after typing::pid=${pid2:-NONE}"
 adb exec-out screencap -p > smoke-out/api$api-typing.png
-# Lưu kết quả vào nhánh smoke-results để đọc được từ ngoài
-git config user.name cyanote-bot; git config user.email actions@users.noreply.github.com
-git fetch -q origin smoke-results 2>/dev/null && git checkout -q -B smoke-results FETCH_HEAD || git checkout -q --orphan smoke-results
-git rm -rq --cached . >/dev/null 2>&1 || true
-git add -f smoke-out
-git commit -qm "smoke api$api run $GITHUB_RUN_NUMBER" && for i in 1 2 3; do git push -q origin smoke-results && break; git pull -q --rebase origin smoke-results; done
+# Lưu kết quả vào nhánh smoke-results (ghi đè mỗi lần) để đọc được từ ngoài
+hdr=$(git config --get http.https://github.com/.extraheader)
+( cd smoke-out && git init -q && git checkout -q -b smoke-results && git add -A \
+  && git -c user.name=cyanote-bot -c user.email=actions@users.noreply.github.com commit -qm "smoke api$api run $GITHUB_RUN_NUMBER" \
+  && git -c http.extraheader="$hdr" push -qf "https://github.com/$GITHUB_REPOSITORY" smoke-results ) || echo "::warning::could not push smoke results"
 [ -n "$pid" ] && [ -n "$pid2" ] && [ -z "$crash" ]
