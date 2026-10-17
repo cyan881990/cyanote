@@ -24,8 +24,7 @@ PY
 
 pip3 install --quiet pillow >/dev/null 2>&1 || true
 python3 tools/demo/seed.py seed
-# ffmpeg: bản ghi âm mẫu 6 giây
-ffmpeg -loglevel error -y -f lavfi -i "sine=frequency=440:duration=6" -c:a aac -b:a 96k seed/demo.m4a || true
+cp tools/demo/demo.m4a seed/demo.m4a
 
 adb shell wm size 1080x2340; adb shell wm density 420
 adb shell am force-stop $PKG
