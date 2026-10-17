@@ -114,7 +114,6 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -227,9 +226,11 @@ fun EditorScreen(
         val f = attachments.newCameraFile()
         cameraFile = f
         runCatching { takePicture.launch(FileProvider.getUriForFile(context, "app.cyanote.files", f)) }
+        Unit
     }
     val startPick = {
         runCatching { pickPhoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
+        Unit
     }
     val startRecord = {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
@@ -440,7 +441,7 @@ fun EditorScreen(
                 val lineCount = if (value.text.isEmpty()) 1 else value.text.count { it == '\n' } + 1
                 val gutter = if (showNums) (lineCount.toString().length * 9 + 16).dp else 0.dp
                 val measurer = rememberTextMeasurer()
-                val numStyle = TextStyle(
+                val numStyle = androidx.compose.ui.text.TextStyle(
                     color = scheme.onSurfaceVariant.copy(alpha = 0.65f),
                     fontSize = 12.sp,
                     fontFamily = FontFamily.Monospace,
