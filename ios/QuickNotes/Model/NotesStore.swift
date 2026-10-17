@@ -135,10 +135,10 @@ final class NotesStore: ObservableObject {
     }
 
     /// replace = false: thêm vào, bỏ qua ghi chú trùng y hệt. replace = true: thay toàn bộ.
-    @discardableResult
     /// id ghi chú cũ → mới sau lần nhập gần nhất (để gắn lại lịch hẹn, ảnh).
     private(set) var lastImportIdMap: [Int64: Int64] = [:]
 
+    @discardableResult
     func importBackup(_ data: BackupData, replace: Bool) -> Int {
         var idMap: [Int64: Int64] = [:]
         var nextId = max(nowMillis(), (notes.map(\.id).max() ?? 0) + 1)
