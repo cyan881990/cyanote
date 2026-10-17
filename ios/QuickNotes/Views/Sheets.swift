@@ -13,8 +13,7 @@ struct MonthCalendarView: View {
     var body: some View {
         let s = settings.strings
         let p = Palette.of(colorScheme)
-        var cal = Calendar(identifier: .gregorian)
-        cal.locale = s.locale
+        let cal = calendar
         let lang = s.languageCode
         let tz = LunarCalendar.timeZone(for: lang)
         let comps = cal.dateComponents([.year, .month], from: monthStart)
@@ -99,6 +98,12 @@ struct MonthCalendarView: View {
             }
         }
         .presentationDetents([.medium, .large])
+    }
+
+    private var calendar: Calendar {
+        var c = Calendar(identifier: .gregorian)
+        c.locale = settings.strings.locale
+        return c
     }
 
     private func shift(_ months: Int) {
