@@ -4,6 +4,7 @@ Dùng: python3 seed.py <thư mục ra>  → notes.json, appointments.json, setti
 import json, os, sys, time, datetime as dt
 
 out = sys.argv[1]
+lang = sys.argv[2] if len(sys.argv) > 2 else "vi"
 os.makedirs(out, exist_ok=True)
 now = dt.datetime.now().replace(second=0, microsecond=0)
 ms = lambda d: int(d.timestamp() * 1000)
@@ -33,27 +34,47 @@ content1 = "\n".join([
     "",
     "Gọi chị Hoa đặt bánh sinh nhật 0987 654 321",
 ])
+if lang == "en":
+    content1 = "\n".join([
+        "Today",
+        f"• Call Nam about the quote 0909 123 456 {tag(t_call)}",
+        f"• Design team meeting for v1.1 {tag(t_meet)}",
+        "• Rent transfer: 4,500,000 + 350,000 = 4,850,000",
+        "• Photo of the power bill, send to landlord",
+        "",
+        "Quick meeting notes:",
+        "- Lock the two-column tablet layout",
+        "- Add voice notes and photos to notes",
+        "- Reminders with sound, Call right from the notification",
+        "- Check line numbers & no-wrap mode: a very long line to show sideways scrolling when word wrap is off ......",
+        "",
+        "Call Hoa to order the birthday cake 0987 654 321",
+    ])
 notes = {
     "version": 1, "selectedId": n1, "monospace": False,
     "calc": {"expr": "4500000+350000", "justEvaluated": False, "lastFull": None},
     "notes": [
         {"id": n1, "title": "", "content": content1, "updatedAt": ms(now)},
-        {"id": 1002, "title": "Khách hàng", "content": "Chị Lan – 0912 345 678\nHẹn xem nhà thứ Bảy\n", "updatedAt": ms(now)},
-        {"id": 1003, "title": "Mua sắm", "content": "Sữa, trứng, cà phê\n", "updatedAt": ms(now)},
+        {"id": 1002, "title": "Clients" if lang == "en" else "Khách hàng", "content": "Lan – 0912 345 678\n" + ("House viewing on Saturday\n" if lang == "en" else "Hẹn xem nhà thứ Bảy\n"), "updatedAt": ms(now)},
+        {"id": 1003, "title": "Shopping" if lang == "en" else "Mua sắm", "content": ("Milk, eggs, coffee\n" if lang == "en" else "Sữa, trứng, cà phê\n"), "updatedAt": ms(now)},
     ],
 }
+TT = {
+    "en": ["Call Nam about the quote", "Design team meeting v1.1", "Show Lan the house", "Call the bank back", "Pay the power bill"],
+    "vi": ["Gọi anh Nam báo giá", "Họp nhóm thiết kế bản 1.1", "Dẫn chị Lan xem nhà", "Gọi lại cho ngân hàng", "Nộp tiền điện"],
+}[lang]
 appts = [
-    {"id": 2001, "title": "Gọi anh Nam báo giá", "time": ms(t_call), "phone": "0909123456", "noteId": n1, "remindBefore": 15, "sound": True, "done": False},
-    {"id": 2002, "title": "Họp nhóm thiết kế bản 1.1", "time": ms(t_meet), "phone": "", "noteId": n1, "remindBefore": 5, "sound": True, "done": False},
-    {"id": 2003, "title": "Dẫn chị Lan xem nhà", "time": ms(t_tomorrow), "phone": "0912345678", "noteId": 1002, "remindBefore": 30, "sound": False, "done": False},
-    {"id": 2004, "title": "Gọi lại cho ngân hàng", "time": ms(t_soon), "phone": "1900545413", "noteId": 0, "remindBefore": 0, "sound": True, "done": False},
-    {"id": 2005, "title": "Nộp tiền điện", "time": ms(t_done), "phone": "", "noteId": 0, "remindBefore": 0, "sound": True, "done": True},
+    {"id": 2001, "title": TT[0], "time": ms(t_call), "phone": "0909123456", "noteId": n1, "remindBefore": 15, "sound": True, "done": False},
+    {"id": 2002, "title": TT[1], "time": ms(t_meet), "phone": "", "noteId": n1, "remindBefore": 5, "sound": True, "done": False},
+    {"id": 2003, "title": TT[2], "time": ms(t_tomorrow), "phone": "0912345678", "noteId": 1002, "remindBefore": 30, "sound": False, "done": False},
+    {"id": 2004, "title": TT[3], "time": ms(t_soon), "phone": "1900545413", "noteId": 0, "remindBefore": 0, "sound": True, "done": False},
+    {"id": 2005, "title": TT[4], "time": ms(t_done), "phone": "", "noteId": 0, "remindBefore": 0, "sound": True, "done": True},
 ]
 json.dump(notes, open(os.path.join(out, "notes.json"), "w"), ensure_ascii=False)
 json.dump(appts, open(os.path.join(out, "appointments.json"), "w"), ensure_ascii=False)
 open(os.path.join(out, "settings.xml"), "w").write(f"""<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
 <map>
-    <string name="language">vi</string>
+    <string name="language">{lang}</string>
     <long name="update_last_check" value="{int(time.time()*1000)}" />
     <boolean name="word_wrap" value="true" />
     <boolean name="line_numbers" value="true" />

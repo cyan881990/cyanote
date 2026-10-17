@@ -1,9 +1,19 @@
 #!/usr/bin/env bash
 # Chụp ảnh giới thiệu tính năng (lịch hẹn, thông báo, ảnh & ghi âm, số dòng, tự xuống dòng) bằng dữ liệu mẫu.
-api="$1"
+api="$1"; lang="${2:-vi}"
 set -x
 PKG=app.cyanote
-out=smoke-out/features; mkdir -p "$out"
+out=smoke-out/features-$lang; mkdir -p "$out"
+# Nhãn nút theo ngôn ngữ (để bấm bằng uiautomator)
+if [ "$lang" = en ]; then
+  L_CALC="Calculator"; L_COLLAPSE="Collapse"; L_ADD="Add appointment"; L_DONE="Done"; L_MORE="More options"
+  L_ATT="Photos & recordings (3)"; L_WRAP="Word wrap"; L_HIDE="Hide panel"; L_SHOW="Show calculator & appointments"
+  L_DARK="Switch to dark mode"; L_BANK="Call the bank back"
+else
+  L_CALC="Máy tính"; L_COLLAPSE="Thu gọn"; L_ADD="Thêm lịch hẹn"; L_DONE="Xong"; L_MORE="Tùy chọn"
+  L_ATT="Ảnh & ghi âm (3)"; L_WRAP="Tự xuống dòng"; L_HIDE="Ẩn bảng"; L_SHOW="Hiện máy tính & lịch hẹn"
+  L_DARK="Chuyển sang nền tối"; L_BANK="Gọi lại cho ngân hàng"
+fi
 shot() { sleep "${2:-3}"; adb exec-out screencap -p > "$out/$1.png"; }
 ui() { adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1; adb pull /sdcard/ui.xml ui.xml >/dev/null 2>&1; }
 # Bấm vào phần tử có content-desc hoặc text = $1
@@ -23,7 +33,7 @@ PY
 }
 
 pip3 install --quiet pillow >/dev/null 2>&1 || true
-python3 tools/demo/seed.py seed
+rm -rf seed; python3 tools/demo/seed.py seed $lang
 cp tools/demo/demo.m4a seed/demo.m4a
 
 adb shell wm size 1080x2340; adb shell wm density 420
@@ -44,33 +54,33 @@ shot 01-main 12
 adb shell am start -n $PKG/vn.ghichunhanh.app.MainActivity --ez open_appointments true
 shot 02-appointments 5
 # Máy tính mở rộng
-tap "Máy tính"; shot 03-calculator 3
-tap "Thu gọn" ; sleep 1
+tap "$L_CALC"; shot 03-calculator 3
+tap "$L_COLLAPSE" ; sleep 1
 # Gắn lịch hẹn từ dòng đang gõ (con trỏ đang ở dòng cuối: "Gọi chị Hoa … 0987 654 321")
-tap "Thêm lịch hẹn"; shot 04-tag-appointment 3
+tap "$L_ADD"; shot 04-tag-appointment 3
 adb shell input keyevent 4; sleep 1; adb shell input keyevent 4; sleep 1
 # Thông báo lịch hẹn (đã hẹn sẵn ~100 giây sau khi tạo dữ liệu)
-for i in $(seq 1 30); do adb shell dumpsys notification --noredact | grep -q "Gọi lại cho ngân hàng" && break; sleep 5; done
+for i in $(seq 1 30); do adb shell dumpsys notification --noredact | grep -q "$L_BANK" && break; sleep 5; done
 adb shell cmd statusbar expand-notifications; shot 05-notification 3
-tap "Xong"; sleep 2
+tap "$L_DONE"; sleep 2
 adb shell cmd statusbar collapse; sleep 2
 adb shell am start -n $PKG/vn.ghichunhanh.app.MainActivity; sleep 3
 # Ảnh & ghi âm
-tap "Tùy chọn"; sleep 1; tap "Ảnh & ghi âm (3)"; shot 06-attachments 4
+tap "$L_MORE"; sleep 1; tap "$L_ATT"; shot 06-attachments 4
 adb shell input keyevent 4; sleep 1
 # Tắt tự xuống dòng
-tap "Tự xuống dòng"; shot 07-no-wrap 3
-tap "Tự xuống dòng"; sleep 1
+tap "$L_WRAP"; shot 07-no-wrap 3
+tap "$L_WRAP"; sleep 1
 # Ẩn bảng dưới → ghi chú rộng hơn
-tap "Ẩn bảng"; shot 08-panel-hidden 3
-tap "Hiện máy tính & lịch hẹn"; sleep 1
+tap "$L_HIDE"; shot 08-panel-hidden 3
+tap "$L_SHOW"; sleep 1
 # Máy tính bảng: 2 cột, lịch hẹn bên phải
 adb shell wm size 1600x2560; adb shell wm density 320; sleep 3
 adb shell am start -n $PKG/vn.ghichunhanh.app.MainActivity --ez open_appointments true
 shot 09-tablet 6
 # Chế độ tối
 adb shell wm size 1080x2340; adb shell wm density 420; sleep 2
-tap "Chuyển sang nền tối"; shot 10-dark 4
+tap "$L_DARK"; shot 10-dark 4
 adb shell wm size reset; adb shell wm density reset
 pid=$(adb shell pidof $PKG | tr -d '\r'); echo "::warning title=features pid::${pid:-NONE}"
 adb logcat -d | grep -E "FATAL EXCEPTION" -A 30 | head -60 > "$out/crash.txt" || true
@@ -79,6 +89,6 @@ adb logcat -d | grep -E "FATAL EXCEPTION" -A 30 | head -60 > "$out/crash.txt" ||
 hdr=$(git config --get http.https://github.com/.extraheader)
 rm -rf smoke-out/.git
 ( cd smoke-out && git init -q && git checkout -q -b smoke-results && git add -A \
-  && git -c user.name=cyanote-bot -c user.email=actions@users.noreply.github.com commit -qm "features api$api" \
+  && git -c user.name=cyanote-bot -c user.email=actions@users.noreply.github.com commit -qm "features api$api $lang" \
   && git -c http.extraheader="$hdr" push -qf "https://github.com/$GITHUB_REPOSITORY" smoke-results ) || echo "::warning::push failed"
 exit 0

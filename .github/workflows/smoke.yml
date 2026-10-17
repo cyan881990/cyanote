@@ -41,4 +41,5 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: |
             bash .github/scripts/smoke.sh ${{ matrix.api }}
-            bash .github/scripts/screens.sh ${{ matrix.api }}
+            bash .github/scripts/screens.sh ${{ matrix.api }} en
+            bash .github/scripts/screens.sh ${{ matrix.api }} vi
