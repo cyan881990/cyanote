@@ -19,7 +19,7 @@ struct BackupData {
 ///   notes/01 - <tên>.txt  bản đọc được trên máy tính
 enum Backup {
     static let format = "cyanote-backup-v1"
-    private static let maxEntryBytes = 20 * 1024 * 1024
+    private static let maxEntryBytes = 200 * 1024 * 1024
 
     struct ReadError: Error {}
 
@@ -74,8 +74,7 @@ enum Backup {
             let clean = path.replacingOccurrences(of: "\\", with: "/")
             let name = (clean as NSString).lastPathComponent
             let parts = clean.split(separator: "/")
-            if parts.count == 3, parts[0] == "attachments", let id = Int64(parts[1]),
-               name.hasSuffix(".jpg") || name.hasSuffix(".m4a") {
+            if parts.count == 3, parts[0] == "attachments", let id = Int64(parts[1]), !name.hasPrefix(".") {
                 files.append((id, name, bytes))
             } else if name == "notes.json" && json == nil {
                 json = bytes

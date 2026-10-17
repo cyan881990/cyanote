@@ -9,14 +9,25 @@ final class AttachmentsStore: ObservableObject {
     private let root = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         .appendingPathComponent("attachments", isDirectory: true)
 
-    static func isImage(_ u: URL) -> Bool { u.pathExtension.lowercased() == "jpg" }
-    static func isAudio(_ u: URL) -> Bool { u.pathExtension.lowercased() == "m4a" }
+    static func isImage(_ u: URL) -> Bool { ["jpg", "jpeg", "png", "heic", "webp", "gif"].contains(u.pathExtension.lowercased()) }
+    static func isVideo(_ u: URL) -> Bool { ["mp4", "mov", "m4v", "3gp", "webm"].contains(u.pathExtension.lowercased()) }
+    static func isAudio(_ u: URL) -> Bool { ["m4a", "mp3", "aac", "wav", "caf"].contains(u.pathExtension.lowercased()) }
+    static func isOther(_ u: URL) -> Bool { !isImage(u) && !isVideo(u) && !isAudio(u) }
+    /// Tên hiển thị: bỏ tiền tố "<thời điểm>__".
+    static func displayName(_ u: URL) -> String {
+        let n = u.lastPathComponent
+        if let r = n.range(of: "__") { return String(n[r.upperBound...]) }
+        return n
+    }
+    static func sanitize(_ s: String) -> String {
+        String(s.filter { $0.isLetter || $0.isNumber || " .-_()".contains($0) }.prefix(80)).trimmingCharacters(in: .whitespaces)
+    }
 
     private func dir(_ noteId: Int64) -> URL { root.appendingPathComponent(String(noteId), isDirectory: true) }
 
     func list(_ noteId: Int64) -> [URL] {
         let files = (try? FileManager.default.contentsOfDirectory(at: dir(noteId), includingPropertiesForKeys: nil)) ?? []
-        return files.filter { Self.isImage($0) || Self.isAudio($0) }.sorted { $0.lastPathComponent < $1.lastPathComponent }
+        return files.filter { !$0.lastPathComponent.hasPrefix(".") }.sorted { $0.lastPathComponent < $1.lastPathComponent }
     }
 
     private func millis() -> Int64 { Int64(Date().timeIntervalSince1970 * 1000) }
@@ -37,14 +48,28 @@ final class AttachmentsStore: ObservableObject {
         return url
     }
 
+    /// Chép nguyên tệp (video, PDF…) vào ghi chú với tên "<thời điểm>__<tên gốc>".
+    @discardableResult
+    func addFile(_ noteId: Int64, from src: URL) -> URL? {
+        let scoped = src.startAccessingSecurityScopedResource()
+        defer { if scoped { src.stopAccessingSecurityScopedResource() } }
+        try? FileManager.default.createDirectory(at: dir(noteId), withIntermediateDirectories: true)
+        var name = Self.sanitize(src.lastPathComponent)
+        if name.isEmpty { name = "file" }
+        let dst = dir(noteId).appendingPathComponent("\(millis())__\(name)")
+        do { try FileManager.default.copyItem(at: src, to: dst) } catch { return nil }
+        version += 1
+        return dst
+    }
+
     func newRecordingURL(_ noteId: Int64) -> URL {
         try? FileManager.default.createDirectory(at: dir(noteId), withIntermediateDirectories: true)
         return dir(noteId).appendingPathComponent("\(millis()).m4a")
     }
 
     func putRaw(_ noteId: Int64, name: String, data: Data) {
-        let safe = String(name.split(separator: "/").last ?? "").filter { $0.isLetter || $0.isNumber || $0 == "." || $0 == "-" || $0 == "_" }
-        guard safe.hasSuffix(".jpg") || safe.hasSuffix(".m4a") else { return }
+        let safe = Self.sanitize(String(name.split(separator: "/").last ?? ""))
+        guard !safe.isEmpty, !safe.hasPrefix(".") else { return }
         try? FileManager.default.createDirectory(at: dir(noteId), withIntermediateDirectories: true)
         try? data.write(to: dir(noteId).appendingPathComponent(safe), options: .atomic)
         version += 1

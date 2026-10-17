@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 import PhotosUI
+import QuickLook
 
 struct ContentView: View {
     @EnvironmentObject private var store: NotesStore
@@ -33,6 +34,9 @@ struct ContentView: View {
     @State private var viewing: URL?
     @State private var photoItems: [PhotosPickerItem] = []
     @State private var showPhotoPicker = false
+    @State private var showVideoCamera = false
+    @State private var showFileImporter = false
+    @State private var previewFile: URL?
 
     private var s: Strings { settings.strings }
     private var p: Palette { Palette.of(colorScheme) }
@@ -221,7 +225,9 @@ struct ContentView: View {
                 noteId: current.id,
                 noteTitle: current.displayTitle(untitled: s("untitled")),
                 onTakePhoto: { DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { showCamera = true } },
-                onRecord: { DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { startRecording(current) } }
+                onRecord: { DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { startRecording(current) } },
+                onRecordVideo: { DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { showVideoCamera = true } },
+                onAttachFile: { DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { showFileImporter = true } }
             )
             .environmentObject(settings)
         }
@@ -234,6 +240,13 @@ struct ContentView: View {
         .fullScreenCover(item: Binding(get: { viewing.map(IdentifiedURL.init) }, set: { viewing = $0?.url })) { item in
             PhotoViewer(url: item.url) { attachments.delete(item.url) }.environmentObject(settings)
         }
+        .fullScreenCover(isPresented: $showVideoCamera) {
+            CameraPicker(video: true, onVideo: { url in attachments.addFile(store.current.id, from: url) }).ignoresSafeArea()
+        }
+        .fileImporter(isPresented: $showFileImporter, allowedContentTypes: [.item], allowsMultipleSelection: true) { result in
+            if case .success(let urls) = result { urls.forEach { attachments.addFile(store.current.id, from: $0) } }
+        }
+        .quickLookPreview($previewFile)
         .photosPicker(isPresented: $showPhotoPicker, selection: $photoItems, maxSelectionCount: 10, matching: .images)
         .onChange(of: photoItems) { items in
             let noteId = store.current.id
@@ -314,9 +327,9 @@ struct ContentView: View {
             }
             // Ảnh & ghi âm
             let _ = attachments.version
-            if !hideExtras {
-                AttachmentStrip(files: attachments.list(current.id), onOpenImage: { viewing = $0 }, onManage: { showAttachments = true })
-            }
+            // Ảnh, video, ghi âm, tệp: luôn hiện (thu nhỏ khi chật chỗ)
+            AttachmentStrip(files: attachments.list(current.id), onOpenImage: { viewing = $0 }, onManage: { showAttachments = true },
+                            onOpenFile: { previewFile = $0 }, compact: hideExtras)
             Divider().overlay(p.line)
             footerBar(current, showHideKeyboard: showHideKeyboard)
         }
@@ -393,7 +406,9 @@ struct ContentView: View {
         return HStack(spacing: 2) {
             Menu {
                 Button { showCamera = true } label: { Label(s("photo_take"), systemImage: "camera") }
+                Button { showVideoCamera = true } label: { Label(s("video_record"), systemImage: "video") }
                 Button { showPhotoPicker = true } label: { Label(s("photo_pick"), systemImage: "photo.on.rectangle") }
+                Button { showFileImporter = true } label: { Label(s("file_attach"), systemImage: "paperclip") }
             } label: {
                 Image(systemName: "camera").font(.system(size: 15, weight: .medium)).foregroundColor(p.muted).frame(width: 32, height: 32)
             }

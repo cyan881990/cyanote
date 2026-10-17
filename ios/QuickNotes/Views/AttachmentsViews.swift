@@ -1,6 +1,8 @@
 import SwiftUI
 import UIKit
 import PhotosUI
+import AVFoundation
+import QuickLook
 
 /// Ảnh thu nhỏ (đọc ở luồng nền).
 struct ThumbView: View {
@@ -14,6 +16,10 @@ struct ThumbView: View {
         ZStack {
             p.keyBg
             if let image { Image(uiImage: image).resizable().scaledToFill() }
+            if AttachmentsStore.isVideo(url) {
+                Image(systemName: "play.fill").font(.system(size: 12)).foregroundColor(.white)
+                    .frame(width: 26, height: 26).background(Color.black.opacity(0.55)).clipShape(Circle())
+            }
         }
         .frame(width: side, height: side)
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
@@ -21,6 +27,12 @@ struct ThumbView: View {
             let u = url
             let target = side * 3
             image = await Task.detached {
+                if AttachmentsStore.isVideo(u) {
+                    let gen = AVAssetImageGenerator(asset: AVAsset(url: u))
+                    gen.appliesPreferredTrackTransform = true
+                    guard let cg = try? gen.copyCGImage(at: .zero, actualTime: nil) else { return nil as UIImage? }
+                    return UIImage(cgImage: cg)
+                }
                 guard let img = UIImage(contentsOfFile: u.path) else { return nil as UIImage? }
                 return img.preparingThumbnail(of: CGSize(width: target, height: target * img.size.height / max(img.size.width, 1)))
             }.value
@@ -59,11 +71,33 @@ struct AudioChip: View {
     }
 }
 
-/// Dải ảnh & ghi âm ngay trên dòng trạng thái của ghi chú.
+/// Tệp đính kèm (PDF, Word…): đuôi tệp + tên.
+struct FileChip: View {
+    let url: URL
+    var height: CGFloat = 56
+    var onOpen: (URL) -> Void
+    @Environment(\.colorScheme) private var colorScheme
+    var body: some View {
+        let p = Palette.of(colorScheme)
+        Button { onOpen(url) } label: {
+            HStack(spacing: 8) {
+                Text(url.pathExtension.uppercased().prefix(4)).font(.system(size: 9, weight: .bold)).foregroundColor(p.onAccent)
+                    .frame(width: 30, height: 30).background(p.accent).clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                Text(AttachmentsStore.displayName(url)).font(.system(size: 13, weight: .medium)).foregroundColor(p.ink).lineLimit(2)
+            }
+            .padding(.horizontal, 12).frame(height: height).frame(maxWidth: 180)
+            .background(p.keyBg).clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        }.buttonStyle(.plain)
+    }
+}
+
+/// Dải ảnh, video, ghi âm & tệp ngay trên dòng trạng thái của ghi chú (luôn hiện).
 struct AttachmentStrip: View {
     let files: [URL]
     var onOpenImage: (URL) -> Void
     var onManage: () -> Void
+    var onOpenFile: (URL) -> Void = { _ in }
+    var compact = false
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
@@ -71,16 +105,21 @@ struct AttachmentStrip: View {
         if !files.isEmpty {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
+                    let side: CGFloat = compact ? 40 : 56
                     ForEach(files, id: \.self) { f in
                         if AttachmentsStore.isImage(f) {
-                            ThumbView(url: f, side: 56).onTapGesture { onOpenImage(f) }
-                        } else {
+                            ThumbView(url: f, side: side).onTapGesture { onOpenImage(f) }
+                        } else if AttachmentsStore.isVideo(f) {
+                            ThumbView(url: f, side: side).onTapGesture { onOpenFile(f) }
+                        } else if AttachmentsStore.isAudio(f) {
                             AudioChip(url: f)
+                        } else {
+                            FileChip(url: f, height: side, onOpen: onOpenFile)
                         }
                     }
                     Button(action: onManage) {
                         Text("\(files.count)").font(.system(size: 15, weight: .bold)).foregroundColor(p.accent)
-                            .frame(width: 56, height: 56).background(p.keyBg)
+                            .frame(width: side, height: side).background(p.keyBg)
                             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                     }.buttonStyle(.plain)
                 }
@@ -129,6 +168,8 @@ struct AttachmentsSheet: View {
     let noteTitle: String
     var onTakePhoto: () -> Void
     var onRecord: () -> Void
+    var onRecordVideo: () -> Void = {}
+    var onAttachFile: () -> Void = {}
     @EnvironmentObject private var settings: AppSettings
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
@@ -136,6 +177,7 @@ struct AttachmentsSheet: View {
     @State private var pickerItems: [PhotosPickerItem] = []
     @State private var viewing: URL?
     @State private var deleteAudio: URL?
+    @State private var preview: URL?
 
     var body: some View {
         let s = settings.strings
@@ -144,15 +186,21 @@ struct AttachmentsSheet: View {
         let files = store.list(noteId)
         let images = files.filter(AttachmentsStore.isImage)
         let audios = files.filter(AttachmentsStore.isAudio)
+        let videos = files.filter(AttachmentsStore.isVideo)
+        let others = files.filter(AttachmentsStore.isOther)
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(spacing: 8) {
                         action("camera", s("photo_take"), p) { dismiss(); onTakePhoto() }
+                        action("video", s("video_record"), p) { dismiss(); onRecordVideo() }
+                        action("mic", s("rec_record"), p) { dismiss(); onRecord() }
+                    }
+                    HStack(spacing: 8) {
                         PhotosPicker(selection: $pickerItems, maxSelectionCount: 10, matching: .images) {
                             actionLabel("photo.on.rectangle", s("photo_pick"), p)
                         }
-                        action("mic", s("rec_record"), p) { dismiss(); onRecord() }
+                        action("paperclip", s("file_attach"), p) { dismiss(); onAttachFile() }
                     }
                     if files.isEmpty {
                         Text(s("att_empty")).foregroundColor(p.muted).padding(.vertical, 12)
@@ -162,6 +210,29 @@ struct AttachmentsSheet: View {
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 84), spacing: 6)], spacing: 6) {
                             ForEach(images, id: \.self) { f in
                                 ThumbView(url: f, side: 84).onTapGesture { viewing = f }
+                            }
+                        }
+                    }
+                    if !videos.isEmpty {
+                        Text(s("att_videos") + " · \(videos.count)").font(.system(size: 13, weight: .bold)).foregroundColor(p.accent)
+                        ForEach(videos, id: \.self) { f in
+                            HStack {
+                                ThumbView(url: f, side: 64).onTapGesture { preview = f }
+                                Text(AttachmentsStore.displayName(f)).font(.system(size: 13)).lineLimit(1)
+                                Spacer()
+                                ShareLink(item: f) { Image(systemName: "square.and.arrow.up") }
+                                Button { deleteAudio = f } label: { Image(systemName: "trash").foregroundColor(.red) }.padding(.leading, 12)
+                            }
+                        }
+                    }
+                    if !others.isEmpty {
+                        Text(s("att_files") + " · \(others.count)").font(.system(size: 13, weight: .bold)).foregroundColor(p.accent)
+                        ForEach(others, id: \.self) { f in
+                            HStack {
+                                FileChip(url: f) { preview = $0 }
+                                Spacer()
+                                ShareLink(item: f) { Image(systemName: "square.and.arrow.up") }
+                                Button { deleteAudio = f } label: { Image(systemName: "trash").foregroundColor(.red) }.padding(.leading, 12)
                             }
                         }
                     }
@@ -197,12 +268,13 @@ struct AttachmentsSheet: View {
         .fullScreenCover(item: Binding(get: { viewing.map(IdentifiedURL.init) }, set: { viewing = $0?.url })) { item in
             PhotoViewer(url: item.url) { store.delete(item.url) }.environmentObject(settings)
         }
-        .confirmationDialog(s("rec_delete_q"), isPresented: Binding(get: { deleteAudio != nil }, set: { if !$0 { deleteAudio = nil } }), titleVisibility: .visible) {
+        .confirmationDialog(s(deleteAudio.map(AttachmentsStore.isAudio) ?? true ? "rec_delete_q" : "att_delete_q"), isPresented: Binding(get: { deleteAudio != nil }, set: { if !$0 { deleteAudio = nil } }), titleVisibility: .visible) {
             Button(s("action_delete"), role: .destructive) {
                 if let f = deleteAudio { AudioPlayback.shared.stop(); store.delete(f) }
                 deleteAudio = nil
             }
         }
+        .quickLookPreview($preview)
         .onDisappear { AudioPlayback.shared.stop() }
     }
 
@@ -227,12 +299,15 @@ struct IdentifiedURL: Identifiable {
 
 /// Máy ảnh (UIImagePickerController).
 struct CameraPicker: UIViewControllerRepresentable {
-    var onImage: (UIImage) -> Void
+    var video = false
+    var onImage: (UIImage) -> Void = { _ in }
+    var onVideo: (URL) -> Void = { _ in }
     @Environment(\.dismiss) private var dismiss
 
     func makeUIViewController(context: Context) -> UIImagePickerController {
         let c = UIImagePickerController()
         c.sourceType = UIImagePickerController.isSourceTypeAvailable(.camera) ? .camera : .photoLibrary
+        if video { c.mediaTypes = ["public.movie"]; c.videoQuality = .typeMedium }
         c.delegate = context.coordinator
         return c
     }
@@ -245,6 +320,7 @@ struct CameraPicker: UIViewControllerRepresentable {
         init(_ p: CameraPicker) { parent = p }
         func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
             if let img = info[.originalImage] as? UIImage { parent.onImage(img) }
+            if let url = info[.mediaURL] as? URL { parent.onVideo(url) }
             parent.dismiss()
         }
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) { parent.dismiss() }
