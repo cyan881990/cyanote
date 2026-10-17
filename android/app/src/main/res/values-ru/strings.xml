@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tự sinh từ translations.py. Sửa ở đó rồi chạy lại gen_strings.py -->
+<resources>
+    <string name="app_name">cyanote++</string>
+    <string name="shortcut_new_short">Новая заметка</string>
+    <string name="shortcut_new_long">Открыть новую вкладку</string>
+    <string name="untitled">Новая заметка</string>
+    <string name="welcome_title">Инструкция</string>
+    <string name="welcome_text">Добро пожаловать в cyanote++!\n\n• Всё сохраняется автоматически. Кнопка «Сохранить» не нужна.\n• Нажмите +, чтобы открыть новую вкладку, листайте панель вкладок для переключения.\n• Нажмите на панель «Калькулятор» внизу для быстрых расчётов. Сворачивайте её когда угодно — расчёт сохранится.\n• «Вставить результат» добавляет ответ прямо в позицию курсора.\n• Нажмите на блок «Лунный» вверху, чтобы открыть календарь на месяц.\n\nЭту вкладку можно закрыть в любой момент (меню ⋮ → Закрыть эту вкладку).</string>
+    <string name="editor_hint">Введите заметку… сохраняется автоматически</string>
+    <string name="tab_add">Новая вкладка</string>
+    <string name="more_options">Другие действия</string>
+    <string name="menu_rename">Переименовать вкладку</string>
+    <string name="menu_copy">Копировать всё</string>
+    <string name="menu_share">Поделиться</string>
+    <string name="menu_calendar">Календарь на месяц</string>
+    <string name="menu_monospace">Моноширинный шрифт</string>
+    <string name="menu_close">Закрыть эту вкладку</string>
+    <string name="rename_title">Переименовать вкладку</string>
+    <string name="rename_label">Название вкладки</string>
+    <string name="action_save">Сохранить</string>
+    <string name="action_cancel">Отмена</string>
+    <string name="close_title">Закрыть «%1$s»?</string>
+    <string name="close_message">Содержимое вкладки будет удалено без возможности восстановления.</string>
+    <string name="action_delete">Удалить</string>
+    <string name="action_keep">Оставить</string>
+    <string name="status_counts">Строк: %1$d · символов: %2$d</string>
+    <string name="status_saving">Сохранение…</string>
+    <string name="status_saved">Сохранено</string>
+    <string name="calc_title">Калькулятор</string>
+    <string name="calc_holding">Калькулятор · расчёт сохранён</string>
+    <string name="calc_keeps">сверните — ничего не пропадёт</string>
+    <string name="calc_collapse">Свернуть</string>
+    <string name="calc_open">Открыть калькулятор</string>
+    <string name="calc_empty">Пока нет расчёта</string>
+    <string name="calc_insert_full">Вставить расчёт</string>
+    <string name="calc_insert_result">Вставить результат</string>
+    <string name="calc_err_div0">Делить на 0 нельзя</string>
+    <string name="calc_err_invalid">Расчёт не завершён</string>
+    <string name="key_clear">Очистить</string>
+    <string name="key_backspace">Стереть</string>
+    <string name="key_percent">Процент</string>
+    <string name="key_divide">Разделить</string>
+    <string name="key_multiply">Умножить</string>
+    <string name="key_minus">Минус</string>
+    <string name="key_plus">Плюс</string>
+    <string name="key_equals">Равно</string>
+    <string name="key_decimal">Десятичная точка</string>
+    <string name="key_triple_zero">Три нуля</string>
+    <string name="lunar_label">ЛУННЫЙ</string>
+    <string name="lunar_date">Месяц %2$d · день %1$d</string>
+    <string name="lunar_date_leap">Високосный месяц %2$d · день %1$d</string>
+    <string name="lunar_year">Год %1$s</string>
+    <string name="calendar_open">Открыть календарь на месяц</string>
+    <string name="calendar_today">Сегодня</string>
+    <string name="action_close">Закрыть</string>
+    <string name="copied">Скопировано</string>
+    <string name="share_title">Поделиться заметкой</string>
+    <string name="clip_label">Заметка</string>
+    <string name="theme_to_dark">Включить тёмную тему</string>
+    <string name="theme_to_light">Включить светлую тему</string>
+    <string name="language">Язык</string>
+    <string name="language_system">Как в системе</string>
+    <string name="backup_menu">Резервная копия</string>
+    <string name="backup_title">Резервная копия и восстановление</string>
+    <string name="backup_desc">Экспортируйте все заметки, калькулятор и настройки в один файл .zip. Скопируйте его на другой телефон и импортируйте там.</string>
+    <string name="backup_export">Экспорт в .zip</string>
+    <string name="backup_import">Импорт из .zip</string>
+    <string name="backup_export_done">Экспортировано заметок: %1$d</string>
+    <string name="backup_export_failed">Не удалось экспортировать файл</string>
+    <string name="backup_import_found">В файле заметок: %1$d. Как их импортировать?</string>
+    <string name="backup_merge">Добавить к моим заметкам</string>
+    <string name="backup_replace">Заменить всё</string>
+    <string name="backup_replace_warning">При замене текущие заметки на этом телефоне будут удалены.</string>
+    <string name="backup_import_done">Импортировано заметок: %1$d</string>
+    <string name="backup_import_failed">Не удаётся прочитать файл. Выберите резервную копию .zip, созданную этим приложением.</string>
+    <string-array name="zodiac">
+        <item>Крысы</item>
+        <item>Быка</item>
+        <item>Тигра</item>
+        <item>Кролика</item>
+        <item>Дракона</item>
+        <item>Змеи</item>
+        <item>Лошади</item>
+        <item>Козы</item>
+        <item>Обезьяны</item>
+        <item>Петуха</item>
+        <item>Собаки</item>
+        <item>Свиньи</item>
+    </string-array>
+</resources>

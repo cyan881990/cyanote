@@ -1,0 +1,60 @@
+# Dự án Xcode được sinh từ file này bằng XcodeGen:  brew install xcodegen && xcodegen generate
+name: Cyanote
+options:
+  bundleIdPrefix: app.cyanote
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+  developmentLanguage: en
+
+packages:
+  GoogleMobileAds:
+    url: https://github.com/googleads/swift-package-manager-google-mobile-ads
+    majorVersion: 11.0.0
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+targets:
+  Cyanote:
+    type: application
+    platform: iOS
+    sources:
+      - path: QuickNotes
+    dependencies:
+      - package: GoogleMobileAds
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.cyanote
+        PRODUCT_NAME: Cyanote
+        TARGETED_DEVICE_FAMILY: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        GENERATE_INFOPLIST_FILE: NO
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+        OTHER_LDFLAGS: "$(inherited) -ObjC"
+        # Điền Team ID của bạn trong Xcode (Signing & Capabilities) để cài lên iPhone
+        DEVELOPMENT_TEAM: ""
+        CODE_SIGN_STYLE: Automatic
+    info:
+      path: Support/Info.plist
+      properties:
+        CFBundleDisplayName: cyanote++
+        CFBundleDevelopmentRegion: en
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundleLocalizations: [en, vi, es, pt, fr, de, id, th, ja, ko, zh-Hans, hi, ru]
+        LSRequiresIPhoneOS: true
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        ITSAppUsesNonExemptEncryption: false
+        # ID ứng dụng AdMob THỬ NGHIỆM của Google — thay bằng ID thật trước khi phát hành
+        GADApplicationIdentifier: ca-app-pub-3940256099942544~1458002511
+        SKAdNetworkItems:
+          - SKAdNetworkIdentifier: cstr6suwn9.skadnetwork
+    scheme:
+      testTargets: []

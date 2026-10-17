@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tự sinh từ translations.py. Sửa ở đó rồi chạy lại gen_strings.py -->
+<resources>
+    <string name="app_name">cyanote++</string>
+    <string name="shortcut_new_short">Ghi chú mới</string>
+    <string name="shortcut_new_long">Mở tab ghi chú mới</string>
+    <string name="untitled">Ghi chú mới</string>
+    <string name="welcome_title">Hướng dẫn</string>
+    <string name="welcome_text">Chào mừng bạn đến với cyanote++!\n\n• Gõ là tự lưu, không cần bấm Lưu.\n• Bấm + để mở tab mới, vuốt thanh tab để chuyển.\n• Bấm thanh Máy tính ở dưới để tính nhanh. Thu gọn lại vẫn giữ phép tính.\n• “Chèn kết quả” đưa kết quả vào đúng chỗ con trỏ.\n• Bấm ô Âm lịch ở góc trên để xem lịch tháng.\n\nBạn có thể đóng tab này bất cứ lúc nào (menu ⋮ → Đóng tab này).</string>
+    <string name="editor_hint">Gõ ghi chú… tự động lưu, không cần bấm Lưu</string>
+    <string name="tab_add">Thêm tab mới</string>
+    <string name="more_options">Tùy chọn</string>
+    <string name="menu_rename">Đổi tên tab</string>
+    <string name="menu_copy">Sao chép toàn bộ</string>
+    <string name="menu_share">Chia sẻ</string>
+    <string name="menu_calendar">Lịch tháng</string>
+    <string name="menu_monospace">Chữ đều (monospace)</string>
+    <string name="menu_close">Đóng tab này</string>
+    <string name="rename_title">Đổi tên tab</string>
+    <string name="rename_label">Tên tab</string>
+    <string name="action_save">Lưu</string>
+    <string name="action_cancel">Hủy</string>
+    <string name="close_title">Đóng tab “%1$s”?</string>
+    <string name="close_message">Nội dung trong tab này sẽ bị xóa và không lấy lại được.</string>
+    <string name="action_delete">Xóa</string>
+    <string name="action_keep">Giữ lại</string>
+    <string name="status_counts">%1$d dòng · %2$d ký tự</string>
+    <string name="status_saving">Đang lưu…</string>
+    <string name="status_saved">Đã lưu</string>
+    <string name="calc_title">Máy tính</string>
+    <string name="calc_holding">Máy tính · đang giữ phép tính</string>
+    <string name="calc_keeps">thu gọn vẫn giữ phép tính</string>
+    <string name="calc_collapse">Thu gọn</string>
+    <string name="calc_open">Mở máy tính</string>
+    <string name="calc_empty">Chưa có phép tính</string>
+    <string name="calc_insert_full">Chèn phép tính</string>
+    <string name="calc_insert_result">Chèn kết quả</string>
+    <string name="calc_err_div0">Không thể chia cho 0</string>
+    <string name="calc_err_invalid">Phép tính chưa đúng</string>
+    <string name="key_clear">Xóa hết</string>
+    <string name="key_backspace">Xóa một ký tự</string>
+    <string name="key_percent">Phần trăm</string>
+    <string name="key_divide">Chia</string>
+    <string name="key_multiply">Nhân</string>
+    <string name="key_minus">Trừ</string>
+    <string name="key_plus">Cộng</string>
+    <string name="key_equals">Bằng</string>
+    <string name="key_decimal">Dấu thập phân</string>
+    <string name="key_triple_zero">Ba số không</string>
+    <string name="lunar_label">ÂM LỊCH</string>
+    <string name="lunar_date">%1$d tháng %2$d</string>
+    <string name="lunar_date_leap">%1$d tháng %2$d (nhuận)</string>
+    <string name="lunar_year">Năm %1$s</string>
+    <string name="calendar_open">Xem lịch tháng</string>
+    <string name="calendar_today">Hôm nay</string>
+    <string name="action_close">Đóng</string>
+    <string name="copied">Đã sao chép</string>
+    <string name="share_title">Chia sẻ ghi chú</string>
+    <string name="clip_label">Ghi chú</string>
+    <string name="theme_to_dark">Chuyển sang nền tối</string>
+    <string name="theme_to_light">Chuyển sang nền sáng</string>
+    <string name="language">Ngôn ngữ</string>
+    <string name="language_system">Theo hệ thống</string>
+    <string name="backup_menu">Sao lưu &amp; khôi phục</string>
+    <string name="backup_title">Sao lưu &amp; khôi phục</string>
+    <string name="backup_desc">Xuất toàn bộ ghi chú, phép tính và cài đặt thành một file .zip. Chép file sang máy khác rồi nhập vào là xong.</string>
+    <string name="backup_export">Xuất ra file .zip</string>
+    <string name="backup_import">Nhập từ file .zip</string>
+    <string name="backup_export_done">Đã xuất %1$d ghi chú</string>
+    <string name="backup_export_failed">Không xuất được file</string>
+    <string name="backup_import_found">File này có %1$d ghi chú. Bạn muốn nhập thế nào?</string>
+    <string name="backup_merge">Thêm vào ghi chú hiện có</string>
+    <string name="backup_replace">Thay thế toàn bộ</string>
+    <string name="backup_replace_warning">Thay thế sẽ xóa các ghi chú đang có trên máy này.</string>
+    <string name="backup_import_done">Đã nhập %1$d ghi chú</string>
+    <string name="backup_import_failed">Không đọc được file này. Hãy chọn file .zip sao lưu từ app.</string>
+    <string-array name="zodiac">
+        <item>Tý</item>
+        <item>Sửu</item>
+        <item>Dần</item>
+        <item>Mão</item>
+        <item>Thìn</item>
+        <item>Tỵ</item>
+        <item>Ngọ</item>
+        <item>Mùi</item>
+        <item>Thân</item>
+        <item>Dậu</item>
+        <item>Tuất</item>
+        <item>Hợi</item>
+    </string-array>
+</resources>

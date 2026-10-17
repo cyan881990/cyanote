@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tự sinh từ translations.py. Sửa ở đó rồi chạy lại gen_strings.py -->
+<resources>
+    <string name="app_name">cyanote++</string>
+    <string name="shortcut_new_short">Neue Notiz</string>
+    <string name="shortcut_new_long">Neuen Notiz-Tab öffnen</string>
+    <string name="untitled">Neue Notiz</string>
+    <string name="welcome_title">Anleitung</string>
+    <string name="welcome_text">Willkommen bei cyanote++!\n\n• Alles wird automatisch gespeichert. Kein Speichern-Knopf nötig.\n• Tippe auf +, um einen neuen Tab zu öffnen, wische über die Tab-Leiste zum Wechseln.\n• Tippe unten auf die Rechner-Leiste für schnelle Rechnungen. Du kannst sie jederzeit einklappen, die Rechnung bleibt erhalten.\n• „Ergebnis einfügen“ setzt das Ergebnis direkt an die Cursorposition.\n• Tippe oben auf das Mondkalender-Feld, um den Monatskalender zu sehen.\n\nDu kannst diesen Tab jederzeit schließen (Menü ⋮ → Diesen Tab schließen).</string>
+    <string name="editor_hint">Notiz schreiben… wird automatisch gespeichert</string>
+    <string name="tab_add">Neuer Tab</string>
+    <string name="more_options">Weitere Optionen</string>
+    <string name="menu_rename">Tab umbenennen</string>
+    <string name="menu_copy">Alles kopieren</string>
+    <string name="menu_share">Teilen</string>
+    <string name="menu_calendar">Monatskalender</string>
+    <string name="menu_monospace">Festbreitenschrift</string>
+    <string name="menu_close">Diesen Tab schließen</string>
+    <string name="rename_title">Tab umbenennen</string>
+    <string name="rename_label">Tab-Name</string>
+    <string name="action_save">Speichern</string>
+    <string name="action_cancel">Abbrechen</string>
+    <string name="close_title">„%1$s“ schließen?</string>
+    <string name="close_message">Der Inhalt dieses Tabs wird gelöscht und kann nicht wiederhergestellt werden.</string>
+    <string name="action_delete">Löschen</string>
+    <string name="action_keep">Behalten</string>
+    <string name="status_counts">%1$d Zeilen · %2$d Zeichen</string>
+    <string name="status_saving">Wird gespeichert…</string>
+    <string name="status_saved">Gespeichert</string>
+    <string name="calc_title">Rechner</string>
+    <string name="calc_holding">Rechner · behält deine Rechnung</string>
+    <string name="calc_keeps">einklappen, nichts geht verloren</string>
+    <string name="calc_collapse">Einklappen</string>
+    <string name="calc_open">Rechner öffnen</string>
+    <string name="calc_empty">Noch keine Rechnung</string>
+    <string name="calc_insert_full">Rechnung einfügen</string>
+    <string name="calc_insert_result">Ergebnis einfügen</string>
+    <string name="calc_err_div0">Division durch 0 nicht möglich</string>
+    <string name="calc_err_invalid">Rechnung unvollständig</string>
+    <string name="key_clear">Alles löschen</string>
+    <string name="key_backspace">Rücktaste</string>
+    <string name="key_percent">Prozent</string>
+    <string name="key_divide">Geteilt</string>
+    <string name="key_multiply">Mal</string>
+    <string name="key_minus">Minus</string>
+    <string name="key_plus">Plus</string>
+    <string name="key_equals">Gleich</string>
+    <string name="key_decimal">Dezimalpunkt</string>
+    <string name="key_triple_zero">Drei Nullen</string>
+    <string name="lunar_label">MONDKALENDER</string>
+    <string name="lunar_date">Monat %2$d · Tag %1$d</string>
+    <string name="lunar_date_leap">Schaltmonat %2$d · Tag %1$d</string>
+    <string name="lunar_year">Jahr %1$s</string>
+    <string name="calendar_open">Monatskalender öffnen</string>
+    <string name="calendar_today">Heute</string>
+    <string name="action_close">Schließen</string>
+    <string name="copied">Kopiert</string>
+    <string name="share_title">Notiz teilen</string>
+    <string name="clip_label">Notiz</string>
+    <string name="theme_to_dark">Dunkles Design aktivieren</string>
+    <string name="theme_to_light">Helles Design aktivieren</string>
+    <string name="language">Sprache</string>
+    <string name="language_system">Systemsprache</string>
+    <string name="backup_menu">Sichern &amp; wiederherstellen</string>
+    <string name="backup_title">Sichern &amp; wiederherstellen</string>
+    <string name="backup_desc">Exportiere alle Notizen, den Rechner und die Einstellungen in eine .zip-Datei. Kopiere sie auf ein anderes Handy und importiere sie dort.</string>
+    <string name="backup_export">Als .zip exportieren</string>
+    <string name="backup_import">Aus .zip importieren</string>
+    <string name="backup_export_done">%1$d Notizen exportiert</string>
+    <string name="backup_export_failed">Datei konnte nicht exportiert werden</string>
+    <string name="backup_import_found">Diese Datei enthält %1$d Notizen. Wie möchtest du sie importieren?</string>
+    <string name="backup_merge">Zu meinen Notizen hinzufügen</string>
+    <string name="backup_replace">Alles ersetzen</string>
+    <string name="backup_replace_warning">Ersetzen löscht die Notizen, die jetzt auf diesem Handy sind.</string>
+    <string name="backup_import_done">%1$d Notizen importiert</string>
+    <string name="backup_import_failed">Diese Datei kann nicht gelesen werden. Wähle eine Sicherungs-.zip dieser App.</string>
+    <string-array name="zodiac">
+        <item>der Ratte</item>
+        <item>des Büffels</item>
+        <item>des Tigers</item>
+        <item>des Hasen</item>
+        <item>des Drachen</item>
+        <item>der Schlange</item>
+        <item>des Pferdes</item>
+        <item>der Ziege</item>
+        <item>des Affen</item>
+        <item>des Hahns</item>
+        <item>des Hundes</item>
+        <item>des Schweins</item>
+    </string-array>
+</resources>

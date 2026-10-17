@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tự sinh từ translations.py. Sửa ở đó rồi chạy lại gen_strings.py -->
+<resources>
+    <string name="app_name">cyanote++</string>
+    <string name="shortcut_new_short">Catatan baru</string>
+    <string name="shortcut_new_long">Buka tab catatan baru</string>
+    <string name="untitled">Catatan baru</string>
+    <string name="welcome_title">Panduan</string>
+    <string name="welcome_text">Selamat datang di cyanote++!\n\n• Semua tersimpan otomatis. Tidak perlu menekan Simpan.\n• Ketuk + untuk membuka tab baru, geser bilah tab untuk berpindah.\n• Ketuk bilah Kalkulator di bawah untuk berhitung cepat. Ciutkan kapan saja, hitunganmu tetap ada.\n• “Sisipkan hasil” menaruh jawaban tepat di posisi kursor.\n• Ketuk kotak Imlek di atas untuk melihat kalender bulan.\n\nKamu bisa menutup tab ini kapan saja (menu ⋮ → Tutup tab ini).</string>
+    <string name="editor_hint">Ketik catatan… tersimpan otomatis</string>
+    <string name="tab_add">Tab baru</string>
+    <string name="more_options">Opsi lainnya</string>
+    <string name="menu_rename">Ganti nama tab</string>
+    <string name="menu_copy">Salin semua</string>
+    <string name="menu_share">Bagikan</string>
+    <string name="menu_calendar">Kalender bulan</string>
+    <string name="menu_monospace">Huruf monospace</string>
+    <string name="menu_close">Tutup tab ini</string>
+    <string name="rename_title">Ganti nama tab</string>
+    <string name="rename_label">Nama tab</string>
+    <string name="action_save">Simpan</string>
+    <string name="action_cancel">Batal</string>
+    <string name="close_title">Tutup “%1$s”?</string>
+    <string name="close_message">Isi tab ini akan dihapus dan tidak bisa dikembalikan.</string>
+    <string name="action_delete">Hapus</string>
+    <string name="action_keep">Biarkan</string>
+    <string name="status_counts">%1$d baris · %2$d karakter</string>
+    <string name="status_saving">Menyimpan…</string>
+    <string name="status_saved">Tersimpan</string>
+    <string name="calc_title">Kalkulator</string>
+    <string name="calc_holding">Kalkulator · menyimpan hitunganmu</string>
+    <string name="calc_keeps">ciutkan, tidak ada yang hilang</string>
+    <string name="calc_collapse">Ciutkan</string>
+    <string name="calc_open">Buka kalkulator</string>
+    <string name="calc_empty">Belum ada hitungan</string>
+    <string name="calc_insert_full">Sisipkan hitungan</string>
+    <string name="calc_insert_result">Sisipkan hasil</string>
+    <string name="calc_err_div0">Tidak bisa dibagi 0</string>
+    <string name="calc_err_invalid">Hitungan belum lengkap</string>
+    <string name="key_clear">Hapus semua</string>
+    <string name="key_backspace">Hapus satu</string>
+    <string name="key_percent">Persen</string>
+    <string name="key_divide">Bagi</string>
+    <string name="key_multiply">Kali</string>
+    <string name="key_minus">Kurang</string>
+    <string name="key_plus">Tambah</string>
+    <string name="key_equals">Sama dengan</string>
+    <string name="key_decimal">Titik desimal</string>
+    <string name="key_triple_zero">Tiga nol</string>
+    <string name="lunar_label">IMLEK</string>
+    <string name="lunar_date">Bulan %2$d · Hari %1$d</string>
+    <string name="lunar_date_leap">Bulan kabisat %2$d · Hari %1$d</string>
+    <string name="lunar_year">Shio %1$s</string>
+    <string name="calendar_open">Buka kalender bulan</string>
+    <string name="calendar_today">Hari ini</string>
+    <string name="action_close">Tutup</string>
+    <string name="copied">Disalin</string>
+    <string name="share_title">Bagikan catatan</string>
+    <string name="clip_label">Catatan</string>
+    <string name="theme_to_dark">Beralih ke mode gelap</string>
+    <string name="theme_to_light">Beralih ke mode terang</string>
+    <string name="language">Bahasa</string>
+    <string name="language_system">Bawaan sistem</string>
+    <string name="backup_menu">Cadangkan &amp; pulihkan</string>
+    <string name="backup_title">Cadangkan &amp; pulihkan</string>
+    <string name="backup_desc">Ekspor semua catatan, kalkulator, dan pengaturan ke satu file .zip. Salin ke ponsel lain lalu impor di sana.</string>
+    <string name="backup_export">Ekspor ke .zip</string>
+    <string name="backup_import">Impor dari .zip</string>
+    <string name="backup_export_done">%1$d catatan diekspor</string>
+    <string name="backup_export_failed">Gagal mengekspor file</string>
+    <string name="backup_import_found">File ini berisi %1$d catatan. Bagaimana cara mengimpornya?</string>
+    <string name="backup_merge">Tambahkan ke catatanku</string>
+    <string name="backup_replace">Ganti semua</string>
+    <string name="backup_replace_warning">Ganti semua akan menghapus catatan yang ada di ponsel ini.</string>
+    <string name="backup_import_done">%1$d catatan diimpor</string>
+    <string name="backup_import_failed">File ini tidak bisa dibaca. Pilih file .zip cadangan dari aplikasi ini.</string>
+    <string-array name="zodiac">
+        <item>Tikus</item>
+        <item>Kerbau</item>
+        <item>Macan</item>
+        <item>Kelinci</item>
+        <item>Naga</item>
+        <item>Ular</item>
+        <item>Kuda</item>
+        <item>Kambing</item>
+        <item>Monyet</item>
+        <item>Ayam</item>
+        <item>Anjing</item>
+        <item>Babi</item>
+    </string-array>
+</resources>

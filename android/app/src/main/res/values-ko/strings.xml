@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tự sinh từ translations.py. Sửa ở đó rồi chạy lại gen_strings.py -->
+<resources>
+    <string name="app_name">cyanote++</string>
+    <string name="shortcut_new_short">새 메모</string>
+    <string name="shortcut_new_long">새 메모 탭 열기</string>
+    <string name="untitled">새 메모</string>
+    <string name="welcome_title">안내</string>
+    <string name="welcome_text">cyanote++에 오신 것을 환영합니다!\n\n• 모든 내용이 자동으로 저장됩니다. 저장 버튼이 필요 없어요.\n• +를 눌러 새 탭을 열고, 탭 바를 밀어서 전환하세요.\n• 아래 계산기 바를 누르면 바로 계산할 수 있어요. 언제든 접어도 계산은 그대로 남아요.\n• “결과 삽입”은 커서 위치에 답을 넣어 줍니다.\n• 위쪽 음력 상자를 누르면 월간 달력을 볼 수 있어요.\n\n이 탭은 언제든 닫을 수 있어요(메뉴 ⋮ → 이 탭 닫기).</string>
+    <string name="editor_hint">메모를 입력하세요… 자동 저장됩니다</string>
+    <string name="tab_add">새 탭</string>
+    <string name="more_options">더보기</string>
+    <string name="menu_rename">탭 이름 바꾸기</string>
+    <string name="menu_copy">모두 복사</string>
+    <string name="menu_share">공유</string>
+    <string name="menu_calendar">월간 달력</string>
+    <string name="menu_monospace">고정폭 글꼴</string>
+    <string name="menu_close">이 탭 닫기</string>
+    <string name="rename_title">탭 이름 바꾸기</string>
+    <string name="rename_label">탭 이름</string>
+    <string name="action_save">저장</string>
+    <string name="action_cancel">취소</string>
+    <string name="close_title">“%1$s” 탭을 닫을까요?</string>
+    <string name="close_message">이 탭의 내용이 삭제되며 복구할 수 없습니다.</string>
+    <string name="action_delete">삭제</string>
+    <string name="action_keep">유지</string>
+    <string name="status_counts">%1$d줄 · %2$d자</string>
+    <string name="status_saving">저장 중…</string>
+    <string name="status_saved">저장됨</string>
+    <string name="calc_title">계산기</string>
+    <string name="calc_holding">계산기 · 계산 유지 중</string>
+    <string name="calc_keeps">접어도 사라지지 않아요</string>
+    <string name="calc_collapse">접기</string>
+    <string name="calc_open">계산기 열기</string>
+    <string name="calc_empty">아직 계산이 없어요</string>
+    <string name="calc_insert_full">계산식 삽입</string>
+    <string name="calc_insert_result">결과 삽입</string>
+    <string name="calc_err_div0">0으로 나눌 수 없습니다</string>
+    <string name="calc_err_invalid">계산식이 완성되지 않았습니다</string>
+    <string name="key_clear">모두 지우기</string>
+    <string name="key_backspace">한 글자 지우기</string>
+    <string name="key_percent">퍼센트</string>
+    <string name="key_divide">나누기</string>
+    <string name="key_multiply">곱하기</string>
+    <string name="key_minus">빼기</string>
+    <string name="key_plus">더하기</string>
+    <string name="key_equals">같음</string>
+    <string name="key_decimal">소수점</string>
+    <string name="key_triple_zero">0 세 개</string>
+    <string name="lunar_label">음력</string>
+    <string name="lunar_date">%2$d월 %1$d일</string>
+    <string name="lunar_date_leap">윤%2$d월 %1$d일</string>
+    <string name="lunar_year">%1$s년</string>
+    <string name="calendar_open">월간 달력 열기</string>
+    <string name="calendar_today">오늘</string>
+    <string name="action_close">닫기</string>
+    <string name="copied">복사됨</string>
+    <string name="share_title">메모 공유</string>
+    <string name="clip_label">메모</string>
+    <string name="theme_to_dark">다크 모드로 전환</string>
+    <string name="theme_to_light">라이트 모드로 전환</string>
+    <string name="language">언어</string>
+    <string name="language_system">시스템 기본값</string>
+    <string name="backup_menu">백업 및 복원</string>
+    <string name="backup_title">백업 및 복원</string>
+    <string name="backup_desc">모든 메모, 계산기, 설정을 하나의 .zip 파일로 내보냅니다. 다른 휴대폰에 복사한 뒤 가져오면 됩니다.</string>
+    <string name="backup_export">.zip으로 내보내기</string>
+    <string name="backup_import">.zip에서 가져오기</string>
+    <string name="backup_export_done">메모 %1$d개를 내보냈습니다</string>
+    <string name="backup_export_failed">파일을 내보내지 못했습니다</string>
+    <string name="backup_import_found">이 파일에는 메모 %1$d개가 있습니다. 어떻게 가져올까요?</string>
+    <string name="backup_merge">내 메모에 추가</string>
+    <string name="backup_replace">모두 바꾸기</string>
+    <string name="backup_replace_warning">모두 바꾸면 이 휴대폰에 있는 메모가 삭제됩니다.</string>
+    <string name="backup_import_done">메모 %1$d개를 가져왔습니다</string>
+    <string name="backup_import_failed">이 파일을 읽을 수 없습니다. 이 앱에서 만든 백업 .zip 파일을 선택하세요.</string>
+    <string-array name="zodiac">
+        <item>쥐</item>
+        <item>소</item>
+        <item>호랑이</item>
+        <item>토끼</item>
+        <item>용</item>
+        <item>뱀</item>
+        <item>말</item>
+        <item>양</item>
+        <item>원숭이</item>
+        <item>닭</item>
+        <item>개</item>
+        <item>돼지</item>
+    </string-array>
+</resources>

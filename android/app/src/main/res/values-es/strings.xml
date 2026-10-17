@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tự sinh từ translations.py. Sửa ở đó rồi chạy lại gen_strings.py -->
+<resources>
+    <string name="app_name">cyanote++</string>
+    <string name="shortcut_new_short">Nota nueva</string>
+    <string name="shortcut_new_long">Abrir una pestaña nueva</string>
+    <string name="untitled">Nota nueva</string>
+    <string name="welcome_title">Guía</string>
+    <string name="welcome_text">¡Bienvenido a cyanote++!\n\n• Todo se guarda automáticamente. No hace falta pulsar Guardar.\n• Toca + para abrir una pestaña nueva y desliza la barra para cambiar.\n• Toca la barra Calculadora abajo para hacer cuentas rápidas. Contráela cuando quieras, el cálculo se conserva.\n• «Insertar resultado» pone la respuesta justo en el cursor.\n• Toca el recuadro Lunar arriba para ver el calendario del mes.\n\nPuedes cerrar esta pestaña cuando quieras (menú ⋮ → Cerrar esta pestaña).</string>
+    <string name="editor_hint">Escribe una nota… se guarda sola</string>
+    <string name="tab_add">Pestaña nueva</string>
+    <string name="more_options">Más opciones</string>
+    <string name="menu_rename">Cambiar nombre</string>
+    <string name="menu_copy">Copiar todo</string>
+    <string name="menu_share">Compartir</string>
+    <string name="menu_calendar">Calendario del mes</string>
+    <string name="menu_monospace">Fuente monoespaciada</string>
+    <string name="menu_close">Cerrar esta pestaña</string>
+    <string name="rename_title">Cambiar nombre de la pestaña</string>
+    <string name="rename_label">Nombre de la pestaña</string>
+    <string name="action_save">Guardar</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="close_title">¿Cerrar «%1$s»?</string>
+    <string name="close_message">El contenido de esta pestaña se eliminará y no se podrá recuperar.</string>
+    <string name="action_delete">Eliminar</string>
+    <string name="action_keep">Conservar</string>
+    <string name="status_counts">%1$d líneas · %2$d caracteres</string>
+    <string name="status_saving">Guardando…</string>
+    <string name="status_saved">Guardado</string>
+    <string name="calc_title">Calculadora</string>
+    <string name="calc_holding">Calculadora · conserva tu cálculo</string>
+    <string name="calc_keeps">contráela, no se pierde nada</string>
+    <string name="calc_collapse">Contraer</string>
+    <string name="calc_open">Abrir calculadora</string>
+    <string name="calc_empty">Aún no hay cálculo</string>
+    <string name="calc_insert_full">Insertar cálculo</string>
+    <string name="calc_insert_result">Insertar resultado</string>
+    <string name="calc_err_div0">No se puede dividir entre 0</string>
+    <string name="calc_err_invalid">Cálculo incompleto</string>
+    <string name="key_clear">Borrar todo</string>
+    <string name="key_backspace">Retroceso</string>
+    <string name="key_percent">Porcentaje</string>
+    <string name="key_divide">Dividir</string>
+    <string name="key_multiply">Multiplicar</string>
+    <string name="key_minus">Menos</string>
+    <string name="key_plus">Más</string>
+    <string name="key_equals">Igual</string>
+    <string name="key_decimal">Punto decimal</string>
+    <string name="key_triple_zero">Triple cero</string>
+    <string name="lunar_label">LUNAR</string>
+    <string name="lunar_date">Mes %2$d · Día %1$d</string>
+    <string name="lunar_date_leap">Mes intercalar %2$d · Día %1$d</string>
+    <string name="lunar_year">Año %1$s</string>
+    <string name="calendar_open">Abrir el calendario del mes</string>
+    <string name="calendar_today">Hoy</string>
+    <string name="action_close">Cerrar</string>
+    <string name="copied">Copiado</string>
+    <string name="share_title">Compartir nota</string>
+    <string name="clip_label">Nota</string>
+    <string name="theme_to_dark">Cambiar a modo oscuro</string>
+    <string name="theme_to_light">Cambiar a modo claro</string>
+    <string name="language">Idioma</string>
+    <string name="language_system">Predeterminado del sistema</string>
+    <string name="backup_menu">Copia de seguridad</string>
+    <string name="backup_title">Copia de seguridad y restauración</string>
+    <string name="backup_desc">Exporta todas las notas, la calculadora y los ajustes a un archivo .zip. Cópialo a otro teléfono e impórtalo allí.</string>
+    <string name="backup_export">Exportar a .zip</string>
+    <string name="backup_import">Importar desde .zip</string>
+    <string name="backup_export_done">Se exportaron %1$d notas</string>
+    <string name="backup_export_failed">No se pudo exportar el archivo</string>
+    <string name="backup_import_found">Este archivo contiene %1$d notas. ¿Cómo quieres importarlas?</string>
+    <string name="backup_merge">Añadir a mis notas</string>
+    <string name="backup_replace">Reemplazar todo</string>
+    <string name="backup_replace_warning">Reemplazar borra las notas que hay ahora en este teléfono.</string>
+    <string name="backup_import_done">Se importaron %1$d notas</string>
+    <string name="backup_import_failed">No se puede leer este archivo. Elige un .zip de copia creado por esta app.</string>
+    <string-array name="zodiac">
+        <item>de la Rata</item>
+        <item>del Buey</item>
+        <item>del Tigre</item>
+        <item>del Conejo</item>
+        <item>del Dragón</item>
+        <item>de la Serpiente</item>
+        <item>del Caballo</item>
+        <item>de la Cabra</item>
+        <item>del Mono</item>
+        <item>del Gallo</item>
+        <item>del Perro</item>
+        <item>del Cerdo</item>
+    </string-array>
+</resources>

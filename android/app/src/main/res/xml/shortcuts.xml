@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Giữ biểu tượng app trên màn hình chính → "Ghi chú mới" -->
+    <shortcut
+        android:shortcutId="new_note"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_add"
+        android:shortcutShortLabel="@string/shortcut_new_short"
+        android:shortcutLongLabel="@string/shortcut_new_long">
+        <intent
+            android:action="vn.ghichunhanh.app.NEW_NOTE"
+            android:targetPackage="app.cyanote"
+            android:targetClass="vn.ghichunhanh.app.MainActivity" />
+    </shortcut>
+</shortcuts>

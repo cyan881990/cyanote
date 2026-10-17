@@ -1,0 +1,14 @@
+.gradle/
+build/
+app/build/
+local.properties
+.idea/
+*.iml
+.DS_Store
+
+# iOS
+ios/QuickNotes.xcodeproj/
+ios/build/
+DerivedData/
+*.xcuserstate
+__pycache__/

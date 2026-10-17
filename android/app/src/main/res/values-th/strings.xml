@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tự sinh từ translations.py. Sửa ở đó rồi chạy lại gen_strings.py -->
+<resources>
+    <string name="app_name">cyanote++</string>
+    <string name="shortcut_new_short">โน้ตใหม่</string>
+    <string name="shortcut_new_long">เปิดแท็บโน้ตใหม่</string>
+    <string name="untitled">โน้ตใหม่</string>
+    <string name="welcome_title">คู่มือ</string>
+    <string name="welcome_text">ยินดีต้อนรับสู่ cyanote++!\n\n• ทุกอย่างบันทึกอัตโนมัติ ไม่ต้องกดบันทึก\n• แตะ + เพื่อเปิดแท็บใหม่ ปัดแถบแท็บเพื่อสลับ\n• แตะแถบเครื่องคิดเลขด้านล่างเพื่อคำนวณเร็ว ย่อเก็บได้ตลอด การคำนวณยังอยู่ครบ\n• “แทรกผลลัพธ์” จะใส่คำตอบตรงตำแหน่งเคอร์เซอร์\n• แตะกล่องจันทรคติด้านบนเพื่อดูปฏิทินรายเดือน\n\nปิดแท็บนี้ได้ทุกเมื่อ (เมนู ⋮ → ปิดแท็บนี้)</string>
+    <string name="editor_hint">พิมพ์โน้ต… บันทึกอัตโนมัติ</string>
+    <string name="tab_add">แท็บใหม่</string>
+    <string name="more_options">ตัวเลือกเพิ่มเติม</string>
+    <string name="menu_rename">เปลี่ยนชื่อแท็บ</string>
+    <string name="menu_copy">คัดลอกทั้งหมด</string>
+    <string name="menu_share">แชร์</string>
+    <string name="menu_calendar">ปฏิทินรายเดือน</string>
+    <string name="menu_monospace">ฟอนต์ความกว้างเท่ากัน</string>
+    <string name="menu_close">ปิดแท็บนี้</string>
+    <string name="rename_title">เปลี่ยนชื่อแท็บ</string>
+    <string name="rename_label">ชื่อแท็บ</string>
+    <string name="action_save">บันทึก</string>
+    <string name="action_cancel">ยกเลิก</string>
+    <string name="close_title">ปิด “%1$s” ไหม</string>
+    <string name="close_message">เนื้อหาในแท็บนี้จะถูกลบและกู้คืนไม่ได้</string>
+    <string name="action_delete">ลบ</string>
+    <string name="action_keep">เก็บไว้</string>
+    <string name="status_counts">%1$d บรรทัด · %2$d ตัวอักษร</string>
+    <string name="status_saving">กำลังบันทึก…</string>
+    <string name="status_saved">บันทึกแล้ว</string>
+    <string name="calc_title">เครื่องคิดเลข</string>
+    <string name="calc_holding">เครื่องคิดเลข · เก็บการคำนวณไว้</string>
+    <string name="calc_keeps">ย่อได้ ไม่มีอะไรหาย</string>
+    <string name="calc_collapse">ย่อ</string>
+    <string name="calc_open">เปิดเครื่องคิดเลข</string>
+    <string name="calc_empty">ยังไม่มีการคำนวณ</string>
+    <string name="calc_insert_full">แทรกการคำนวณ</string>
+    <string name="calc_insert_result">แทรกผลลัพธ์</string>
+    <string name="calc_err_div0">หารด้วย 0 ไม่ได้</string>
+    <string name="calc_err_invalid">การคำนวณยังไม่ครบ</string>
+    <string name="key_clear">ล้างทั้งหมด</string>
+    <string name="key_backspace">ลบหนึ่งตัว</string>
+    <string name="key_percent">เปอร์เซ็นต์</string>
+    <string name="key_divide">หาร</string>
+    <string name="key_multiply">คูณ</string>
+    <string name="key_minus">ลบ</string>
+    <string name="key_plus">บวก</string>
+    <string name="key_equals">เท่ากับ</string>
+    <string name="key_decimal">จุดทศนิยม</string>
+    <string name="key_triple_zero">ศูนย์สามตัว</string>
+    <string name="lunar_label">จันทรคติ</string>
+    <string name="lunar_date">เดือน %2$d · วันที่ %1$d</string>
+    <string name="lunar_date_leap">เดือน %2$d (อธิกมาส) · วันที่ %1$d</string>
+    <string name="lunar_year">ปี%1$s</string>
+    <string name="calendar_open">เปิดปฏิทินรายเดือน</string>
+    <string name="calendar_today">วันนี้</string>
+    <string name="action_close">ปิด</string>
+    <string name="copied">คัดลอกแล้ว</string>
+    <string name="share_title">แชร์โน้ต</string>
+    <string name="clip_label">โน้ต</string>
+    <string name="theme_to_dark">เปลี่ยนเป็นโหมดมืด</string>
+    <string name="theme_to_light">เปลี่ยนเป็นโหมดสว่าง</string>
+    <string name="language">ภาษา</string>
+    <string name="language_system">ตามระบบ</string>
+    <string name="backup_menu">สำรองและกู้คืน</string>
+    <string name="backup_title">สำรองและกู้คืน</string>
+    <string name="backup_desc">ส่งออกโน้ตทั้งหมด เครื่องคิดเลข และการตั้งค่าเป็นไฟล์ .zip ไฟล์เดียว คัดลอกไปเครื่องอื่นแล้วนำเข้าได้เลย</string>
+    <string name="backup_export">ส่งออกเป็น .zip</string>
+    <string name="backup_import">นำเข้าจาก .zip</string>
+    <string name="backup_export_done">ส่งออก %1$d โน้ตแล้ว</string>
+    <string name="backup_export_failed">ส่งออกไฟล์ไม่สำเร็จ</string>
+    <string name="backup_import_found">ไฟล์นี้มี %1$d โน้ต ต้องการนำเข้าแบบไหน</string>
+    <string name="backup_merge">เพิ่มลงในโน้ตของฉัน</string>
+    <string name="backup_replace">แทนที่ทั้งหมด</string>
+    <string name="backup_replace_warning">การแทนที่จะลบโน้ตที่มีอยู่ในเครื่องนี้</string>
+    <string name="backup_import_done">นำเข้า %1$d โน้ตแล้ว</string>
+    <string name="backup_import_failed">อ่านไฟล์นี้ไม่ได้ เลือกไฟล์ .zip สำรองที่สร้างจากแอปนี้</string>
+    <string-array name="zodiac">
+        <item>ชวด</item>
+        <item>ฉลู</item>
+        <item>ขาล</item>
+        <item>เถาะ</item>
+        <item>มะโรง</item>
+        <item>มะเส็ง</item>
+        <item>มะเมีย</item>
+        <item>มะแม</item>
+        <item>วอก</item>
+        <item>ระกา</item>
+        <item>จอ</item>
+        <item>กุน</item>
+    </string-array>
+</resources>

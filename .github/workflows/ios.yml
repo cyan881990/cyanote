@@ -1,0 +1,60 @@
+name: iOS
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: ios
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cài XcodeGen và sinh dự án Xcode
+        run: |
+          brew install xcodegen
+          xcodegen generate
+
+      - name: Build cho máy ảo iOS (Simulator)
+        run: |
+          set -o pipefail
+          xcodebuild -project Cyanote.xcodeproj -scheme Cyanote -configuration Debug \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO build | tail -n 80
+
+      - name: Build cho iPhone (chưa ký)
+        run: |
+          set -o pipefail
+          xcodebuild -project Cyanote.xcodeproj -scheme Cyanote -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build | tail -n 80
+
+      - name: Đóng gói .ipa (chưa ký) và bản Simulator
+        run: |
+          mkdir -p ../dist Payload
+          cp -R build/Build/Products/Release-iphoneos/Cyanote.app Payload/
+          zip -qr ../dist/cyanote-ios-unsigned.ipa Payload
+          (cd build/Build/Products/Debug-iphonesimulator && zip -qr ../../../../../dist/cyanote-ios-simulator.zip Cyanote.app)
+          ls -la ../dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cyanote-ios
+          path: dist/*
+
+      - name: Đăng lên trang Releases
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: test-build
+          name: Bản thử mới nhất
+          prerelease: true
+          files: dist/*

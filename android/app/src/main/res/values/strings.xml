@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tự sinh từ translations.py. Sửa ở đó rồi chạy lại gen_strings.py -->
+<resources>
+    <string name="app_name">cyanote++</string>
+    <string name="shortcut_new_short">New note</string>
+    <string name="shortcut_new_long">Open a new note tab</string>
+    <string name="untitled">New note</string>
+    <string name="welcome_title">Guide</string>
+    <string name="welcome_text">Welcome to cyanote++!\n\n• Everything saves automatically. No Save button needed.\n• Tap + to open a new tab, swipe the tab bar to switch.\n• Tap the Calculator bar at the bottom for quick math. Collapse it anytime, your calculation stays.\n• “Insert result” puts the answer right at the cursor.\n• Tap the Lunar box at the top to see the month calendar.\n\nYou can close this tab anytime (menu ⋮ → Close this tab).</string>
+    <string name="editor_hint">Type a note… it saves automatically</string>
+    <string name="tab_add">New tab</string>
+    <string name="more_options">More options</string>
+    <string name="menu_rename">Rename tab</string>
+    <string name="menu_copy">Copy all</string>
+    <string name="menu_share">Share</string>
+    <string name="menu_calendar">Month calendar</string>
+    <string name="menu_monospace">Monospace font</string>
+    <string name="menu_close">Close this tab</string>
+    <string name="rename_title">Rename tab</string>
+    <string name="rename_label">Tab name</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="close_title">Close “%1$s”?</string>
+    <string name="close_message">The content of this tab will be deleted and cannot be recovered.</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_keep">Keep</string>
+    <string name="status_counts">%1$d lines · %2$d chars</string>
+    <string name="status_saving">Saving…</string>
+    <string name="status_saved">Saved</string>
+    <string name="calc_title">Calculator</string>
+    <string name="calc_holding">Calculator · keeps your calculation</string>
+    <string name="calc_keeps">collapse anytime, nothing is lost</string>
+    <string name="calc_collapse">Collapse</string>
+    <string name="calc_open">Open calculator</string>
+    <string name="calc_empty">No calculation yet</string>
+    <string name="calc_insert_full">Insert calculation</string>
+    <string name="calc_insert_result">Insert result</string>
+    <string name="calc_err_div0">Cannot divide by 0</string>
+    <string name="calc_err_invalid">Incomplete calculation</string>
+    <string name="key_clear">Clear</string>
+    <string name="key_backspace">Backspace</string>
+    <string name="key_percent">Percent</string>
+    <string name="key_divide">Divide</string>
+    <string name="key_multiply">Multiply</string>
+    <string name="key_minus">Minus</string>
+    <string name="key_plus">Plus</string>
+    <string name="key_equals">Equals</string>
+    <string name="key_decimal">Decimal point</string>
+    <string name="key_triple_zero">Triple zero</string>
+    <string name="lunar_label">LUNAR</string>
+    <string name="lunar_date">Month %2$d · Day %1$d</string>
+    <string name="lunar_date_leap">Leap month %2$d · Day %1$d</string>
+    <string name="lunar_year">Year of the %1$s</string>
+    <string name="calendar_open">Open month calendar</string>
+    <string name="calendar_today">Today</string>
+    <string name="action_close">Close</string>
+    <string name="copied">Copied</string>
+    <string name="share_title">Share note</string>
+    <string name="clip_label">Note</string>
+    <string name="theme_to_dark">Switch to dark mode</string>
+    <string name="theme_to_light">Switch to light mode</string>
+    <string name="language">Language</string>
+    <string name="language_system">System default</string>
+    <string name="backup_menu">Backup &amp; restore</string>
+    <string name="backup_title">Backup &amp; restore</string>
+    <string name="backup_desc">Export all notes, the calculator and settings into one .zip file. Copy it to another phone and import it there.</string>
+    <string name="backup_export">Export to .zip</string>
+    <string name="backup_import">Import from .zip</string>
+    <string name="backup_export_done">Exported %1$d notes</string>
+    <string name="backup_export_failed">Could not export the file</string>
+    <string name="backup_import_found">This file contains %1$d notes. How do you want to import them?</string>
+    <string name="backup_merge">Add to my notes</string>
+    <string name="backup_replace">Replace all</string>
+    <string name="backup_replace_warning">Replace deletes the notes currently on this phone.</string>
+    <string name="backup_import_done">Imported %1$d notes</string>
+    <string name="backup_import_failed">This file can’t be read. Choose a backup .zip made by this app.</string>
+    <string-array name="zodiac">
+        <item>Rat</item>
+        <item>Ox</item>
+        <item>Tiger</item>
+        <item>Rabbit</item>
+        <item>Dragon</item>
+        <item>Snake</item>
+        <item>Horse</item>
+        <item>Goat</item>
+        <item>Monkey</item>
+        <item>Rooster</item>
+        <item>Dog</item>
+        <item>Pig</item>
+    </string-array>
+</resources>
