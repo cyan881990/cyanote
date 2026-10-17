@@ -137,6 +137,12 @@
 "rec_delete_q" = "ลบเสียงบันทึกนี้ไหม";
 "att_play" = "เล่น";
 "att_pause" = "หยุดชั่วคราว";
+"video_record" = "ถ่ายวิดีโอ";
+"file_attach" = "แนบไฟล์";
+"att_videos" = "วิดีโอ";
+"att_files" = "ไฟล์";
+"att_delete_q" = "ลบไฟล์นี้ไหม";
+"media_pick" = "เลือกรูปหรือวิดีโอ";
 "zodiac_0" = "ชวด";
 "zodiac_1" = "ฉลู";
 "zodiac_2" = "ขาล";

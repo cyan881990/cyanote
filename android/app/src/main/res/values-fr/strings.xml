@@ -139,6 +139,12 @@
     <string name="rec_delete_q">Supprimer cet enregistrement ?</string>
     <string name="att_play">Lire</string>
     <string name="att_pause">Pause</string>
+    <string name="video_record">Filmer une vidéo</string>
+    <string name="file_attach">Joindre un fichier</string>
+    <string name="att_videos">Vidéos</string>
+    <string name="att_files">Fichiers</string>
+    <string name="att_delete_q">Supprimer ce fichier ?</string>
+    <string name="media_pick">Choisir une photo ou une vidéo</string>
     <string-array name="zodiac">
         <item>du Rat</item>
         <item>du Buffle</item>

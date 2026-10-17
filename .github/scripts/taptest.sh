@@ -56,7 +56,7 @@ echo "::warning title=3 after second tap::$(ime) || $(edit_xy)"
 # Mở máy tính rồi bấm vào ghi chú
 adb shell input keyevent 4; sleep 2
 dismiss; r3=$(edit_xy); set -- $r3
-adb shell input tap $(( $1 )) $(( $2 + 300 )); sleep 3
+adb shell input tap $(( $1 + 150 )) $(( $2 - 120 )); sleep 3
 adb exec-out screencap -p > smoke-out/tap/3-tap-lower.png
 echo "::warning title=4 tap lower area::$(ime) || $(edit_xy)"
 adb logcat -d | grep -E "FATAL|InputMethod|IME|ImeTracker" | tail -30 | cut -c1-200 > smoke-out/tap/log.txt

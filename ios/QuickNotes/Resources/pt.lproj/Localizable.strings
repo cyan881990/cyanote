@@ -137,6 +137,12 @@
 "rec_delete_q" = "Excluir esta gravação?";
 "att_play" = "Reproduzir";
 "att_pause" = "Pausar";
+"video_record" = "Gravar vídeo";
+"file_attach" = "Anexar arquivo";
+"att_videos" = "Vídeos";
+"att_files" = "Arquivos";
+"att_delete_q" = "Excluir este arquivo?";
+"media_pick" = "Escolher foto ou vídeo";
 "zodiac_0" = "do Rato";
 "zodiac_1" = "do Boi";
 "zodiac_2" = "do Tigre";

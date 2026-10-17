@@ -137,6 +137,12 @@
 "rec_delete_q" = "Supprimer cet enregistrement ?";
 "att_play" = "Lire";
 "att_pause" = "Pause";
+"video_record" = "Filmer une vidéo";
+"file_attach" = "Joindre un fichier";
+"att_videos" = "Vidéos";
+"att_files" = "Fichiers";
+"att_delete_q" = "Supprimer ce fichier ?";
+"media_pick" = "Choisir une photo ou une vidéo";
 "zodiac_0" = "du Rat";
 "zodiac_1" = "du Buffle";
 "zodiac_2" = "du Tigre";

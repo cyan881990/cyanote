@@ -20,9 +20,9 @@ class AttachmentsStore private constructor(private val appContext: Context) {
     private fun dir(noteId: Long) = File(root, noteId.toString())
 
     private fun scan(noteId: Long): List<File> =
-        dir(noteId).listFiles { f -> f.isFile && (isImage(f) || isAudio(f)) }?.sortedBy { it.name } ?: emptyList()
+        dir(noteId).listFiles { f -> f.isFile && !f.name.startsWith(".") }?.sortedBy { it.name } ?: emptyList()
 
-    /** Ảnh (.jpg) và ghi âm (.m4a) của ghi chú, theo thứ tự thêm vào. */
+    /** Ảnh, video, ghi âm và tệp của ghi chú, theo thứ tự thêm vào. */
     fun list(noteId: Long): List<File> = cache.getOrPut(noteId) { scan(noteId) }
 
     fun refresh(noteId: Long) {
@@ -34,6 +34,25 @@ class AttachmentsStore private constructor(private val appContext: Context) {
         val d = dir(noteId).apply { mkdirs() }
         return File(d, "${System.currentTimeMillis()}.m4a")
     }
+
+    /** File mới cho video quay bằng máy ảnh (ghi thẳng vào thư mục của ghi chú). */
+    fun newVideoFile(noteId: Long): File {
+        val d = dir(noteId).apply { mkdirs() }
+        return File(d, "${System.currentTimeMillis()}.mp4")
+    }
+
+    /**
+     * Đính kèm nguyên tệp (video, PDF, Word…): chép vào thư mục ghi chú với tên "<thời điểm>__<tên gốc>".
+     * Ảnh chọn từ thư viện vẫn đi qua [add] để được thu nhỏ.
+     */
+    fun addFile(noteId: Long, source: Uri, displayName: String?): File? = runCatching {
+        val d = dir(noteId).apply { mkdirs() }
+        val base = sanitize(displayName ?: "file").ifEmpty { "file" }
+        val out = File(d, "${System.currentTimeMillis()}__$base")
+        appContext.contentResolver.openInputStream(source)?.use { input -> out.outputStream().use { input.copyTo(it) } } ?: return null
+        refresh(noteId)
+        out
+    }.getOrNull()
 
     /** File tạm cho máy ảnh ghi ảnh vào (chia sẻ qua FileProvider). */
     fun newCameraFile(): File {
@@ -60,8 +79,8 @@ class AttachmentsStore private constructor(private val appContext: Context) {
     /** Chép nguyên file (dùng khi khôi phục sao lưu). */
     fun putRaw(noteId: Long, name: String, bytes: ByteArray) {
         val d = dir(noteId).apply { mkdirs() }
-        val safe = name.substringAfterLast('/').filter { it.isLetterOrDigit() || it == '.' || it == '-' || it == '_' }
-        if (safe.isEmpty() || !(safe.endsWith(".jpg") || safe.endsWith(".m4a"))) return
+        val safe = sanitize(name.substringAfterLast('/'))
+        if (safe.isEmpty() || safe.startsWith(".")) return
         File(d, safe).writeBytes(bytes)
         refresh(noteId)
     }
@@ -80,7 +99,7 @@ class AttachmentsStore private constructor(private val appContext: Context) {
     fun all(): List<Pair<Long, File>> =
         root.listFiles()?.flatMap { d ->
             val id = d.name.toLongOrNull() ?: return@flatMap emptyList()
-            d.listFiles { f -> f.isFile && (isImage(f) || isAudio(f)) }?.map { id to it } ?: emptyList()
+            d.listFiles { f -> f.isFile && !f.name.startsWith(".") }?.map { id to it } ?: emptyList()
         } ?: emptyList()
 
     private fun decodeScaled(bytes: ByteArray, maxSide: Int): Bitmap? {
@@ -107,8 +126,33 @@ class AttachmentsStore private constructor(private val appContext: Context) {
     }
 
     companion object {
-        fun isImage(f: File) = f.name.endsWith(".jpg")
-        fun isAudio(f: File) = f.name.endsWith(".m4a")
+        private val IMAGE = setOf("jpg", "jpeg", "png", "webp", "gif", "heic")
+        private val VIDEO = setOf("mp4", "3gp", "mov", "webm", "mkv", "m4v")
+        private val AUDIO = setOf("m4a", "mp3", "aac", "wav", "ogg", "amr", "flac")
+        fun isImage(f: File) = f.extension.lowercase() in IMAGE
+        fun isVideo(f: File) = f.extension.lowercase() in VIDEO
+        fun isAudio(f: File) = f.extension.lowercase() in AUDIO
+        fun isOther(f: File) = !isImage(f) && !isVideo(f) && !isAudio(f)
+
+        /** Tên hiển thị: bỏ tiền tố "<thời điểm>__". */
+        fun displayName(f: File): String = f.name.substringAfter("__", f.name)
+
+        fun mimeOf(f: File): String =
+            android.webkit.MimeTypeMap.getSingleton().getMimeTypeFromExtension(f.extension.lowercase()) ?: "application/octet-stream"
+
+        /** Giữ chữ (mọi ngôn ngữ), số, dấu cách, . - _ ( ); tối đa 80 ký tự. */
+        fun sanitize(name: String): String =
+            name.filter { it.isLetterOrDigit() || it in " .-_()" }.trim().take(80)
+
+        /** Ảnh đầu của video để làm hình thu nhỏ. */
+        fun videoFrame(f: File): Bitmap? = runCatching {
+            android.media.MediaMetadataRetriever().run {
+                setDataSource(f.path)
+                val b = getFrameAtTime(0)
+                release()
+                b
+            }
+        }.getOrNull()
 
         @Volatile private var instance: AttachmentsStore? = null
         fun get(context: Context): AttachmentsStore =

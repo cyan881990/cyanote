@@ -139,6 +139,12 @@
     <string name="rec_delete_q">Удалить эту запись?</string>
     <string name="att_play">Воспроизвести</string>
     <string name="att_pause">Пауза</string>
+    <string name="video_record">Снять видео</string>
+    <string name="file_attach">Прикрепить файл</string>
+    <string name="att_videos">Видео</string>
+    <string name="att_files">Файлы</string>
+    <string name="att_delete_q">Удалить этот файл?</string>
+    <string name="media_pick">Выбрать фото или видео</string>
     <string-array name="zodiac">
         <item>Крысы</item>
         <item>Быка</item>

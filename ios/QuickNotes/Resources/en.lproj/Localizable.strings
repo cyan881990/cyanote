@@ -137,6 +137,12 @@
 "rec_delete_q" = "Delete this recording?";
 "att_play" = "Play";
 "att_pause" = "Pause";
+"video_record" = "Record video";
+"file_attach" = "Attach file";
+"att_videos" = "Videos";
+"att_files" = "Files";
+"att_delete_q" = "Delete this file?";
+"media_pick" = "Choose photo or video";
 "zodiac_0" = "Rat";
 "zodiac_1" = "Ox";
 "zodiac_2" = "Tiger";

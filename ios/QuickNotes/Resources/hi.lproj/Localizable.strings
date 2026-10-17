@@ -137,6 +137,12 @@
 "rec_delete_q" = "यह रिकॉर्डिंग हटाएँ?";
 "att_play" = "चलाएँ";
 "att_pause" = "रोकें";
+"video_record" = "वीडियो रिकॉर्ड करें";
+"file_attach" = "फ़ाइल जोड़ें";
+"att_videos" = "वीडियो";
+"att_files" = "फ़ाइलें";
+"att_delete_q" = "यह फ़ाइल हटाएँ?";
+"media_pick" = "फ़ोटो या वीडियो चुनें";
 "zodiac_0" = "चूहा";
 "zodiac_1" = "बैल";
 "zodiac_2" = "बाघ";

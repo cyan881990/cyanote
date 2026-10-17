@@ -139,6 +139,12 @@
     <string name="rec_delete_q">ลบเสียงบันทึกนี้ไหม</string>
     <string name="att_play">เล่น</string>
     <string name="att_pause">หยุดชั่วคราว</string>
+    <string name="video_record">ถ่ายวิดีโอ</string>
+    <string name="file_attach">แนบไฟล์</string>
+    <string name="att_videos">วิดีโอ</string>
+    <string name="att_files">ไฟล์</string>
+    <string name="att_delete_q">ลบไฟล์นี้ไหม</string>
+    <string name="media_pick">เลือกรูปหรือวิดีโอ</string>
     <string-array name="zodiac">
         <item>ชวด</item>
         <item>ฉลู</item>

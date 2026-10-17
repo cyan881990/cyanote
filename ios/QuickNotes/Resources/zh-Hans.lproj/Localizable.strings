@@ -137,6 +137,12 @@
 "rec_delete_q" = "删除这段录音？";
 "att_play" = "播放";
 "att_pause" = "暂停";
+"video_record" = "录制视频";
+"file_attach" = "附加文件";
+"att_videos" = "视频";
+"att_files" = "文件";
+"att_delete_q" = "删除这个文件？";
+"media_pick" = "选择照片或视频";
 "zodiac_0" = "鼠";
 "zodiac_1" = "牛";
 "zodiac_2" = "虎";

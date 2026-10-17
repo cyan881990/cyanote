@@ -137,6 +137,12 @@
 "rec_delete_q" = "Xoá ghi âm này?";
 "att_play" = "Phát";
 "att_pause" = "Tạm dừng";
+"video_record" = "Quay video";
+"file_attach" = "Đính kèm tệp";
+"att_videos" = "Video";
+"att_files" = "Tệp";
+"att_delete_q" = "Xoá tệp này?";
+"media_pick" = "Chọn ảnh hoặc video";
 "zodiac_0" = "Tý";
 "zodiac_1" = "Sửu";
 "zodiac_2" = "Dần";

@@ -139,6 +139,12 @@
     <string name="rec_delete_q">Xoá ghi âm này?</string>
     <string name="att_play">Phát</string>
     <string name="att_pause">Tạm dừng</string>
+    <string name="video_record">Quay video</string>
+    <string name="file_attach">Đính kèm tệp</string>
+    <string name="att_videos">Video</string>
+    <string name="att_files">Tệp</string>
+    <string name="att_delete_q">Xoá tệp này?</string>
+    <string name="media_pick">Chọn ảnh hoặc video</string>
     <string-array name="zodiac">
         <item>Tý</item>
         <item>Sửu</item>

@@ -139,6 +139,12 @@
     <string name="rec_delete_q">Hapus rekaman ini?</string>
     <string name="att_play">Putar</string>
     <string name="att_pause">Jeda</string>
+    <string name="video_record">Rekam video</string>
+    <string name="file_attach">Lampirkan file</string>
+    <string name="att_videos">Video</string>
+    <string name="att_files">File</string>
+    <string name="att_delete_q">Hapus file ini?</string>
+    <string name="media_pick">Pilih foto atau video</string>
     <string-array name="zodiac">
         <item>Tikus</item>
         <item>Kerbau</item>

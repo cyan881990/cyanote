@@ -139,6 +139,12 @@
     <string name="rec_delete_q">删除这段录音？</string>
     <string name="att_play">播放</string>
     <string name="att_pause">暂停</string>
+    <string name="video_record">录制视频</string>
+    <string name="file_attach">附加文件</string>
+    <string name="att_videos">视频</string>
+    <string name="att_files">文件</string>
+    <string name="att_delete_q">删除这个文件？</string>
+    <string name="media_pick">选择照片或视频</string>
     <string-array name="zodiac">
         <item>鼠</item>
         <item>牛</item>

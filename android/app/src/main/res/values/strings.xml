@@ -139,6 +139,12 @@
     <string name="rec_delete_q">Delete this recording?</string>
     <string name="att_play">Play</string>
     <string name="att_pause">Pause</string>
+    <string name="video_record">Record video</string>
+    <string name="file_attach">Attach file</string>
+    <string name="att_videos">Videos</string>
+    <string name="att_files">Files</string>
+    <string name="att_delete_q">Delete this file?</string>
+    <string name="media_pick">Choose photo or video</string>
     <string-array name="zodiac">
         <item>Rat</item>
         <item>Ox</item>

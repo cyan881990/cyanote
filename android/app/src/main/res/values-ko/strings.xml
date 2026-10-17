@@ -139,6 +139,12 @@
     <string name="rec_delete_q">이 녹음을 삭제할까요?</string>
     <string name="att_play">재생</string>
     <string name="att_pause">일시정지</string>
+    <string name="video_record">동영상 촬영</string>
+    <string name="file_attach">파일 첨부</string>
+    <string name="att_videos">동영상</string>
+    <string name="att_files">파일</string>
+    <string name="att_delete_q">이 파일을 삭제할까요?</string>
+    <string name="media_pick">사진 또는 동영상 선택</string>
     <string-array name="zodiac">
         <item>쥐</item>
         <item>소</item>

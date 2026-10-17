@@ -196,8 +196,12 @@ fun EditorScreen(
     }
 
     // Đang gõ (bàn phím hiện) thì thu gọn máy tính cho rộng chỗ; phép tính vẫn được giữ.
+    var imeWasVisible by remember { mutableStateOf(false) }
     LaunchedEffect(imeVisible) {
         if (imeVisible) calcOpen = false
+        // Bàn phím vừa ẩn (nút Back, vuốt xuống…) → bỏ chọn ô chữ, để lần chạm sau chắc chắn bật lại bàn phím
+        if (!imeVisible && imeWasVisible) focusManager.clearFocus()
+        imeWasVisible = imeVisible
     }
     // Tab mới (trống) thì đặt con trỏ sẵn để gõ ngay.
     LaunchedEffect(current.id) {
@@ -228,8 +232,33 @@ fun EditorScreen(
         f?.delete()
         cameraFile = null
     }
-    val pickPhoto = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        if (uri != null) attachments.add(current.id, uri)
+    // Chọn ảnh hoặc video: ảnh được thu nhỏ, video chép nguyên
+    val pickPhoto = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(10)) { uris ->
+        for (uri in uris) {
+            val type = context.contentResolver.getType(uri) ?: ""
+            if (type.startsWith("video")) attachments.addFile(current.id, uri, queryName(context, uri) ?: "video.mp4")
+            else attachments.add(current.id, uri)
+        }
+    }
+    var videoFile by remember { mutableStateOf<File?>(null) }
+    val takeVideo = rememberLauncherForActivityResult(ActivityResultContracts.CaptureVideo()) { ok ->
+        val f = videoFile
+        if (!(ok && f != null && f.length() > 0)) f?.delete()
+        attachments.refresh(current.id)
+        videoFile = null
+    }
+    val attachFile = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
+        for (uri in uris) attachments.addFile(current.id, uri, queryName(context, uri))
+    }
+    val startVideo = {
+        val f = attachments.newVideoFile(current.id)
+        videoFile = f
+        runCatching { takeVideo.launch(FileProvider.getUriForFile(context, "app.cyanote.files", f)) }
+        Unit
+    }
+    val startAttach = {
+        runCatching { attachFile.launch(arrayOf("*/*")) }
+        Unit
     }
     val startCamera = {
         val f = attachments.newCameraFile()
@@ -238,7 +267,7 @@ fun EditorScreen(
         Unit
     }
     val startPick = {
-        runCatching { pickPhoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
+        runCatching { pickPhoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)) }
         Unit
     }
     val startRecord = {
@@ -567,13 +596,16 @@ fun EditorScreen(
                     }
                 }
                 // Ảnh & ghi âm của ghi chú
-                if (!extrasHidden) AttachmentStrip(noteFiles, onOpenImage = { viewerFile = it }, onManage = { showAttachments = true })
+                // Ảnh, video, ghi âm, tệp: luôn hiện (thu nhỏ khi chật chỗ)
+                AttachmentStrip(noteFiles, onOpenImage = { viewerFile = it }, onManage = { showAttachments = true }, compact = extrasHidden)
                 HorizontalDivider(color = scheme.outlineVariant)
                 EditorFooter(
                     text = value.text,
                     saving = store.isSaving,
                     onCamera = startCamera,
                     onPick = startPick,
+                    onVideo = startVideo,
+                    onFile = startAttach,
                     onRecord = startRecord,
                     onAppointment = tagAppointment,
                     onHideKeyboard = if (wideTyping || (imeVisible && !EditorPrefs.dockVisible)) hideKeyboard else null,
@@ -815,6 +847,8 @@ fun EditorScreen(
             onPickPhoto = { showAttachments = false; startPick() },
             onRecord = { showAttachments = false; startRecord() },
             onDismiss = { showAttachments = false },
+            onRecordVideo = { showAttachments = false; startVideo() },
+            onAttachFile = { showAttachments = false; startAttach() },
         )
     }
     viewerFile?.let { f ->
@@ -1330,6 +1364,8 @@ private fun EditorFooter(
     saving: Boolean,
     onCamera: () -> Unit,
     onPick: () -> Unit,
+    onVideo: () -> Unit,
+    onFile: () -> Unit,
     onRecord: () -> Unit,
     onAppointment: () -> Unit,
     onHideKeyboard: (() -> Unit)?,
@@ -1369,9 +1405,19 @@ private fun EditorFooter(
                     onClick = { photoMenu = false; onCamera() },
                 )
                 DropdownMenuItem(
-                    text = { Text(stringResource(R.string.photo_pick)) },
+                    text = { Text(stringResource(R.string.video_record)) },
+                    leadingIcon = { Icon(VideoGlyph, contentDescription = null, modifier = Modifier.size(20.dp)) },
+                    onClick = { photoMenu = false; onVideo() },
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.media_pick)) },
                     leadingIcon = { Icon(GalleryGlyph, contentDescription = null, modifier = Modifier.size(20.dp)) },
                     onClick = { photoMenu = false; onPick() },
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.file_attach)) },
+                    leadingIcon = { Icon(FileGlyph, contentDescription = null, modifier = Modifier.size(20.dp)) },
+                    onClick = { photoMenu = false; onFile() },
                 )
             }
         }
@@ -1418,6 +1464,13 @@ private fun EditorFooter(
         }
     }
 }
+
+/** Tên tệp người dùng chọn (để hiển thị trong ghi chú). */
+private fun queryName(context: Context, uri: android.net.Uri): String? = runCatching {
+    context.contentResolver.query(uri, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null)?.use { c ->
+        if (c.moveToFirst()) c.getString(0) else null
+    }
+}.getOrNull()
 
 /** Bật bàn phím cho ô chữ đang được chọn (dùng khi Compose không tự bật lại). */
 private fun showImeNow(view: android.view.View) {

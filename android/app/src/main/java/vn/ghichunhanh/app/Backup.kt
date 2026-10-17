@@ -43,7 +43,7 @@ object Backup {
     const val FORMAT = "cyanote-backup-v1"
     private const val NOTES_ENTRY = "notes.json"
     private const val ATTACH_DIR = "attachments"
-    private const val MAX_ENTRY_BYTES = 20L * 1024 * 1024 // chặn file nén "bom" hoặc quá lớn
+    private const val MAX_ENTRY_BYTES = 200L * 1024 * 1024 // chặn file nén "bom" hoặc quá lớn (video đính kèm)
     private const val MAX_ENTRIES = 5000
 
     /** Loại file cho bộ chọn file khi nhập. */
@@ -114,8 +114,7 @@ object Backup {
                 val name = path.substringAfterLast('/')
                 val parts = path.split('/')
                 when {
-                    parts.size == 3 && parts[0] == ATTACH_DIR && parts[1].toLongOrNull() != null &&
-                        (name.endsWith(".jpg") || name.endsWith(".m4a")) ->
+                    parts.size == 3 && parts[0] == ATTACH_DIR && parts[1].toLongOrNull() != null && !name.startsWith(".") ->
                         files.add(Triple(parts[1].toLong(), name, readLimited(zip)))
                     name == NOTES_ENTRY && json == null ->
                         json = String(readLimited(zip), Charsets.UTF_8)

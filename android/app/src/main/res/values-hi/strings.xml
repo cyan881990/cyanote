@@ -139,6 +139,12 @@
     <string name="rec_delete_q">यह रिकॉर्डिंग हटाएँ?</string>
     <string name="att_play">चलाएँ</string>
     <string name="att_pause">रोकें</string>
+    <string name="video_record">वीडियो रिकॉर्ड करें</string>
+    <string name="file_attach">फ़ाइल जोड़ें</string>
+    <string name="att_videos">वीडियो</string>
+    <string name="att_files">फ़ाइलें</string>
+    <string name="att_delete_q">यह फ़ाइल हटाएँ?</string>
+    <string name="media_pick">फ़ोटो या वीडियो चुनें</string>
     <string-array name="zodiac">
         <item>चूहा</item>
         <item>बैल</item>

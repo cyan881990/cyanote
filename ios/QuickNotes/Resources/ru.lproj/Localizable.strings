@@ -137,6 +137,12 @@
 "rec_delete_q" = "Удалить эту запись?";
 "att_play" = "Воспроизвести";
 "att_pause" = "Пауза";
+"video_record" = "Снять видео";
+"file_attach" = "Прикрепить файл";
+"att_videos" = "Видео";
+"att_files" = "Файлы";
+"att_delete_q" = "Удалить этот файл?";
+"media_pick" = "Выбрать фото или видео";
 "zodiac_0" = "Крысы";
 "zodiac_1" = "Быка";
 "zodiac_2" = "Тигра";

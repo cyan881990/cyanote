@@ -661,3 +661,25 @@ for _lang, _vals in REC.items():
     assert len(_vals) == len(REC_KEYS)
     T[_lang].update(dict(zip(REC_KEYS, _vals)))
 KEYS += REC_KEYS
+
+# ---- Video & tệp đính kèm ----
+VID_KEYS = ["video_record", "file_attach", "att_videos", "att_files", "att_delete_q", "media_pick"]
+VID = {
+    "en": ["Record video", "Attach file", "Videos", "Files", "Delete this file?", "Choose photo or video"],
+    "vi": ["Quay video", "Đính kèm tệp", "Video", "Tệp", "Xoá tệp này?", "Chọn ảnh hoặc video"],
+    "es": ["Grabar vídeo", "Adjuntar archivo", "Vídeos", "Archivos", "¿Eliminar este archivo?", "Elegir foto o vídeo"],
+    "pt": ["Gravar vídeo", "Anexar arquivo", "Vídeos", "Arquivos", "Excluir este arquivo?", "Escolher foto ou vídeo"],
+    "fr": ["Filmer une vidéo", "Joindre un fichier", "Vidéos", "Fichiers", "Supprimer ce fichier ?", "Choisir une photo ou une vidéo"],
+    "de": ["Video aufnehmen", "Datei anhängen", "Videos", "Dateien", "Diese Datei löschen?", "Foto oder Video auswählen"],
+    "in": ["Rekam video", "Lampirkan file", "Video", "File", "Hapus file ini?", "Pilih foto atau video"],
+    "th": ["ถ่ายวิดีโอ", "แนบไฟล์", "วิดีโอ", "ไฟล์", "ลบไฟล์นี้ไหม", "เลือกรูปหรือวิดีโอ"],
+    "ja": ["動画を撮る", "ファイルを添付", "動画", "ファイル", "このファイルを削除しますか？", "写真や動画を選ぶ"],
+    "ko": ["동영상 촬영", "파일 첨부", "동영상", "파일", "이 파일을 삭제할까요?", "사진 또는 동영상 선택"],
+    "zh-rCN": ["录制视频", "附加文件", "视频", "文件", "删除这个文件？", "选择照片或视频"],
+    "hi": ["वीडियो रिकॉर्ड करें", "फ़ाइल जोड़ें", "वीडियो", "फ़ाइलें", "यह फ़ाइल हटाएँ?", "फ़ोटो या वीडियो चुनें"],
+    "ru": ["Снять видео", "Прикрепить файл", "Видео", "Файлы", "Удалить этот файл?", "Выбрать фото или видео"],
+}
+for _lang, _vals in VID.items():
+    assert len(_vals) == len(VID_KEYS)
+    T[_lang].update(dict(zip(VID_KEYS, _vals)))
+KEYS += VID_KEYS

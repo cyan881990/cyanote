@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -95,10 +96,21 @@ fun shareAttachment(context: Context, file: File, chooserTitle: String) {
     runCatching {
         val uri = FileProvider.getUriForFile(context, "app.cyanote.files", file)
         val send = Intent(Intent.ACTION_SEND)
-            .setType(if (AttachmentsStore.isImage(file)) "image/jpeg" else "audio/mp4")
+            .setType(AttachmentsStore.mimeOf(file))
             .putExtra(Intent.EXTRA_STREAM, uri)
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         context.startActivity(Intent.createChooser(send, chooserTitle))
+    }
+}
+
+/** Mở video / tệp bằng ứng dụng phù hợp trên máy (trình xem PDF, Word, trình phát video…). */
+fun openAttachment(context: Context, file: File) {
+    runCatching {
+        val uri = FileProvider.getUriForFile(context, "app.cyanote.files", file)
+        context.startActivity(
+            Intent(Intent.ACTION_VIEW).setDataAndType(uri, AttachmentsStore.mimeOf(file))
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        )
     }
 }
 
@@ -134,18 +146,27 @@ object AudioPlayer {
 
 @Composable
 private fun Thumb(file: File, size: Int, modifier: Modifier) {
-    val bmp by produceState<Bitmap?>(null, file) { value = withContext(Dispatchers.IO) { AttachmentsStore.thumbnail(file, size) } }
+    val bmp by produceState<Bitmap?>(null, file) {
+        value = withContext(Dispatchers.IO) {
+            if (AttachmentsStore.isVideo(file)) AttachmentsStore.videoFrame(file) else AttachmentsStore.thumbnail(file, size)
+        }
+    }
     val extra = LocalExtraColors.current
-    Box(modifier.background(extra.keyBg)) {
+    Box(modifier.background(extra.keyBg), contentAlignment = Alignment.Center) {
         bmp?.let {
             Image(it.asImageBitmap(), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+        }
+        if (AttachmentsStore.isVideo(file)) {
+            Box(Modifier.size(26.dp).clip(CircleShape).background(Color(0x99000000)), contentAlignment = Alignment.Center) {
+                Icon(Icons.Filled.PlayArrow, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+            }
         }
     }
 }
 
 /** Nút ghi âm thu gọn (phát/tạm dừng + thời lượng). */
 @Composable
-private fun AudioChip(file: File, onLongClick: (() -> Unit)? = null) {
+private fun AudioChip(file: File, onLongClick: (() -> Unit)? = null, height: androidx.compose.ui.unit.Dp = 56.dp) {
     val scheme = MaterialTheme.colorScheme
     val extra = LocalExtraColors.current
     val dur by produceState(0L, file) { value = withContext(Dispatchers.IO) { durationMs(file) } }
@@ -160,7 +181,7 @@ private fun AudioChip(file: File, onLongClick: (() -> Unit)? = null) {
         shape = RoundedCornerShape(14.dp),
         color = if (isPlaying) scheme.primary else extra.accentSoft,
         contentColor = if (isPlaying) scheme.onPrimary else scheme.primary,
-        modifier = Modifier.height(56.dp),
+        modifier = Modifier.height(height),
     ) {
         Row(Modifier.padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             if (isPlaying) PauseGlyph() else Icon(Icons.Filled.PlayArrow, contentDescription = stringResource(R.string.att_play), modifier = Modifier.size(22.dp))
@@ -169,6 +190,26 @@ private fun AudioChip(file: File, onLongClick: (() -> Unit)? = null) {
                 if (isPlaying) formatDuration(pos) + " / " + formatDuration(dur) else formatDuration(dur),
                 fontSize = 14.sp, fontWeight = FontWeight.Bold,
             )
+        }
+    }
+}
+
+/** Tệp đính kèm (PDF, Word…): biểu tượng + tên, bấm để mở. */
+@Composable
+private fun FileChip(file: File, height: androidx.compose.ui.unit.Dp = 56.dp) {
+    val context = LocalContext.current
+    val scheme = MaterialTheme.colorScheme
+    Surface(
+        onClick = { openAttachment(context, file) },
+        shape = RoundedCornerShape(14.dp),
+        color = LocalExtraColors.current.keyBg,
+        modifier = Modifier.height(height).widthIn(max = 180.dp),
+    ) {
+        Row(Modifier.padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Box(Modifier.size(30.dp).clip(RoundedCornerShape(8.dp)).background(scheme.primary), contentAlignment = Alignment.Center) {
+                Text(file.extension.uppercase().take(4), color = scheme.onPrimary, fontSize = 9.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+            }
+            Text(AttachmentsStore.displayName(file), fontSize = 13.sp, fontWeight = FontWeight.Medium, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, color = scheme.onSurface)
         }
     }
 }
@@ -182,20 +223,23 @@ private fun PauseGlyph() {
     }
 }
 
-/** Dải ảnh & ghi âm của ghi chú, nằm ngay trên dòng trạng thái. Không có gì thì không chiếm chỗ. */
+/** Dải ảnh, video, ghi âm & tệp của ghi chú, nằm ngay trên dòng trạng thái (luôn hiện; [compact] khi chật chỗ). */
 @Composable
-fun AttachmentStrip(files: List<File>, onOpenImage: (File) -> Unit, onManage: () -> Unit) {
+fun AttachmentStrip(files: List<File>, onOpenImage: (File) -> Unit, onManage: () -> Unit, compact: Boolean = false) {
     if (files.isEmpty()) return
+    val context = LocalContext.current
+    val tile = if (compact) 40.dp else 56.dp
     LazyRow(
-        Modifier.fillMaxWidth().padding(vertical = 6.dp),
+        Modifier.fillMaxWidth().padding(vertical = if (compact) 4.dp else 6.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 14.dp),
     ) {
         items(files, key = { it.path }) { f ->
-            if (AttachmentsStore.isImage(f)) {
-                Thumb(f, 160, Modifier.size(56.dp).clip(RoundedCornerShape(12.dp)).clickable { onOpenImage(f) })
-            } else {
-                AudioChip(f)
+            when {
+                AttachmentsStore.isImage(f) -> Thumb(f, 160, Modifier.size(tile).clip(RoundedCornerShape(12.dp)).clickable { onOpenImage(f) })
+                AttachmentsStore.isVideo(f) -> Thumb(f, 160, Modifier.size(tile).clip(RoundedCornerShape(12.dp)).clickable { openAttachment(context, f) })
+                AttachmentsStore.isAudio(f) -> AudioChip(f, height = tile)
+                else -> FileChip(f, height = tile)
             }
         }
         item(key = "manage") {
@@ -203,7 +247,7 @@ fun AttachmentStrip(files: List<File>, onOpenImage: (File) -> Unit, onManage: ()
                 onClick = onManage,
                 shape = RoundedCornerShape(12.dp),
                 color = LocalExtraColors.current.keyBg,
-                modifier = Modifier.size(56.dp),
+                modifier = Modifier.size(tile),
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Text("${files.size}", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
@@ -259,12 +303,16 @@ fun AttachmentsDialog(
     onPickPhoto: () -> Unit,
     onRecord: () -> Unit,
     onDismiss: () -> Unit,
+    onRecordVideo: () -> Unit = {},
+    onAttachFile: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val scheme = MaterialTheme.colorScheme
     val shareTitle = stringResource(R.string.photo_share)
     val images = files.filter(AttachmentsStore::isImage)
     val audios = files.filter(AttachmentsStore::isAudio)
+    val videos = files.filter(AttachmentsStore::isVideo)
+    val others = files.filter(AttachmentsStore::isOther)
     var confirmAudio by remember { mutableStateOf<File?>(null) }
     DisposableEffect(Unit) { onDispose { AudioPlayer.stop() } }
 
@@ -280,8 +328,12 @@ fun AttachmentsDialog(
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     QuickAction(CameraIcon, stringResource(R.string.photo_take), onTakePhoto, Modifier.weight(1f))
-                    QuickAction(GalleryGlyph, stringResource(R.string.photo_pick), onPickPhoto, Modifier.weight(1f))
+                    QuickAction(VideoGlyph, stringResource(R.string.video_record), onRecordVideo, Modifier.weight(1f))
                     QuickAction(MicIcon, stringResource(R.string.rec_record), onRecord, Modifier.weight(1f))
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    QuickAction(GalleryGlyph, stringResource(R.string.media_pick), onPickPhoto, Modifier.weight(1f))
+                    QuickAction(FileGlyph, stringResource(R.string.file_attach), onAttachFile, Modifier.weight(1f))
                 }
                 if (files.isEmpty()) {
                     Text(stringResource(R.string.att_empty), color = scheme.onSurfaceVariant, modifier = Modifier.padding(vertical = 12.dp))
@@ -296,6 +348,27 @@ fun AttachmentsDialog(
                     ) {
                         items(images, key = { it.path }) { f ->
                             Thumb(f, 200, Modifier.aspectRatio(1f).clip(RoundedCornerShape(10.dp)).clickable { onOpenImage(f) })
+                        }
+                    }
+                }
+                if (videos.isNotEmpty()) {
+                    Text(stringResource(R.string.att_videos) + " · ${videos.size}", fontWeight = FontWeight.Bold, color = scheme.primary, fontSize = 13.sp)
+                    videos.forEach { f ->
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Thumb(f, 200, Modifier.size(64.dp).clip(RoundedCornerShape(10.dp)).clickable { openAttachment(context, f) })
+                            Text(AttachmentsStore.displayName(f), fontSize = 13.sp, modifier = Modifier.weight(1f), maxLines = 1)
+                            IconButton(onClick = { shareAttachment(context, f, shareTitle) }) { Icon(Icons.Filled.Share, contentDescription = shareTitle) }
+                            IconButton(onClick = { confirmAudio = f }) { Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.action_delete), tint = scheme.error) }
+                        }
+                    }
+                }
+                if (others.isNotEmpty()) {
+                    Text(stringResource(R.string.att_files) + " · ${others.size}", fontWeight = FontWeight.Bold, color = scheme.primary, fontSize = 13.sp)
+                    others.forEach { f ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(Modifier.weight(1f)) { FileChip(f) }
+                            IconButton(onClick = { shareAttachment(context, f, shareTitle) }) { Icon(Icons.Filled.Share, contentDescription = shareTitle) }
+                            IconButton(onClick = { confirmAudio = f }) { Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.action_delete), tint = scheme.error) }
                         }
                     }
                 }
@@ -316,7 +389,7 @@ fun AttachmentsDialog(
     confirmAudio?.let { f ->
         AlertDialog(
             onDismissRequest = { confirmAudio = null },
-            title = { Text(stringResource(R.string.rec_delete_q)) },
+            title = { Text(stringResource(if (AttachmentsStore.isAudio(f)) R.string.rec_delete_q else R.string.att_delete_q)) },
             confirmButton = {
                 TextButton(onClick = { AudioPlayer.stop(); onDelete(f); confirmAudio = null }) {
                     Text(stringResource(R.string.action_delete), color = scheme.error)
@@ -337,6 +410,23 @@ private fun QuickAction(icon: androidx.compose.ui.graphics.vector.ImageVector, l
         }
     }
 }
+
+private fun strokeGlyph(name: String, d: String): androidx.compose.ui.graphics.vector.ImageVector =
+    androidx.compose.ui.graphics.vector.ImageVector.Builder(name, 24.dp, 24.dp, 24f, 24f).apply {
+        addPath(
+            pathData = androidx.compose.ui.graphics.vector.PathParser().parsePathString(d).toNodes(),
+            stroke = androidx.compose.ui.graphics.SolidColor(Color.Black),
+            strokeLineWidth = 2f,
+            strokeLineCap = androidx.compose.ui.graphics.StrokeCap.Round,
+            strokeLineJoin = androidx.compose.ui.graphics.StrokeJoin.Round,
+        )
+    }.build()
+
+/** Máy quay video. */
+val VideoGlyph by lazy { strokeGlyph("Video", "M3,7H15V17H3Z M15,10.5L21,7V17L15,13.5") }
+
+/** Tệp (tờ giấy + kẹp). */
+val FileGlyph by lazy { strokeGlyph("File", "M6,3H14L19,8V21H6Z M14,3V8H19 M9,13H16 M9,17H14") }
 
 /** Biểu tượng thư viện ảnh (khung + núi). */
 val GalleryGlyph: androidx.compose.ui.graphics.vector.ImageVector by lazy {

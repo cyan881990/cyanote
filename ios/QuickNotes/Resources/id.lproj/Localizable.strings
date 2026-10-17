@@ -137,6 +137,12 @@
 "rec_delete_q" = "Hapus rekaman ini?";
 "att_play" = "Putar";
 "att_pause" = "Jeda";
+"video_record" = "Rekam video";
+"file_attach" = "Lampirkan file";
+"att_videos" = "Video";
+"att_files" = "File";
+"att_delete_q" = "Hapus file ini?";
+"media_pick" = "Pilih foto atau video";
 "zodiac_0" = "Tikus";
 "zodiac_1" = "Kerbau";
 "zodiac_2" = "Macan";

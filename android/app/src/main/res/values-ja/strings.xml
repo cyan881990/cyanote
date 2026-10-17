@@ -139,6 +139,12 @@
     <string name="rec_delete_q">この録音を削除しますか？</string>
     <string name="att_play">再生</string>
     <string name="att_pause">一時停止</string>
+    <string name="video_record">動画を撮る</string>
+    <string name="file_attach">ファイルを添付</string>
+    <string name="att_videos">動画</string>
+    <string name="att_files">ファイル</string>
+    <string name="att_delete_q">このファイルを削除しますか？</string>
+    <string name="media_pick">写真や動画を選ぶ</string>
     <string-array name="zodiac">
         <item>子</item>
         <item>丑</item>

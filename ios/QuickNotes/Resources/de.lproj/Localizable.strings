@@ -137,6 +137,12 @@
 "rec_delete_q" = "Diese Aufnahme löschen?";
 "att_play" = "Abspielen";
 "att_pause" = "Pause";
+"video_record" = "Video aufnehmen";
+"file_attach" = "Datei anhängen";
+"att_videos" = "Videos";
+"att_files" = "Dateien";
+"att_delete_q" = "Diese Datei löschen?";
+"media_pick" = "Foto oder Video auswählen";
 "zodiac_0" = "der Ratte";
 "zodiac_1" = "des Büffels";
 "zodiac_2" = "des Tigers";

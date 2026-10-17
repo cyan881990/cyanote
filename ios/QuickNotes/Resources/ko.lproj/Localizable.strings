@@ -137,6 +137,12 @@
 "rec_delete_q" = "이 녹음을 삭제할까요?";
 "att_play" = "재생";
 "att_pause" = "일시정지";
+"video_record" = "동영상 촬영";
+"file_attach" = "파일 첨부";
+"att_videos" = "동영상";
+"att_files" = "파일";
+"att_delete_q" = "이 파일을 삭제할까요?";
+"media_pick" = "사진 또는 동영상 선택";
 "zodiac_0" = "쥐";
 "zodiac_1" = "소";
 "zodiac_2" = "호랑이";

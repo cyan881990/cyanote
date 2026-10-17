@@ -139,6 +139,12 @@
     <string name="rec_delete_q">Excluir esta gravação?</string>
     <string name="att_play">Reproduzir</string>
     <string name="att_pause">Pausar</string>
+    <string name="video_record">Gravar vídeo</string>
+    <string name="file_attach">Anexar arquivo</string>
+    <string name="att_videos">Vídeos</string>
+    <string name="att_files">Arquivos</string>
+    <string name="att_delete_q">Excluir este arquivo?</string>
+    <string name="media_pick">Escolher foto ou vídeo</string>
     <string-array name="zodiac">
         <item>do Rato</item>
         <item>do Boi</item>
