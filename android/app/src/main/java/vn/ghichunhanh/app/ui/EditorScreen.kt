@@ -1090,8 +1090,8 @@ private fun ClockHeader(
                     color = scheme.onBackground,
                     maxLines = 1,
                 )
-                // Phiên bản app, ví dụ "v1.1.40"
-                Text(
+                // Phiên bản app, ví dụ "v1.1.40" (máy hẹp: chỉ xem trong menu ⋮)
+                if (!narrow) Text(
                     "v" + appVersion(),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Medium,

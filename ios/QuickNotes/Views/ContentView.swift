@@ -525,7 +525,9 @@ struct HeaderView: View {
                     HStack(spacing: 7) {
                         Image("LogoMark").resizable().frame(width: 24, height: 24)
                         Text(s("app_name")).font(.system(size: 14, weight: .bold)).foregroundColor(p.ink).lineLimit(1)
-                        Text("v" + appVersionString).font(.system(size: 11, weight: .medium)).foregroundColor(p.muted).lineLimit(1).fixedSize()
+                        if UIScreen.main.bounds.width >= 380 {
+                            Text("v" + appVersionString).font(.system(size: 11, weight: .medium)).foregroundColor(p.muted).lineLimit(1).fixedSize()
+                        }
                     }
                     .frame(height: 36)
                     HStack(alignment: .lastTextBaseline, spacing: 6) {
