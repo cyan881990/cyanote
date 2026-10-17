@@ -26,6 +26,7 @@ import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import vn.ghichunhanh.app.ads.AdsInit
 import vn.ghichunhanh.app.ui.AppTheme
 import vn.ghichunhanh.app.ui.EditorScreen
 import vn.ghichunhanh.app.ui.UpdateDialog
@@ -61,8 +62,9 @@ class MainActivity : ComponentActivity() {
         AppSettings.load(this)
 
         // Khởi tạo AdMob ở luồng nền để app mở nhanh.
+        // Xong thì callback chạy trên luồng chính → mới bắt đầu tải banner.
         lifecycleScope.launch(Dispatchers.IO) {
-            MobileAds.initialize(this@MainActivity) {}
+            MobileAds.initialize(this@MainActivity) { AdsInit.ready = true }
         }
 
         if (savedInstanceState == null) handleIntent(intent)
