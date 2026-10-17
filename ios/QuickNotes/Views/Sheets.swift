@@ -261,8 +261,9 @@ enum AdConfig {
 /// đổi chỗ (đáy ↔ đầu màn hình lúc gõ) nó được gắn sang chỗ mới, không tải lại quảng cáo.
 struct BannerAdView: View {
     var width: CGFloat
+    var mrec: Bool = false
     var body: some View {
-        let size = GADCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(width)
+        let size = mrec ? GADAdSizeMediumRectangle : GADCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(width)
         BannerRepresentable(adSize: size)
             .frame(width: size.size.width, height: size.size.height)
             .frame(maxWidth: .infinity)
@@ -271,18 +272,18 @@ struct BannerAdView: View {
 
 final class SharedBanner {
     static let shared = SharedBanner()
-    private var banner: GADBannerView?
+    private var banners: [String: GADBannerView] = [:]   // mỗi kích thước một quảng cáo, dùng lại
 
     func view(for size: GADAdSize) -> GADBannerView {
-        if let banner, CGSizeEqualToSize(banner.adSize.size, size.size) { return banner }
-        banner?.removeFromSuperview()
+        let key = "\(Int(size.size.width))x\(Int(size.size.height))"
+        if let b = banners[key] { return b }
         let b = GADBannerView(adSize: size)
         b.adUnitID = AdConfig.bannerUnitID
         b.rootViewController = UIApplication.shared.connectedScenes
             .compactMap { ($0 as? UIWindowScene)?.keyWindow?.rootViewController }
             .first
         b.load(GADRequest())
-        banner = b
+        banners[key] = b
         return b
     }
 }

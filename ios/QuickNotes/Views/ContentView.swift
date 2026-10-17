@@ -62,7 +62,10 @@ struct ContentView: View {
                                 CalculatorPanel(calc: store.calc, onCollapse: nil) { text in insert(text, into: current) }
                             }
                         }
-                        if !typing { BannerAdView(width: adWidth) }
+                        if !typing {
+                            // Đủ cao: khung 300×250 lấp chỗ trống dưới máy tính; không thì banner.
+                            if h >= 660 { BannerAdView(width: 300, mrec: true) } else { BannerAdView(width: adWidth) }
+                        }
                     }
                     .frame(width: sideWidth - 12)
                     .padding(.top, 10)
@@ -330,6 +333,12 @@ struct HeaderView: View {
             } else {
             HStack(alignment: .bottom, spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
+                    // Logo nhỏ của app, ngang hàng với các nút nhanh bên phải
+                    HStack(spacing: 7) {
+                        Image("LogoMark").resizable().frame(width: 24, height: 24)
+                        Text(s("app_name")).font(.system(size: 14, weight: .bold)).foregroundColor(p.ink).lineLimit(1)
+                    }
+                    .frame(height: 36)
                     HStack(alignment: .lastTextBaseline, spacing: 6) {
                         Text(timeString(now, s.locale))
                             .font(.system(size: 44, weight: .bold).monospacedDigit())
@@ -423,6 +432,7 @@ struct HeaderView: View {
     @ViewBuilder
     private func compactRow(_ now: Date, _ s: Strings, _ p: Palette, lunarText: String) -> some View {
         HStack(spacing: 6) {
+            Image("LogoMark").resizable().frame(width: 22, height: 22)
             Text(timeString(now, s.locale) + (amPm(now, s.locale).map { " " + $0 } ?? ""))
                 .font(.system(size: 20, weight: .bold).monospacedDigit())
                 .foregroundColor(p.ink)

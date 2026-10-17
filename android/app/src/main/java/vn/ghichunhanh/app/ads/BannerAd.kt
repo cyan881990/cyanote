@@ -1,20 +1,21 @@
 package vn.ghichunhanh.app.ads
 
+import android.view.ViewGroup
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.width
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -22,58 +23,79 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 
-/** AdMob đã khởi tạo xong chưa. Chỉ tải quảng cáo sau khi xong, nếu không sẽ treo luồng giao diện. */
+/** AdMob đã khởi tạo xong chưa. Chỉ tạo/tải quảng cáo sau khi xong, nếu không sẽ treo luồng giao diện. */
 object AdsInit {
     var ready by mutableStateOf(false)
 }
 
 object AdConfig {
     /**
-     * ID banner THỬ NGHIỆM của Google (luôn hiện quảng cáo mẫu, không tính tiền).
+     * ID THỬ NGHIỆM của Google (luôn hiện quảng cáo mẫu, không tính tiền).
      * Trước khi đăng Play Store: tạo ứng dụng + đơn vị quảng cáo trong AdMob
-     * rồi thay chuỗi này và APPLICATION_ID trong AndroidManifest.xml.
+     * rồi thay các chuỗi này và APPLICATION_ID trong AndroidManifest.xml.
      * KHÔNG tự bấm vào quảng cáo thật của mình.
      */
-    const val BANNER_AD_UNIT_ID = "ca-app-pub-3940256099942544/9214589741"
+    const val BANNER_AD_UNIT_ID = "ca-app-pub-3940256099942544/9214589741"   // banner thích ứng
+    const val MREC_AD_UNIT_ID = "ca-app-pub-3940256099942544/6300978111"     // khung 300×250
 }
 
-/**
- * Banner thích ứng (adaptive) đặt ở đáy màn hình.
- * Khi [visible] = false (đang mở máy tính hoặc đang hiện bàn phím) banner chỉ thu chiều cao về 0,
- * không bị tạo lại, nên không gửi yêu cầu quảng cáo mới mỗi lần đóng/mở.
- */
+/** Một quảng cáo giữ nguyên suốt phiên: đổi chỗ trên màn hình chỉ gắn sang chỗ mới, không tải lại. */
+class AdHolder(val view: AdView, val size: AdSize) {
+    var requested = false
+}
+
+/** Kích thước banner thích ứng cho bề rộng [widthDp], hoặc khung 300×250 khi [mrec]. */
 @Composable
-fun BannerAd(visible: Boolean, widthDp: Int, modifier: Modifier = Modifier) {
+fun rememberAdSize(widthDp: Int, mrec: Boolean = false): AdSize {
     val context = LocalContext.current
-    val adSize = remember(widthDp) {
-        AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, widthDp)
+    return remember(widthDp, mrec) {
+        if (mrec) AdSize.MEDIUM_RECTANGLE
+        else AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, widthDp)
     }
-    val height = if (visible) adSize.height.dp else 0.dp
-    // Chưa khởi tạo xong AdMob: giữ chỗ trống đúng kích thước (giao diện không bị nhảy).
-    if (!AdsInit.ready) {
-        Spacer(modifier.fillMaxWidth().height(height))
+}
+
+/** Tạo (một lần) quảng cáo cho [size]; null cho tới khi AdMob khởi tạo xong. */
+@Composable
+fun rememberAdHolder(size: AdSize, mrec: Boolean = false): AdHolder? {
+    if (!AdsInit.ready) return null
+    val context = LocalContext.current
+    val holder = remember(size) {
+        AdHolder(
+            AdView(context).apply {
+                setAdSize(size)
+                adUnitId = if (mrec) AdConfig.MREC_AD_UNIT_ID else AdConfig.BANNER_AD_UNIT_ID
+            },
+            size,
+        )
+    }
+    DisposableEffect(holder) { onDispose { holder.view.destroy() } }
+    return holder
+}
+
+/** Chỗ đặt quảng cáo. Chưa sẵn sàng thì giữ đúng khoảng trống để giao diện không nhảy. */
+@Composable
+fun AdSlot(holder: AdHolder?, size: AdSize, modifier: Modifier = Modifier) {
+    val w = size.width.dp
+    val h = size.height.dp
+    if (holder == null) {
+        Spacer(modifier.fillMaxWidth().height(h))
         return
     }
-    val adView = remember(adSize) {
-        AdView(context).apply {
-            setAdSize(adSize)
-            adUnitId = AdConfig.BANNER_AD_UNIT_ID
+    // Tải sau khi vẽ xong khung hình, chỉ một lần cho mỗi quảng cáo.
+    LaunchedEffect(holder) {
+        if (!holder.requested) {
+            holder.requested = true
+            holder.view.loadAd(AdRequest.Builder().build())
         }
     }
-    // Tải quảng cáo sau khi vẽ xong khung hình, không gọi giữa lúc dựng giao diện.
-    LaunchedEffect(adView) {
-        adView.loadAd(AdRequest.Builder().build())
-    }
-    DisposableEffect(adView) {
-        onDispose { adView.destroy() }
-    }
     Box(modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-        key(adView) {
+        key(holder) {
             AndroidView(
-                factory = { adView },
-                modifier = Modifier
-                    .width(adSize.width.dp)
-                    .height(height),
+                factory = {
+                    (holder.view.parent as? ViewGroup)?.removeView(holder.view)
+                    holder.view
+                },
+                modifier = Modifier.size(w, h),
             )
         }
     }

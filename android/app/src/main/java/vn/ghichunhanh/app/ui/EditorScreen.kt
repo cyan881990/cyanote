@@ -107,7 +107,11 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.runtime.SideEffect
-import vn.ghichunhanh.app.ads.BannerAd
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import vn.ghichunhanh.app.ads.AdSlot
+import vn.ghichunhanh.app.ads.rememberAdHolder
+import vn.ghichunhanh.app.ads.rememberAdSize
 import vn.ghichunhanh.app.displayTitle
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -365,8 +369,6 @@ fun EditorScreen(
             }
         }
     }
-    // Chỉ MỘT banner, di chuyển giữa đáy (bình thường) và đầu màn hình (khi gõ) mà không bị tạo lại.
-    val banner = remember { movableContentOf { widthDp: Int -> BannerAd(visible = true, widthDp = widthDp) } }
 
     Surface(Modifier.fillMaxSize(), color = scheme.background) {
         BoxWithConstraints(
@@ -389,9 +391,17 @@ fun EditorScreen(
             val typingCalcRow = imeVisible && !wide  // điện thoại dọc: thanh máy tính + nút ẩn bàn phím sát bàn phím
             val adOnTop = imeVisible
             // Bề rộng banner: tối đa 480dp (để không quá cao trên màn hình rộng), vừa cột máy tính khi 2 cột.
+            val adWidth = if (wide) sideWidth.value.toInt() - 12 else minOf(maxWidth.value.toInt() - 24, 480)
+            // Quảng cáo: 1 banner (đổi chỗ đáy ↔ đầu màn hình khi gõ, không tải lại).
+            // Màn hình rộng đủ cao: cột phải dùng khung 300×250 lấp chỗ trống dưới máy tính.
+            val bannerSize = rememberAdSize(adWidth)
+            val bannerHolder = rememberAdHolder(bannerSize)
+            val mrecSize = rememberAdSize(300, mrec = true)
+            val useMrec = wide && !imeVisible && screenH >= 660.dp
+            val mrecHolder = if (wide) rememberAdHolder(mrecSize, mrec = true) else null
+            val banner: @Composable () -> Unit = { AdSlot(bannerHolder, bannerSize) }
             val isWideTyping = imeVisible && wide
             SideEffect { wideTyping = isWideTyping }
-            val adWidth = if (wide) sideWidth.value.toInt() - 12 else minOf(maxWidth.value.toInt() - 24, 480)
 
             val header: @Composable () -> Unit = {
                 if (compactHeader) {
@@ -416,7 +426,7 @@ fun EditorScreen(
                 }
             }
             val topAd: @Composable () -> Unit = {
-                if (adOnTop) Box(Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, bottom = 6.dp)) { banner(adWidth) }
+                if (adOnTop) Box(Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, bottom = 6.dp)) { banner() }
             }
 
             if (wide) {
@@ -437,7 +447,9 @@ fun EditorScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         sideCalc(Modifier.weight(1f).fillMaxWidth())
-                        if (!adOnTop) banner(adWidth)
+                        if (!adOnTop) {
+                            if (useMrec) AdSlot(mrecHolder, mrecSize) else banner()
+                        }
                     }
                 }
             } else {
@@ -462,7 +474,7 @@ fun EditorScreen(
                             } else {
                                 CalculatorBar(calc = store.calc, onExpand = openCalc)
                             }
-                            banner(adWidth)
+                            banner()
                         }
                         if (typingCalcRow) {
                             Row(
@@ -553,6 +565,16 @@ fun EditorScreen(
 @Composable
 private fun currentLocale(): Locale = LocalConfiguration.current.locales[0]
 
+/** Logo nhỏ của app (luôn hiện ở đầu màn hình). */
+@Composable
+private fun AppLogo(size: Dp) {
+    Image(
+        painter = painterResource(R.drawable.logo_mark),
+        contentDescription = stringResource(R.string.app_name),
+        modifier = Modifier.size(size),
+    )
+}
+
 /** Đồng hồ thu gọn 1 dòng (khi đang gõ hoặc màn hình thấp): giờ · ngày · âm lịch · các nút nhanh. */
 @Composable
 private fun CompactHeader(
@@ -599,6 +621,7 @@ private fun CompactHeader(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
+        AppLogo(22.dp)
         Text(
             time,
             fontSize = 20.sp,
@@ -706,11 +729,27 @@ private fun ClockHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 20.dp, end = 16.dp, top = 14.dp, bottom = 10.dp),
+            .padding(start = 20.dp, end = 16.dp, top = 8.dp, bottom = 10.dp),
         verticalAlignment = Alignment.Bottom,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Column(Modifier.weight(1f)) {
+            // Logo nhỏ của app, ngang hàng với các nút nhanh bên phải
+            Row(
+                modifier = Modifier.height(36.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(7.dp),
+            ) {
+                AppLogo(24.dp)
+                Text(
+                    stringResource(R.string.app_name),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.2.sp,
+                    color = scheme.onBackground,
+                    maxLines = 1,
+                )
+            }
             Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
                     time,
