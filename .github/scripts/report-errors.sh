@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# In các dòng lỗi của xcodebuild thành một thông báo (annotation) để đọc được ngay trên trang Actions.
+# In lỗi của xcodebuild thành annotation để đọc được ngay trên trang Actions.
 log="$1"; label="$2"
-tail -n 30 "$log"
-errors=$(grep -E "error:|fatal error|Could not resolve|unable to|cannot find|No such module|BUILD FAILED" "$log" \
-  | sed -E 's#^/Users/runner/work/[^/]+/[^/]+/##' | sort -u | head -n 60)
+encode() { sed ':a;N;$!ba;s/%/%25/g;s/\r//g;s/\n/%0A/g'; }
+errors=$(grep -E "error:|fatal error|Could not resolve|unable to|cannot find|No such module|failed|Failed" "$log" \
+  | grep -v "^note:" | sed -E 's#^/Users/runner/work/[^/]+/[^/]+/##' | sort -u | head -n 60)
 if [ -n "$errors" ]; then
-  # %0A = xuống dòng trong annotation
-  msg=$(printf '%s' "$errors" | sed ':a;N;$!ba;s/%/%25/g;s/\r//g;s/\n/%0A/g')
-  echo "::error title=${label} build errors::${msg}"
+  echo "::error title=${label} errors::$(printf '%s' "$errors" | encode)"
 fi
+# Luôn gửi kèm phần cuối nhật ký (cắt dòng dài)
+echo "::warning title=${label} log tail::$(tail -n 45 "$log" | cut -c1-220 | sed -E 's#/Users/runner/work/[^/]+/[^/]+/##g' | encode)"
