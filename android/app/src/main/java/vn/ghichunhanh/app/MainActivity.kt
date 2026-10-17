@@ -72,8 +72,11 @@ class MainActivity : ComponentActivity() {
         // Xong thì callback chạy trên luồng chính → mới bắt đầu tải banner.
         lifecycleScope.launch(Dispatchers.IO) {
             MobileAds.initialize(this@MainActivity) {
-                AdsInit.ready = true
-                Interstitials.preload(this@MainActivity)
+                // Callback có thể chạy ở luồng nền; tải quảng cáo phải ở luồng chính.
+                runOnUiThread {
+                    AdsInit.ready = true
+                    Interstitials.preload(this@MainActivity)
+                }
             }
         }
 

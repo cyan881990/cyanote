@@ -278,6 +278,8 @@ fun EditorScreen(
 
     // Nút ẩn bàn phím ở dòng trạng thái của ghi chú (dùng khi 2 cột, vì không có thanh máy tính dưới)
     var wideTyping by remember { mutableStateOf(false) }
+    // Ẩn chip lịch hẹn & dải ảnh khi chỗ chật (đang gõ, hoặc điện thoại đang mở bảng dưới) để vẫn thấy chữ
+    var extrasHidden by remember { mutableStateOf(false) }
     // ----- Các khối giao diện (ghép lại theo kích thước màn hình bên dưới) -----
     val hideKeyboard = { keyboard?.hide(); focusManager.clearFocus() }
     val hideKeyboardNow = hideKeyboard
@@ -506,7 +508,7 @@ fun EditorScreen(
                     )
                 }
                 // Lịch hẹn gắn với ghi chú này
-                val noteAppts = appts.items.filter { it.noteId == current.id && !it.done }
+                val noteAppts = if (extrasHidden) emptyList() else appts.items.filter { it.noteId == current.id && !it.done }
                 if (noteAppts.isNotEmpty()) {
                     LazyRow(
                         Modifier.fillMaxWidth().padding(top = 4.dp),
@@ -531,7 +533,7 @@ fun EditorScreen(
                     }
                 }
                 // Ảnh & ghi âm của ghi chú
-                AttachmentStrip(noteFiles, onOpenImage = { viewerFile = it }, onManage = { showAttachments = true })
+                if (!extrasHidden) AttachmentStrip(noteFiles, onOpenImage = { viewerFile = it }, onManage = { showAttachments = true })
                 HorizontalDivider(color = scheme.outlineVariant)
                 EditorFooter(
                     text = value.text,
@@ -616,7 +618,8 @@ fun EditorScreen(
             val mrecHolder = if (wide) rememberAdHolder(mrecSize, mrec = true) else null
             val banner: @Composable () -> Unit = { AdSlot(bannerHolder, bannerSize) }
             val isWideTyping = imeVisible && wide
-            SideEffect { wideTyping = isWideTyping }
+            val hideExtras = (imeVisible && !wide) || (!wide && calcOpen && EditorPrefs.dockVisible) || screenH < 420.dp
+            SideEffect { wideTyping = isWideTyping; extrasHidden = hideExtras }
 
             val header: @Composable () -> Unit = {
                 if (compactHeader) {

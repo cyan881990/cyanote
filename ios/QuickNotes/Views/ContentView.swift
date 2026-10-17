@@ -99,7 +99,8 @@ struct ContentView: View {
                     // Đang gõ: quảng cáo lên đầu màn hình, xa bàn phím.
                     if typing { BannerAdView(width: adWidth).padding(.horizontal, 12).padding(.bottom, 6) }
                     if showTabs { TabBarView(menu: AnyView(menu(current))) }
-                    editorCard(current, showHideKeyboard: typing && !prefs.dockVisible)
+                    editorCard(current, showHideKeyboard: typing && !prefs.dockVisible,
+                               hideExtras: typing || (calcOpen && prefs.dockVisible) || h < 420)
                     VStack(spacing: 8) {
                         if !typing {
                             if prefs.dockVisible {
@@ -255,7 +256,7 @@ struct ContentView: View {
 
     // MARK: Vùng ghi chú
 
-    private func editorCard(_ current: Note, showHideKeyboard: Bool = false) -> some View {
+    private func editorCard(_ current: Note, showHideKeyboard: Bool = false, hideExtras: Bool = false) -> some View {
         let textBinding = Binding<String>(
             get: { store.current.content },
             set: { store.updateContent(store.current.id, $0) }
@@ -292,7 +293,7 @@ struct ContentView: View {
                 }
             }
             // Lịch hẹn gắn với ghi chú này
-            let noteAppts = appts.items.filter { $0.noteId == current.id && !$0.done }
+            let noteAppts = hideExtras ? [] : appts.items.filter { $0.noteId == current.id && !$0.done }
             if !noteAppts.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 6) {
@@ -313,7 +314,9 @@ struct ContentView: View {
             }
             // Ảnh & ghi âm
             let _ = attachments.version
-            AttachmentStrip(files: attachments.list(current.id), onOpenImage: { viewing = $0 }, onManage: { showAttachments = true })
+            if !hideExtras {
+                AttachmentStrip(files: attachments.list(current.id), onOpenImage: { viewing = $0 }, onManage: { showAttachments = true })
+            }
             Divider().overlay(p.line)
             footerBar(current, showHideKeyboard: showHideKeyboard)
         }
