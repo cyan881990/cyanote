@@ -139,6 +139,8 @@ fun CalculatorPanel(
     calc: CalcState,
     onCollapse: (() -> Unit)?,   // null: không có nút Thu gọn (màn hình rộng, máy tính luôn mở)
     onInsert: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    fill: Boolean = false,       // true: phím giãn ra lấp kín chiều cao (cột bên phải trên màn hình rộng)
 ) {
     val scheme = MaterialTheme.colorScheme
     val extra = LocalExtraColors.current
@@ -155,10 +157,11 @@ fun CalculatorPanel(
         shape = RoundedCornerShape(20.dp),
         color = scheme.surface,
         border = BorderStroke(1.dp, scheme.outlineVariant),
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
     ) {
+        val keyHeight = if (fill) Modifier.fillMaxHeight() else Modifier.height(44.dp)
         Column(
-            modifier = Modifier.padding(8.dp),
+            modifier = Modifier.padding(8.dp).then(if (fill) Modifier.fillMaxHeight() else Modifier),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             // Màn hình số + nút Thu gọn
@@ -223,9 +226,12 @@ fun CalculatorPanel(
             }
 
             for (row in KEY_ROWS) {
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = if (fill) Modifier.weight(1f) else Modifier,
+                ) {
                     for (key in row) {
-                        CalcKey(key = key, modifier = Modifier.weight(1f)) {
+                        CalcKey(key = key, modifier = Modifier.weight(1f).then(keyHeight)) {
                             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                             calc.press(key)
                         }
@@ -290,7 +296,6 @@ private fun CalcKey(key: String, modifier: Modifier, onClick: () -> Unit) {
         color = bg,
         contentColor = fg,
         modifier = modifier
-            .height(44.dp)
             .semantics { contentDescription = description },
     ) {
         Box(contentAlignment = Alignment.Center) {

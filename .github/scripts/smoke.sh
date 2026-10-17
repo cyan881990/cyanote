@@ -35,6 +35,13 @@ adb shell input keyevent 111; sleep 1
 adb shell settings put system accelerometer_rotation 0
 adb shell settings put system user_rotation 1; sleep 4
 adb exec-out screencap -p > smoke-out/api$api-landscape.png
+dump_main() {  # in luồng chính nếu app đang treo
+  p=$(adb shell pidof app.cyanote | tr -d '\r'); [ -z "$p" ] && return
+  adb shell debuggerd -j "$p" > "smoke-out/api$api-$1-stacks.txt" 2>&1 || true
+  m=$(awk '/^"main"/{f=1} f{print} f&&/^$/{exit}' "smoke-out/api$api-$1-stacks.txt" | grep -v "^  native:" | head -40 | cut -c1-200)
+  echo "::warning title=API $api main thread ($1)::$(printf '%s' "$m" | enc)"
+}
+dump_main landscape
 adb shell input tap 160 200; sleep 3
 adb exec-out screencap -p > smoke-out/api$api-landscape-typing.png
 adb shell input keyevent 111
@@ -42,6 +49,7 @@ adb shell settings put system user_rotation 0; sleep 3
 # Máy tính bảng / điện thoại gập mở (giả lập màn hình lớn)
 adb shell wm size 1600x2560; adb shell wm density 320; sleep 5
 adb exec-out screencap -p > smoke-out/api$api-tablet.png
+dump_main tablet
 adb shell input tap 500 1200; sleep 3
 adb exec-out screencap -p > smoke-out/api$api-tablet-typing.png
 adb shell wm size reset; adb shell wm density reset

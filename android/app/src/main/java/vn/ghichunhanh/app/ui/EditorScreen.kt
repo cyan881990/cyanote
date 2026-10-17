@@ -323,6 +323,22 @@ fun EditorScreen(
             onInsert = { text -> applyValue(insertAtCursor(value, text)) },
         )
     }
+    // Cột máy tính bên phải: đủ cao thì phím giãn lấp kín cột (không chừa khoảng trống), thấp thì cuộn.
+    val sideCalc: @Composable (Modifier) -> Unit = { modifier ->
+        BoxWithConstraints(modifier) {
+            if (maxHeight >= 360.dp) {
+                CalculatorPanel(
+                    calc = store.calc,
+                    onCollapse = null,
+                    onInsert = { text -> applyValue(insertAtCursor(value, text)) },
+                    modifier = Modifier.fillMaxSize(),
+                    fill = true,
+                )
+            } else {
+                Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) { calcPanel(false) }
+            }
+        }
+    }
     val hideKeyboardButton: @Composable (Dp) -> Unit = { size ->
         Surface(
             onClick = hideKeyboard,
@@ -351,9 +367,9 @@ fun EditorScreen(
             // Hai cột: máy tính bảng, điện thoại gập mở, hoặc điện thoại xoay ngang.
             val wide = maxWidth >= 720.dp || (maxWidth > maxHeight && maxWidth >= 560.dp)
             val sideWidth = when {
-                maxWidth >= 1000.dp -> 380.dp
-                maxWidth >= 720.dp -> 330.dp
-                else -> 320.dp
+                maxWidth >= 1000.dp -> 392.dp
+                maxWidth >= 720.dp -> 344.dp
+                else -> 332.dp   // xoay ngang: banner tối thiểu 320dp + lề
             }
             val compactHeader = imeVisible || maxHeight < 520.dp  // đang gõ hoặc màn hình thấp → đồng hồ 1 dòng
             val showTabs = !imeVisible || maxHeight >= 400.dp
@@ -361,7 +377,7 @@ fun EditorScreen(
             val headerHideButton = imeVisible && !typingCalcRow
             val adOnTop = imeVisible
             // Bề rộng banner: tối đa 480dp (để không quá cao trên màn hình rộng), vừa cột máy tính khi 2 cột.
-            val adWidth = if (wide) sideWidth.value.toInt() else minOf(maxWidth.value.toInt() - 24, 480)
+            val adWidth = if (wide) sideWidth.value.toInt() - 12 else minOf(maxWidth.value.toInt() - 24, 480)
 
             val header: @Composable () -> Unit = {
                 if (compactHeader) {
@@ -406,10 +422,7 @@ fun EditorScreen(
                             .padding(top = 10.dp, end = 12.dp, bottom = 10.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        Column(
-                            Modifier.weight(1f).verticalScroll(rememberScrollState()),
-                            verticalArrangement = Arrangement.Bottom,
-                        ) { calcPanel(false) }
+                        sideCalc(Modifier.weight(1f).fillMaxWidth())
                         if (!adOnTop) banner(adWidth)
                     }
                 }
