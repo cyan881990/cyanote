@@ -2,6 +2,7 @@
 # Cài APK, mở app, đợi 25 giây rồi báo cáo: app còn chạy không, có crash/ANR không.
 api="$1"
 enc() { awk 'BEGIN{ORS="%0A"} {gsub(/%/,"%25"); gsub(/\r/,""); print}'; }
+adb root || true; sleep 3; adb wait-for-device
 adb install -r android/app/build/outputs/apk/debug/app-debug.apk
 adb logcat -c
 adb shell am start -W -n app.cyanote/vn.ghichunhanh.app.MainActivity
@@ -14,7 +15,7 @@ mkdir -p smoke-out
 adb exec-out screencap -p > smoke-out/api$api.png
 if [ -n "$pid" ]; then
   adb shell debuggerd -j "$pid" > smoke-out/api$api-stacks.txt 2>&1 || true
-  main=$(awk '/^"main"/{f=1} f{print} f&&/^$/{exit}' smoke-out/api$api-stacks.txt | head -45 | cut -c1-200)
+  main=$(awk '/^"main"/{f=1} f{print} f&&/^$/{exit}' smoke-out/api$api-stacks.txt | head -60 | cut -c1-200)
   echo "::warning title=API $api main thread::$(printf '%s' "$main" | enc)"
 fi
 cp logcat.txt smoke-out/api$api-logcat.txt
