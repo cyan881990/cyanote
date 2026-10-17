@@ -50,7 +50,8 @@ fun rememberAdSize(widthDp: Int, mrec: Boolean = false): AdSize {
     val context = LocalContext.current
     return remember(widthDp, mrec) {
         if (mrec) AdSize.MEDIUM_RECTANGLE
-        else AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, widthDp)
+        // Lúc đổi kích thước màn hình bề rộng có thể tạm bằng 0 → giữ tối thiểu 300dp (AdMob báo lỗi nếu ≤ 0)
+        else AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, widthDp.coerceAtLeast(300))
     }
 }
 

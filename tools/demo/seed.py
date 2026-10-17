@@ -30,6 +30,8 @@ content1 = "\n".join([
     "- Thêm ghi âm và ảnh vào ghi chú",
     "- Nhắc lịch có chuông, bấm Gọi ngay trên thông báo",
     "- Kiểm tra số dòng & chế độ không tự xuống dòng: một dòng rất dài để thấy thanh cuộn ngang khi tắt tự xuống dòng ......",
+    "",
+    "Gọi chị Hoa đặt bánh sinh nhật 0987 654 321",
 ])
 notes = {
     "version": 1, "selectedId": n1, "monospace": False,

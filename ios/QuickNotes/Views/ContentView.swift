@@ -45,7 +45,7 @@ struct ContentView: View {
             let typing = keyboard.isVisible
             let wide = w >= 720 || (w > h && w >= 560)    // iPad, iPhone xoay ngang → 2 cột
             let sideWidth: CGFloat = w >= 1000 ? 392 : (w >= 720 ? 344 : 332)
-            let compactHeader = typing || h < 520
+            let compactHeader = typing || h < 520 || (calcOpen && prefs.dockVisible && !wide)
             let showTabs = true                     // luôn có thanh tab (nút + tạo ghi chú mới)
             let typingCalcRow = typing && !wide
             let adWidth: CGFloat = wide ? sideWidth - 12 : min(w - 24, 480)
@@ -114,7 +114,7 @@ struct ContentView: View {
                                         .frame(maxHeight: h * 0.58)
                                     } else {
                                         apptsPanel(current, collapse: { withAnimation(.easeOut(duration: 0.2)) { calcOpen = false } })
-                                            .frame(height: min(h * 0.55, 420))
+                                            .frame(height: min(h * 0.5, 420))
                                     }
                                 } else {
                                     HStack(spacing: 8) {

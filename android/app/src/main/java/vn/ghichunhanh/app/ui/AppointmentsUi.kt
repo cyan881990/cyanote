@@ -150,7 +150,7 @@ fun AppointmentEditorDialog(
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedButton(onClick = { pickDate = true }, modifier = Modifier.weight(1.3f)) {
                         Text(
-                            date.format(DateTimeFormatter.ofPattern(android.text.format.DateFormat.getBestDateTimePattern(locale, "EEEdMMMyyyy"), locale)),
+                            date.format(DateTimeFormatter.ofPattern(android.text.format.DateFormat.getBestDateTimePattern(locale, "EEEdMMM"), locale)),
                             maxLines = 1, overflow = TextOverflow.Ellipsis,
                         )
                     }

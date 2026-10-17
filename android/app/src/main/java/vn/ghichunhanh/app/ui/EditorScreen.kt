@@ -599,7 +599,9 @@ fun EditorScreen(
                 maxWidth >= 720.dp -> 344.dp
                 else -> 332.dp   // xoay ngang: banner tối thiểu 320dp + lề
             }
-            val compactHeader = imeVisible || maxHeight < 520.dp  // đang gõ hoặc màn hình thấp → đồng hồ 1 dòng
+            // Đồng hồ 1 dòng khi: đang gõ, màn hình thấp, hoặc (điện thoại) đang mở bảng máy tính/lịch hẹn
+            val compactHeader = imeVisible || maxHeight < 520.dp ||
+                (calcOpen && EditorPrefs.dockVisible && !(maxWidth >= 720.dp || (maxWidth > maxHeight && maxWidth >= 560.dp)))
             val showTabs = true                      // luôn có thanh tab (nút + tạo ghi chú mới)
             val typingCalcRow = imeVisible && !wide  // điện thoại dọc: thanh máy tính + nút ẩn bàn phím sát bàn phím
             val adOnTop = imeVisible
@@ -712,11 +714,11 @@ fun EditorScreen(
                                     if (calcMode) {
                                         DockSwitcher(calcMode, setCalc, setAppts, hideDock, showLabels = true)
                                         // Màn hình thấp: máy tính không chiếm quá ~60% chiều cao, cuộn được.
-                                        Box(Modifier.heightIn(max = screenH * 0.58f).verticalScroll(rememberScrollState())) {
+                                        Box(Modifier.heightIn(max = screenH * 0.56f).verticalScroll(rememberScrollState())) {
                                             calcPanel(true)
                                         }
                                     } else {
-                                        apptsPanel(Modifier.heightIn(max = screenH * 0.6f), { calcOpen = false })
+                                        apptsPanel(Modifier.heightIn(max = screenH * 0.5f), { calcOpen = false })
                                     }
                                 } else {
                                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {

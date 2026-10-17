@@ -46,23 +46,13 @@ shot 02-appointments 5
 # Máy tính mở rộng
 tap "Máy tính"; shot 03-calculator 3
 tap "Thu gọn" ; sleep 1
-# Gắn lịch hẹn từ dòng đang gõ: đặt con trỏ ở dòng 2 rồi bấm ⏰
-ui
-xy=$(python3 - <<'PY'
-import re, xml.etree.ElementTree as ET
-for n in ET.parse("ui.xml").getroot().iter("node"):
-    if n.get("class") == "android.widget.EditText":
-        x1, y1, x2, y2 = map(int, re.findall(r"\d+", n.get("bounds")))
-        print(x1 + 420, y1 + int(42 + 68 * 1.5)); break
-PY
-)
-[ -n "$xy" ] && adb shell input tap $xy
-sleep 2
+# Gắn lịch hẹn từ dòng đang gõ (con trỏ đang ở dòng cuối: "Gọi chị Hoa … 0987 654 321")
 tap "Thêm lịch hẹn"; shot 04-tag-appointment 3
 adb shell input keyevent 4; sleep 1; adb shell input keyevent 4; sleep 1
 # Thông báo lịch hẹn (đã hẹn sẵn ~100 giây sau khi tạo dữ liệu)
 for i in $(seq 1 30); do adb shell dumpsys notification --noredact | grep -q "Gọi lại cho ngân hàng" && break; sleep 5; done
 adb shell cmd statusbar expand-notifications; shot 05-notification 3
+tap "Xong"; sleep 2
 adb shell cmd statusbar collapse; sleep 2
 # Ảnh & ghi âm
 tap "Tùy chọn"; sleep 1; tap "Ảnh & ghi âm (3)"; shot 06-attachments 4
