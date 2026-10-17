@@ -92,3 +92,12 @@ val KeyboardHideIcon: ImageVector by lazy {
         moveTo(9f, 18.5f); lineTo(12f, 21.5f); lineTo(15f, 18.5f)
     }
 }
+
+/** Mũi tên xuống khay: "cập nhật". */
+val UpdateIcon: ImageVector by lazy {
+    strokeIcon("Update") {
+        moveTo(12f, 4f); lineTo(12f, 15f)
+        moveTo(7.5f, 10.5f); lineTo(12f, 15f); lineTo(16.5f, 10.5f)
+        moveTo(5f, 19.5f); lineTo(19f, 19.5f)
+    }
+}

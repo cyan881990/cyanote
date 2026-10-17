@@ -22,6 +22,9 @@ object UpdateChecker {
     private const val PREFS = "settings"
     private const val KEY_LAST_CHECK = "update_last_check"
     private const val KEY_SKIPPED = "update_skipped_code"
+    private const val KEY_CODE = "update_latest_code"
+    private const val KEY_NAME = "update_latest_name"
+    private const val KEY_URL = "update_latest_url"
     private const val MIN_INTERVAL_MS = 6 * 60 * 60 * 1000L // tối đa 4 lần/ngày
 
     fun installedFromPlay(context: Context): Boolean {
@@ -41,11 +44,23 @@ object UpdateChecker {
         PackageInfoCompat.getLongVersionCode(context.packageManager.getPackageInfo(context.packageName, 0))
     }.getOrDefault(0L)
 
-    /** Trả về bản mới nếu có (và người dùng chưa bấm "Để sau" cho đúng bản đó). */
+    /** Bản mới đã biết từ lần kiểm tra trước (để hiện nhãn "Cập nhật" ngay khi mở app, không cần mạng). */
+    fun cached(context: Context): UpdateInfo? {
+        val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val code = prefs.getLong(KEY_CODE, 0L)
+        val url = prefs.getString(KEY_URL, null) ?: return null
+        if (code <= currentVersionCode(context)) return null
+        return UpdateInfo(code, prefs.getString(KEY_NAME, "") ?: "", url)
+    }
+
+    fun isSkipped(context: Context, info: UpdateInfo): Boolean =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getLong(KEY_SKIPPED, 0L) == info.versionCode
+
+    /** Hỏi máy chủ; trả về bản mới nếu có (kể cả bản đã bấm "Để sau"), không thì bản đã lưu. */
     suspend fun check(context: Context, force: Boolean = false): UpdateInfo? = withContext(Dispatchers.IO) {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val now = System.currentTimeMillis()
-        if (!force && now - prefs.getLong(KEY_LAST_CHECK, 0L) < MIN_INTERVAL_MS) return@withContext null
+        if (!force && now - prefs.getLong(KEY_LAST_CHECK, 0L) < MIN_INTERVAL_MS) return@withContext cached(context)
         prefs.edit().putLong(KEY_LAST_CHECK, now).apply()
         runCatching {
             val conn = URL("$MANIFEST_URL?t=$now").openConnection() as HttpURLConnection
@@ -60,9 +75,13 @@ object UpdateChecker {
                 versionName = android.optString("versionName", ""),
                 url = android.getString("url"),
             )
-            val skipped = prefs.getLong(KEY_SKIPPED, 0L)
-            if (info.versionCode > currentVersionCode(context) && info.versionCode != skipped) info else null
-        }.getOrNull()
+            prefs.edit()
+                .putLong(KEY_CODE, info.versionCode)
+                .putString(KEY_NAME, info.versionName)
+                .putString(KEY_URL, info.url)
+                .apply()
+            if (info.versionCode > currentVersionCode(context)) info else null
+        }.getOrElse { cached(context) }
     }
 
     fun skip(context: Context, versionCode: Long) {

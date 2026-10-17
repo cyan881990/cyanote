@@ -16,7 +16,8 @@ struct ContentView: View {
     @State private var showMonth = false
     @State private var showLanguages = false
     @State private var showBackup = false
-    @State private var update: IOSUpdateInfo?
+    @State private var update: IOSUpdateInfo?          // hộp thoại
+    @State private var available: IOSUpdateInfo? = UpdateChecker.cached()   // nhãn ở đầu màn hình
     @Environment(\.openURL) private var openURL
 
     private var s: Strings { settings.strings }
@@ -27,7 +28,9 @@ struct ContentView: View {
         VStack(spacing: 0) {
             HeaderView(
                 onLanguage: { showLanguages = true },
-                onCalendar: { showMonth = true }
+                onCalendar: { showMonth = true },
+                updateLabel: available == nil ? nil : s("update_now"),
+                onUpdate: { update = available }
             )
             TabBarView(menu: AnyView(menu(current)))
             editorCard(current)
@@ -98,7 +101,11 @@ struct ContentView: View {
         } message: {
             Text(s("close_message"))
         }
-        .task { update = await UpdateChecker.check() }
+        .task {
+            let info = await UpdateChecker.check()
+            available = info
+            if let info, !UpdateChecker.isSkipped(info) { update = info }
+        }
         .alert(s("update_title"), isPresented: Binding(get: { update != nil }, set: { if !$0 { update = nil } })) {
             Button(s("update_now")) {
                 if let u = update { openURL(u.url) }
@@ -231,6 +238,8 @@ struct HeaderView: View {
     @Environment(\.colorScheme) private var colorScheme
     var onLanguage: () -> Void
     var onCalendar: () -> Void
+    var updateLabel: String? = nil
+    var onUpdate: () -> Void = {}
 
     var body: some View {
         let s = settings.strings
@@ -261,6 +270,23 @@ struct HeaderView: View {
                 Spacer(minLength: 0)
                 VStack(alignment: .trailing, spacing: 8) {
                     HStack(spacing: 6) {
+                        // Nhãn "Có bản mới" cùng tông với thẻ âm lịch
+                        if let updateLabel {
+                            Button(action: onUpdate) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "arrow.down.to.line").font(.system(size: 13, weight: .bold))
+                                    Text(updateLabel).font(.system(size: 12, weight: .bold)).lineLimit(1)
+                                }
+                                .foregroundColor(p.accent)
+                                .padding(.leading, 8)
+                                .padding(.trailing, 10)
+                                .frame(height: 36)
+                                .background(p.accentSoft)
+                                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(p.accent.opacity(0.35), lineWidth: 1))
+                            }
+                            .buttonStyle(.plain)
+                        }
                         Button(action: onLanguage) {
                             HStack(spacing: 5) {
                                 Image(systemName: "globe").font(.system(size: 14, weight: .medium))

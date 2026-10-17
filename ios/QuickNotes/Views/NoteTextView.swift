@@ -56,6 +56,22 @@ struct NoteTextView: UIViewRepresentable {
             guard !isUpdating else { return }
             parent.text = tv.text
             parent.selection = tv.selectedRange
+            scrollToCaret(tv)
+        }
+
+        /// Tự cuộn tới chỗ đang gõ.
+        func scrollToCaret(_ tv: UITextView) {
+            DispatchQueue.main.async {
+                guard let end = tv.selectedTextRange?.end else { return }
+                var rect = tv.caretRect(for: end)
+                rect.size.height += 24
+                tv.scrollRectToVisible(rect, animated: false)
+            }
+        }
+
+        func textViewDidBeginEditing(_ tv: UITextView) {
+            // Bàn phím vừa bật → vùng ghi chú thu nhỏ; đợi bố cục xong rồi cuộn tới con trỏ.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in self?.scrollToCaret(tv) }
         }
 
         func textViewDidChangeSelection(_ tv: UITextView) {

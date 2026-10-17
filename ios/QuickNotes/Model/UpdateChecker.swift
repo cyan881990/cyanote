@@ -13,6 +13,21 @@ enum UpdateChecker {
     static let manifestURL = URL(string: "https://cyan881990.github.io/update.json")!
     private static let lastCheckKey = "update_last_check"
     private static let skippedKey = "update_skipped_build"
+    private static let buildKey = "update_latest_build"
+    private static let versionKey = "update_latest_version"
+    private static let urlKey = "update_latest_url"
+
+    /// Bản mới đã biết từ lần kiểm tra trước (hiện nhãn "Cập nhật" ngay khi mở app).
+    static func cached() -> IOSUpdateInfo? {
+        let d = UserDefaults.standard
+        let build = d.integer(forKey: buildKey)
+        guard build > currentBuild, let s = d.string(forKey: urlKey), let url = URL(string: s) else { return nil }
+        return IOSUpdateInfo(build: build, version: d.string(forKey: versionKey) ?? "", url: url)
+    }
+
+    static func isSkipped(_ info: IOSUpdateInfo) -> Bool {
+        UserDefaults.standard.integer(forKey: skippedKey) == info.build
+    }
 
     static var currentBuild: Int {
         Int(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "0") ?? 0
@@ -21,7 +36,7 @@ enum UpdateChecker {
     static func check(force: Bool = false) async -> IOSUpdateInfo? {
         let defaults = UserDefaults.standard
         let now = Date().timeIntervalSince1970
-        if !force && now - defaults.double(forKey: lastCheckKey) < 6 * 3600 { return nil }
+        if !force && now - defaults.double(forKey: lastCheckKey) < 6 * 3600 { return cached() }
         defaults.set(now, forKey: lastCheckKey)
 
         var request = URLRequest(url: manifestURL, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 8)
@@ -31,9 +46,12 @@ enum UpdateChecker {
               let ios = root["ios"] as? [String: Any],
               let build = ios["build"] as? Int,
               let urlString = ios["url"] as? String,
-              let url = URL(string: urlString) else { return nil }
+              let url = URL(string: urlString) else { return cached() }
         let version = ios["version"] as? String ?? ""
-        guard build > currentBuild, build != defaults.integer(forKey: skippedKey) else { return nil }
+        defaults.set(build, forKey: buildKey)
+        defaults.set(version, forKey: versionKey)
+        defaults.set(urlString, forKey: urlKey)
+        guard build > currentBuild else { return nil }
         return IOSUpdateInfo(build: build, version: version, url: url)
     }
 

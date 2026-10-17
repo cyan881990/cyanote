@@ -17,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.ads.MobileAds
+import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.appupdate.AppUpdateOptions
 import com.google.android.play.core.install.InstallStateUpdatedListener
@@ -38,10 +39,15 @@ class MainActivity : ComponentActivity() {
     private val appUpdateManager by lazy { AppUpdateManagerFactory.create(this) }
     private var fromPlay = false
     private var playUpdateReady by mutableStateOf(false)
-    private var fileUpdate by mutableStateOf<UpdateInfo?>(null)
+    private var fileUpdate by mutableStateOf<UpdateInfo?>(null)      // có bản mới (hiện nhãn ở đầu màn hình)
+    private var showUpdateDialog by mutableStateOf(false)
+    private var playUpdateAvailable by mutableStateOf<AppUpdateInfo?>(null)
     private val playUpdateLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { }
     private val installListener = InstallStateUpdatedListener { state ->
-        if (state.installStatus() == InstallStatus.DOWNLOADED) playUpdateReady = true
+        if (state.installStatus() == InstallStatus.DOWNLOADED) {
+            playUpdateReady = true
+            playUpdateAvailable = null
+        }
     }
 
     // Áp dụng ngôn ngữ người dùng chọn trong app (nút 🌐).
@@ -66,7 +72,12 @@ class MainActivity : ComponentActivity() {
             appUpdateManager.registerListener(installListener)
             checkPlayUpdate()
         } else {
-            lifecycleScope.launch { fileUpdate = UpdateChecker.check(this@MainActivity) }
+            fileUpdate = UpdateChecker.cached(this)
+            lifecycleScope.launch {
+                val info = UpdateChecker.check(this@MainActivity)
+                fileUpdate = info
+                showUpdateDialog = info != null && !UpdateChecker.isSkipped(this@MainActivity, info)
+            }
         }
 
         setContent {
@@ -91,6 +102,12 @@ class MainActivity : ComponentActivity() {
                             AppSettings.setTheme(this@MainActivity, if (dark) ThemeMode.LIGHT else ThemeMode.DARK)
                         },
                         currentLanguage = AppSettings.languageTag(this@MainActivity),
+                        updateLabel = when {
+                            playUpdateReady -> getString(R.string.update_restart)
+                            playUpdateAvailable != null || fileUpdate != null -> getString(R.string.update_now)
+                            else -> null
+                        },
+                        onUpdateClick = { onUpdateClick() },
                         onLanguageChosen = { tag ->
                             if (tag != AppSettings.languageTag(this@MainActivity)) {
                                 store.saveNow()
@@ -105,17 +122,17 @@ class MainActivity : ComponentActivity() {
                             appUpdateManager.completeUpdate()
                         })
                     }
-                    fileUpdate?.let { info ->
+                    val info = fileUpdate
+                    if (showUpdateDialog && info != null) {
                         UpdateDialog(
                             info = info,
                             onUpdate = {
-                                fileUpdate = null
-                                // Mở link tải APK mới; Android sẽ hỏi cài đè lên bản hiện tại (giữ nguyên ghi chú).
-                                runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(info.url))) }
+                                showUpdateDialog = false
+                                openDownload(info)
                             },
                             onLater = {
                                 UpdateChecker.skip(this@MainActivity, info.versionCode)
-                                fileUpdate = null
+                                showUpdateDialog = false
                             },
                         )
                     }
@@ -139,6 +156,33 @@ class MainActivity : ComponentActivity() {
         super.onDestroy()
     }
 
+    /** Bấm nhãn "Cập nhật" ở đầu màn hình. */
+    private fun onUpdateClick() {
+        when {
+            playUpdateReady -> {
+                store.saveNow()
+                appUpdateManager.completeUpdate()
+            }
+            playUpdateAvailable != null -> startPlayFlow(playUpdateAvailable!!)
+            fileUpdate != null -> showUpdateDialog = true
+        }
+    }
+
+    // Mở link tải APK mới; Android sẽ hỏi cài đè lên bản hiện tại (giữ nguyên ghi chú).
+    private fun openDownload(info: UpdateInfo) {
+        runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(info.url))) }
+    }
+
+    private fun startPlayFlow(info: AppUpdateInfo) {
+        runCatching {
+            appUpdateManager.startUpdateFlowForResult(
+                info,
+                playUpdateLauncher,
+                AppUpdateOptions.newBuilder(AppUpdateType.FLEXIBLE).build(),
+            )
+        }
+    }
+
     /** Google Play: có bản mới thì tải ngầm (FLEXIBLE), xong báo "Khởi động lại". */
     private fun checkPlayUpdate() {
         appUpdateManager.appUpdateInfo.addOnSuccessListener { info ->
@@ -146,13 +190,8 @@ class MainActivity : ComponentActivity() {
                 info.installStatus() == InstallStatus.DOWNLOADED -> playUpdateReady = true
                 info.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
                     info.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE) -> {
-                    runCatching {
-                        appUpdateManager.startUpdateFlowForResult(
-                            info,
-                            playUpdateLauncher,
-                            AppUpdateOptions.newBuilder(AppUpdateType.FLEXIBLE).build(),
-                        )
-                    }
+                    playUpdateAvailable = info
+                    startPlayFlow(info)
                 }
             }
         }

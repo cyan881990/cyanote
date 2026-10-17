@@ -97,6 +97,9 @@ import vn.ghichunhanh.app.Note
 import vn.ghichunhanh.app.NotesStore
 import vn.ghichunhanh.app.R
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.foundation.layout.defaultMinSize
 import vn.ghichunhanh.app.ads.BannerAd
 import vn.ghichunhanh.app.displayTitle
 import java.time.DayOfWeek
@@ -116,6 +119,8 @@ fun EditorScreen(
     onToggleTheme: () -> Unit,
     currentLanguage: String,
     onLanguageChosen: (String) -> Unit,
+    updateLabel: String? = null,
+    onUpdateClick: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val keyboard = LocalSoftwareKeyboardController.current
@@ -166,6 +171,8 @@ fun EditorScreen(
                 onToggleTheme = onToggleTheme,
                 onLanguageClick = { showLanguages = true },
                 onCalendarClick = { showMonth = true },
+                updateLabel = updateLabel,
+                onUpdateClick = onUpdateClick,
             )
 
             TabBar(
@@ -258,25 +265,55 @@ fun EditorScreen(
                         fontFamily = if (store.monospace) FontFamily.Monospace else FontFamily.Default,
                     )
                     val hint = stringResource(R.string.editor_hint)
-                    BasicTextField(
-                        value = value,
-                        onValueChange = { applyValue(it) },
-                        modifier = Modifier
+                    // Tự cuộn tới chỗ đang gõ (kể cả khi bàn phím vừa bật làm vùng ghi chú thu nhỏ).
+                    val scroll = rememberScrollState()
+                    var viewportPx by remember { mutableStateOf(0) }
+                    var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
+                    val density = LocalDensity.current
+                    val padTopPx = with(density) { 16.dp.toPx() }
+                    val marginPx = with(density) { 28.dp.toPx() }
+                    LaunchedEffect(value.text, value.selection, viewportPx, layout) {
+                        val l = layout ?: return@LaunchedEffect
+                        if (viewportPx <= 0) return@LaunchedEffect
+                        val offset = value.selection.end.coerceIn(0, l.layoutInput.text.length)
+                        val rect = l.getCursorRect(offset)
+                        val top = padTopPx + rect.top
+                        val bottom = padTopPx + rect.bottom
+                        val target = when {
+                            bottom + marginPx > scroll.value + viewportPx -> (bottom + marginPx - viewportPx).toInt()
+                            top - marginPx < scroll.value -> (top - marginPx).toInt().coerceAtLeast(0)
+                            else -> return@LaunchedEffect
+                        }
+                        scroll.animateScrollTo(target.coerceIn(0, scroll.maxValue.coerceAtLeast(target)))
+                    }
+                    Box(
+                        Modifier
                             .weight(1f)
                             .fillMaxWidth()
-                            .focusRequester(focusRequester)
-                            .padding(horizontal = 20.dp, vertical = 16.dp),
-                        textStyle = textStyle,
-                        cursorBrush = SolidColor(scheme.primary),
-                        decorationBox = { inner ->
-                            Box {
-                                if (value.text.isEmpty()) {
-                                    Text(hint, style = textStyle.copy(color = scheme.onSurfaceVariant))
+                            .onSizeChanged { viewportPx = it.height }
+                            .verticalScroll(scroll)
+                    ) {
+                        BasicTextField(
+                            value = value,
+                            onValueChange = { applyValue(it) },
+                            onTextLayout = { layout = it },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .defaultMinSize(minHeight = with(density) { viewportPx.toDp() })
+                                .focusRequester(focusRequester)
+                                .padding(horizontal = 20.dp, vertical = 16.dp),
+                            textStyle = textStyle,
+                            cursorBrush = SolidColor(scheme.primary),
+                            decorationBox = { inner ->
+                                Box {
+                                    if (value.text.isEmpty()) {
+                                        Text(hint, style = textStyle.copy(color = scheme.onSurfaceVariant))
+                                    }
+                                    inner()
                                 }
-                                inner()
-                            }
-                        },
-                    )
+                            },
+                        )
+                    }
                     HorizontalDivider(color = scheme.outlineVariant)
                     StatusRow(text = value.text, saving = store.isSaving)
                 }
@@ -430,6 +467,8 @@ private fun ClockHeader(
     onToggleTheme: () -> Unit,
     onLanguageClick: () -> Unit,
     onCalendarClick: () -> Unit,
+    updateLabel: String?,
+    onUpdateClick: () -> Unit,
 ) {
     val context = LocalContext.current
     val scheme = MaterialTheme.colorScheme
@@ -500,6 +539,31 @@ private fun ClockHeader(
         }
         Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                // Nhãn "Có bản mới" (cùng tông màu với thẻ âm lịch), bấm để cập nhật
+                if (updateLabel != null) {
+                    Surface(
+                        onClick = onUpdateClick,
+                        shape = RoundedCornerShape(10.dp),
+                        color = extra.accentSoft,
+                        border = BorderStroke(1.dp, scheme.primary.copy(alpha = 0.35f)),
+                        modifier = Modifier.height(36.dp),
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(start = 8.dp, end = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            Icon(UpdateIcon, contentDescription = null, tint = scheme.primary, modifier = Modifier.size(16.dp))
+                            Text(
+                                updateLabel,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = scheme.primary,
+                                maxLines = 1,
+                            )
+                        }
+                    }
+                }
                 // Nút đổi ngôn ngữ nhanh
                 Surface(
                     onClick = onLanguageClick,
