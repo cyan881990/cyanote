@@ -81,6 +81,9 @@
     <string name="update_downloaded">업데이트를 다운로드했습니다</string>
     <string name="update_restart">다시 시작</string>
     <string name="hide_keyboard">키보드 숨기기</string>
+    <string name="check_updates">업데이트 확인</string>
+    <string name="up_to_date">최신 버전을 사용 중입니다 (%1$s)</string>
+    <string name="checking_updates">업데이트 확인 중…</string>
     <string-array name="zodiac">
         <item>쥐</item>
         <item>소</item>

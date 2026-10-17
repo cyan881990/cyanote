@@ -81,6 +81,9 @@
     <string name="update_downloaded">अपडेट डाउनलोड हो गया</string>
     <string name="update_restart">फिर से शुरू करें</string>
     <string name="hide_keyboard">कीबोर्ड छिपाएँ</string>
+    <string name="check_updates">अपडेट जाँचें</string>
+    <string name="up_to_date">आप नवीनतम वर्ज़न पर हैं (%1$s)</string>
+    <string name="checking_updates">अपडेट जाँचे जा रहे हैं…</string>
     <string-array name="zodiac">
         <item>चूहा</item>
         <item>बैल</item>

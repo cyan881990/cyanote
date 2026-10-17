@@ -81,6 +81,9 @@
     <string name="update_downloaded">Đã tải xong bản cập nhật</string>
     <string name="update_restart">Khởi động lại</string>
     <string name="hide_keyboard">Ẩn bàn phím</string>
+    <string name="check_updates">Kiểm tra cập nhật</string>
+    <string name="up_to_date">Bạn đang dùng bản mới nhất (%1$s)</string>
+    <string name="checking_updates">Đang kiểm tra cập nhật…</string>
     <string-array name="zodiac">
         <item>Tý</item>
         <item>Sửu</item>

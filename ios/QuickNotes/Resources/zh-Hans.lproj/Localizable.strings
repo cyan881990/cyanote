@@ -79,6 +79,9 @@
 "update_downloaded" = "更新已下载";
 "update_restart" = "重新启动";
 "hide_keyboard" = "隐藏键盘";
+"check_updates" = "检查更新";
+"up_to_date" = "已是最新版本（%1$@）";
+"checking_updates" = "正在检查更新…";
 "zodiac_0" = "鼠";
 "zodiac_1" = "牛";
 "zodiac_2" = "虎";

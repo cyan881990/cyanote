@@ -474,3 +474,24 @@ KB = {
 for _lang, _val in KB.items():
     T[_lang]["hide_keyboard"] = _val
 KEYS += ["hide_keyboard"]
+
+# Menu kiểm tra cập nhật
+CHK_KEYS = ["check_updates", "up_to_date", "checking_updates"]
+CHK = {
+    "en": ("Check for updates", "You're on the latest version (%1$s)", "Checking for updates…"),
+    "vi": ("Kiểm tra cập nhật", "Bạn đang dùng bản mới nhất (%1$s)", "Đang kiểm tra cập nhật…"),
+    "es": ("Buscar actualizaciones", "Tienes la última versión (%1$s)", "Buscando actualizaciones…"),
+    "pt": ("Verificar atualizações", "Você está na versão mais recente (%1$s)", "Verificando atualizações…"),
+    "fr": ("Rechercher des mises à jour", "Vous avez la dernière version (%1$s)", "Recherche de mises à jour…"),
+    "de": ("Nach Updates suchen", "Du hast die neueste Version (%1$s)", "Suche nach Updates…"),
+    "in": ("Periksa pembaruan", "Anda memakai versi terbaru (%1$s)", "Memeriksa pembaruan…"),
+    "th": ("ตรวจหาอัปเดต", "คุณใช้เวอร์ชันล่าสุดแล้ว (%1$s)", "กำลังตรวจหาอัปเดต…"),
+    "ja": ("アップデートを確認", "最新バージョンです（%1$s）", "アップデートを確認中…"),
+    "ko": ("업데이트 확인", "최신 버전을 사용 중입니다 (%1$s)", "업데이트 확인 중…"),
+    "zh-rCN": ("检查更新", "已是最新版本（%1$s）", "正在检查更新…"),
+    "hi": ("अपडेट जाँचें", "आप नवीनतम वर्ज़न पर हैं (%1$s)", "अपडेट जाँचे जा रहे हैं…"),
+    "ru": ("Проверить обновления", "У вас последняя версия (%1$s)", "Проверка обновлений…"),
+}
+for _lang, _vals in CHK.items():
+    T[_lang].update(dict(zip(CHK_KEYS, _vals)))
+KEYS += CHK_KEYS

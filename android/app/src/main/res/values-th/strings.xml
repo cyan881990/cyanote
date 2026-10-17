@@ -81,6 +81,9 @@
     <string name="update_downloaded">ดาวน์โหลดอัปเดตแล้ว</string>
     <string name="update_restart">เริ่มใหม่</string>
     <string name="hide_keyboard">ซ่อนแป้นพิมพ์</string>
+    <string name="check_updates">ตรวจหาอัปเดต</string>
+    <string name="up_to_date">คุณใช้เวอร์ชันล่าสุดแล้ว (%1$s)</string>
+    <string name="checking_updates">กำลังตรวจหาอัปเดต…</string>
     <string-array name="zodiac">
         <item>ชวด</item>
         <item>ฉลู</item>

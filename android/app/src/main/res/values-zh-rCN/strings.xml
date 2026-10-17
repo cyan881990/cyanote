@@ -81,6 +81,9 @@
     <string name="update_downloaded">更新已下载</string>
     <string name="update_restart">重新启动</string>
     <string name="hide_keyboard">隐藏键盘</string>
+    <string name="check_updates">检查更新</string>
+    <string name="up_to_date">已是最新版本（%1$s）</string>
+    <string name="checking_updates">正在检查更新…</string>
     <string-array name="zodiac">
         <item>鼠</item>
         <item>牛</item>

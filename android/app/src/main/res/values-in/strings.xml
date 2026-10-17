@@ -81,6 +81,9 @@
     <string name="update_downloaded">Pembaruan sudah diunduh</string>
     <string name="update_restart">Mulai ulang</string>
     <string name="hide_keyboard">Sembunyikan keyboard</string>
+    <string name="check_updates">Periksa pembaruan</string>
+    <string name="up_to_date">Anda memakai versi terbaru (%1$s)</string>
+    <string name="checking_updates">Memeriksa pembaruan…</string>
     <string-array name="zodiac">
         <item>Tikus</item>
         <item>Kerbau</item>

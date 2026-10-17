@@ -81,6 +81,9 @@
     <string name="update_downloaded">Mise à jour téléchargée</string>
     <string name="update_restart">Redémarrer</string>
     <string name="hide_keyboard">Masquer le clavier</string>
+    <string name="check_updates">Rechercher des mises à jour</string>
+    <string name="up_to_date">Vous avez la dernière version (%1$s)</string>
+    <string name="checking_updates">Recherche de mises à jour…</string>
     <string-array name="zodiac">
         <item>du Rat</item>
         <item>du Buffle</item>

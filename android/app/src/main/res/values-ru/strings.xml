@@ -81,6 +81,9 @@
     <string name="update_downloaded">Обновление загружено</string>
     <string name="update_restart">Перезапустить</string>
     <string name="hide_keyboard">Скрыть клавиатуру</string>
+    <string name="check_updates">Проверить обновления</string>
+    <string name="up_to_date">У вас последняя версия (%1$s)</string>
+    <string name="checking_updates">Проверка обновлений…</string>
     <string-array name="zodiac">
         <item>Крысы</item>
         <item>Быка</item>

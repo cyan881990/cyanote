@@ -79,6 +79,9 @@
 "update_downloaded" = "Pembaruan sudah diunduh";
 "update_restart" = "Mulai ulang";
 "hide_keyboard" = "Sembunyikan keyboard";
+"check_updates" = "Periksa pembaruan";
+"up_to_date" = "Anda memakai versi terbaru (%1$@)";
+"checking_updates" = "Memeriksa pembaruan…";
 "zodiac_0" = "Tikus";
 "zodiac_1" = "Kerbau";
 "zodiac_2" = "Macan";

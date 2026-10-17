@@ -79,6 +79,9 @@
 "update_downloaded" = "업데이트를 다운로드했습니다";
 "update_restart" = "다시 시작";
 "hide_keyboard" = "키보드 숨기기";
+"check_updates" = "업데이트 확인";
+"up_to_date" = "최신 버전을 사용 중입니다 (%1$@)";
+"checking_updates" = "업데이트 확인 중…";
 "zodiac_0" = "쥐";
 "zodiac_1" = "소";
 "zodiac_2" = "호랑이";

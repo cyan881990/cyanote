@@ -79,6 +79,9 @@
 "update_downloaded" = "ดาวน์โหลดอัปเดตแล้ว";
 "update_restart" = "เริ่มใหม่";
 "hide_keyboard" = "ซ่อนแป้นพิมพ์";
+"check_updates" = "ตรวจหาอัปเดต";
+"up_to_date" = "คุณใช้เวอร์ชันล่าสุดแล้ว (%1$@)";
+"checking_updates" = "กำลังตรวจหาอัปเดต…";
 "zodiac_0" = "ชวด";
 "zodiac_1" = "ฉลู";
 "zodiac_2" = "ขาล";

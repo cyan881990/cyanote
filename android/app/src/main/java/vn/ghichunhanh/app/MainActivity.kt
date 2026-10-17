@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -110,6 +111,7 @@ class MainActivity : ComponentActivity() {
                             else -> null
                         },
                         onUpdateClick = { onUpdateClick() },
+                        onCheckUpdates = { checkUpdatesNow() },
                         onLanguageChosen = { tag ->
                             if (tag != AppSettings.languageTag(this@MainActivity)) {
                                 store.saveNow()
@@ -156,6 +158,30 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         if (fromPlay) appUpdateManager.unregisterListener(installListener)
         super.onDestroy()
+    }
+
+    /** Menu ⋮ → "Kiểm tra cập nhật": hỏi ngay, không chờ 6 tiếng. */
+    private fun checkUpdatesNow() {
+        val version = runCatching { packageManager.getPackageInfo(packageName, 0).versionName }.getOrNull() ?: ""
+        if (fromPlay) {
+            if (playUpdateReady || playUpdateAvailable != null) { onUpdateClick(); return }
+            appUpdateManager.appUpdateInfo.addOnSuccessListener { info ->
+                if (info.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
+                    playUpdateAvailable = info
+                    startPlayFlow(info)
+                } else {
+                    Toast.makeText(this, getString(R.string.up_to_date, version), Toast.LENGTH_SHORT).show()
+                }
+            }
+            return
+        }
+        Toast.makeText(this, R.string.checking_updates, Toast.LENGTH_SHORT).show()
+        lifecycleScope.launch {
+            val info = UpdateChecker.check(this@MainActivity, force = true)
+            fileUpdate = info
+            if (info != null) showUpdateDialog = true
+            else Toast.makeText(this@MainActivity, getString(R.string.up_to_date, version), Toast.LENGTH_SHORT).show()
+        }
     }
 
     /** Bấm nhãn "Cập nhật" ở đầu màn hình. */

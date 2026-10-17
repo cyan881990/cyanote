@@ -79,6 +79,9 @@
 "update_downloaded" = "Обновление загружено";
 "update_restart" = "Перезапустить";
 "hide_keyboard" = "Скрыть клавиатуру";
+"check_updates" = "Проверить обновления";
+"up_to_date" = "У вас последняя версия (%1$@)";
+"checking_updates" = "Проверка обновлений…";
 "zodiac_0" = "Крысы";
 "zodiac_1" = "Быка";
 "zodiac_2" = "Тигра";

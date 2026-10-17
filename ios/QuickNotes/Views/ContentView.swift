@@ -18,6 +18,7 @@ struct ContentView: View {
     @State private var showBackup = false
     @State private var update: IOSUpdateInfo?          // hộp thoại
     @State private var available: IOSUpdateInfo? = UpdateChecker.cached()   // nhãn ở đầu màn hình
+    @State private var upToDate = false
     @Environment(\.openURL) private var openURL
 
     private var s: Strings { settings.strings }
@@ -32,8 +33,8 @@ struct ContentView: View {
             let wide = w >= 720 || (w > h && w >= 560)    // iPad, iPhone xoay ngang → 2 cột
             let sideWidth: CGFloat = w >= 1000 ? 392 : (w >= 720 ? 344 : 332)
             let compactHeader = typing || h < 520
-            let showTabs = !typing || h >= 400
-            let typingCalcRow = typing && !wide && h >= 300
+            let showTabs = true                     // luôn có thanh tab (nút + tạo ghi chú mới)
+            let typingCalcRow = typing && !wide
             let adWidth: CGFloat = wide ? sideWidth - 12 : min(w - 24, 480)
             let header = HeaderView(
                 onLanguage: { showLanguages = true },
@@ -41,7 +42,7 @@ struct ContentView: View {
                 updateLabel: available == nil ? nil : s("update_now"),
                 onUpdate: { update = available },
                 compact: compactHeader,
-                onHideKeyboard: (typing && !typingCalcRow) ? { hideKeyboard() } : nil
+                onHideKeyboard: nil
             )
             if wide {
                 HStack(spacing: 0) {
@@ -49,7 +50,7 @@ struct ContentView: View {
                         header
                         if typing { BannerAdView(width: adWidth).padding(.horizontal, 12).padding(.bottom, 6) }
                         if showTabs { TabBarView(menu: AnyView(menu(current))) }
-                        editorCard(current)
+                        editorCard(current, showHideKeyboard: typing)
                         Spacer().frame(height: 10)
                     }
                     VStack(spacing: 8) {
@@ -144,6 +145,9 @@ struct ContentView: View {
         } message: {
             Text(s("close_message"))
         }
+        .alert(s.f("up_to_date", (Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "") + " (\(UpdateChecker.currentBuild))"), isPresented: $upToDate) {
+            Button("OK", role: .cancel) {}
+        }
         .task {
             let info = await UpdateChecker.check()
             available = info
@@ -168,7 +172,7 @@ struct ContentView: View {
 
     // MARK: Vùng ghi chú
 
-    private func editorCard(_ current: Note) -> some View {
+    private func editorCard(_ current: Note, showHideKeyboard: Bool = false) -> some View {
         let textBinding = Binding<String>(
             get: { store.current.content },
             set: { store.updateContent(store.current.id, $0) }
@@ -212,6 +216,19 @@ struct ContentView: View {
                     Image(systemName: "checkmark").font(.system(size: 11, weight: .bold)).foregroundColor(p.accent)
                     Text(s("status_saved")).foregroundColor(p.accent)
                 }
+                if showHideKeyboard {
+                    Button(action: hideKeyboard) {
+                        Image(systemName: "keyboard.chevron.compact.down")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(p.accent)
+                            .frame(width: 44, height: 30)
+                            .background(p.accentSoft)
+                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.leading, 6)
+                    .accessibilityLabel(s("hide_keyboard"))
+                }
             }
             .font(.system(size: 12, weight: .medium))
             .padding(.horizontal, 20)
@@ -243,6 +260,13 @@ struct ContentView: View {
             }
             Button { showMonth = true } label: { Label(s("menu_calendar"), systemImage: "calendar") }
             Button { showLanguages = true } label: { Label(s("language"), systemImage: "globe") }
+            Button {
+                Task {
+                    let info = await UpdateChecker.check(force: true)
+                    available = info
+                    if let info { update = info } else { upToDate = true }
+                }
+            } label: { Label(s("check_updates"), systemImage: available == nil ? "arrow.triangle.2.circlepath" : "arrow.down.circle.fill") }
             Button { showBackup = true } label: { Label(s("backup_menu"), systemImage: "archivebox") }
             Toggle(isOn: Binding(get: { store.monospace }, set: { store.setMonospace($0) })) {
                 Label(s("menu_monospace"), systemImage: "textformat")

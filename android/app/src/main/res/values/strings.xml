@@ -81,6 +81,9 @@
     <string name="update_downloaded">Update downloaded</string>
     <string name="update_restart">Restart</string>
     <string name="hide_keyboard">Hide keyboard</string>
+    <string name="check_updates">Check for updates</string>
+    <string name="up_to_date">You\'re on the latest version (%1$s)</string>
+    <string name="checking_updates">Checking for updates…</string>
     <string-array name="zodiac">
         <item>Rat</item>
         <item>Ox</item>

@@ -81,6 +81,9 @@
     <string name="update_downloaded">Atualização baixada</string>
     <string name="update_restart">Reiniciar</string>
     <string name="hide_keyboard">Ocultar teclado</string>
+    <string name="check_updates">Verificar atualizações</string>
+    <string name="up_to_date">Você está na versão mais recente (%1$s)</string>
+    <string name="checking_updates">Verificando atualizações…</string>
     <string-array name="zodiac">
         <item>do Rato</item>
         <item>do Boi</item>

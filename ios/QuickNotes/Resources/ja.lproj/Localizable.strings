@@ -79,6 +79,9 @@
 "update_downloaded" = "アップデートをダウンロードしました";
 "update_restart" = "再起動";
 "hide_keyboard" = "キーボードを閉じる";
+"check_updates" = "アップデートを確認";
+"up_to_date" = "最新バージョンです（%1$@）";
+"checking_updates" = "アップデートを確認中…";
 "zodiac_0" = "子";
 "zodiac_1" = "丑";
 "zodiac_2" = "寅";

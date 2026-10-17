@@ -106,6 +106,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.runtime.SideEffect
 import vn.ghichunhanh.app.ads.BannerAd
 import vn.ghichunhanh.app.displayTitle
 import java.time.DayOfWeek
@@ -127,6 +128,7 @@ fun EditorScreen(
     onLanguageChosen: (String) -> Unit,
     updateLabel: String? = null,
     onUpdateClick: () -> Unit = {},
+    onCheckUpdates: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val keyboard = LocalSoftwareKeyboardController.current
@@ -166,6 +168,8 @@ fun EditorScreen(
         if (current.content.isEmpty()) runCatching { focusRequester.requestFocus() }
     }
 
+    // Nút ẩn bàn phím ở dòng trạng thái của ghi chú (dùng khi 2 cột, vì không có thanh máy tính dưới)
+    var wideTyping by remember { mutableStateOf(false) }
     // ----- Các khối giao diện (ghép lại theo kích thước màn hình bên dưới) -----
     val hideKeyboard = { keyboard?.hide(); focusManager.clearFocus() }
     val openCalc = { hideKeyboard(); calcOpen = true }
@@ -224,6 +228,15 @@ fun EditorScreen(
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.backup_menu)) },
                         onClick = { menuOpen = false; showBackup = true },
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.check_updates)) },
+                        trailingIcon = {
+                            if (updateLabel != null) {
+                                Box(Modifier.size(8.dp).clip(CircleShape).background(scheme.primary))
+                            }
+                        },
+                        onClick = { menuOpen = false; onCheckUpdates() },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.menu_monospace)) },
@@ -311,7 +324,7 @@ fun EditorScreen(
                     )
                 }
                 HorizontalDivider(color = scheme.outlineVariant)
-                StatusRow(text = value.text, saving = store.isSaving)
+                StatusRow(text = value.text, saving = store.isSaving, onHideKeyboard = if (wideTyping) hideKeyboard else null)
             }
         }
 
@@ -372,11 +385,12 @@ fun EditorScreen(
                 else -> 332.dp   // xoay ngang: banner tối thiểu 320dp + lề
             }
             val compactHeader = imeVisible || maxHeight < 520.dp  // đang gõ hoặc màn hình thấp → đồng hồ 1 dòng
-            val showTabs = !imeVisible || maxHeight >= 400.dp
-            val typingCalcRow = imeVisible && !wide && maxHeight >= 300.dp
-            val headerHideButton = imeVisible && !typingCalcRow
+            val showTabs = true                      // luôn có thanh tab (nút + tạo ghi chú mới)
+            val typingCalcRow = imeVisible && !wide  // điện thoại dọc: thanh máy tính + nút ẩn bàn phím sát bàn phím
             val adOnTop = imeVisible
             // Bề rộng banner: tối đa 480dp (để không quá cao trên màn hình rộng), vừa cột máy tính khi 2 cột.
+            val isWideTyping = imeVisible && wide
+            SideEffect { wideTyping = isWideTyping }
             val adWidth = if (wide) sideWidth.value.toInt() - 12 else minOf(maxWidth.value.toInt() - 24, 480)
 
             val header: @Composable () -> Unit = {
@@ -388,7 +402,7 @@ fun EditorScreen(
                         onCalendarClick = { showMonth = true },
                         updateLabel = updateLabel,
                         onUpdateClick = onUpdateClick,
-                        onHideKeyboard = if (headerHideButton) hideKeyboard else null,
+                        onHideKeyboard = null,
                     )
                 } else {
                     ClockHeader(
@@ -913,7 +927,7 @@ private fun TabBar(
 }
 
 @Composable
-private fun StatusRow(text: String, saving: Boolean) {
+private fun StatusRow(text: String, saving: Boolean, onHideKeyboard: (() -> Unit)? = null) {
     val scheme = MaterialTheme.colorScheme
     val lines = if (text.isEmpty()) 1 else text.count { it == '\n' } + 1
     Row(
@@ -935,6 +949,19 @@ private fun StatusRow(text: String, saving: Boolean) {
             Icon(Icons.Filled.Check, contentDescription = null, tint = scheme.primary, modifier = Modifier.size(14.dp))
             Spacer(Modifier.width(4.dp))
             Text(stringResource(R.string.status_saved), fontSize = 12.sp, fontWeight = FontWeight.Medium, color = scheme.primary)
+        }
+        if (onHideKeyboard != null) {
+            Spacer(Modifier.width(10.dp))
+            Surface(
+                onClick = onHideKeyboard,
+                shape = RoundedCornerShape(10.dp),
+                color = LocalExtraColors.current.accentSoft,
+                modifier = Modifier.size(width = 44.dp, height = 30.dp),
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(KeyboardHideIcon, contentDescription = stringResource(R.string.hide_keyboard), tint = scheme.primary, modifier = Modifier.size(18.dp))
+                }
+            }
         }
     }
 }

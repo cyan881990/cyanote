@@ -79,6 +79,9 @@
 "update_downloaded" = "Đã tải xong bản cập nhật";
 "update_restart" = "Khởi động lại";
 "hide_keyboard" = "Ẩn bàn phím";
+"check_updates" = "Kiểm tra cập nhật";
+"up_to_date" = "Bạn đang dùng bản mới nhất (%1$@)";
+"checking_updates" = "Đang kiểm tra cập nhật…";
 "zodiac_0" = "Tý";
 "zodiac_1" = "Sửu";
 "zodiac_2" = "Dần";

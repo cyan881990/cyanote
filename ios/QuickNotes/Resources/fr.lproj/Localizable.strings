@@ -79,6 +79,9 @@
 "update_downloaded" = "Mise à jour téléchargée";
 "update_restart" = "Redémarrer";
 "hide_keyboard" = "Masquer le clavier";
+"check_updates" = "Rechercher des mises à jour";
+"up_to_date" = "Vous avez la dernière version (%1$@)";
+"checking_updates" = "Recherche de mises à jour…";
 "zodiac_0" = "du Rat";
 "zodiac_1" = "du Buffle";
 "zodiac_2" = "du Tigre";
