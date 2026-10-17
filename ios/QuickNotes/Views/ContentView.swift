@@ -759,7 +759,10 @@ struct TabBarView: View {
                     withAnimation { proxy.scrollTo(id, anchor: .center) }
                 }
             }
-            Button { store.newNote() } label: {
+            Button {
+                store.newNote()
+                Interstitials.shared.onNoteCreated()   // mỗi 3 ghi chú mới → 1 quảng cáo toàn trang
+            } label: {
                 Image(systemName: "plus")
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundColor(p.ink)

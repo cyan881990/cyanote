@@ -16,7 +16,9 @@ struct CyanoteApp: App {
             welcomeTitle: settings.strings("welcome_title"),
             welcomeText: settings.strings("welcome_text")
         ))
-        GADMobileAds.sharedInstance().start(completionHandler: nil)
+        GADMobileAds.sharedInstance().start { _ in
+            DispatchQueue.main.async { Interstitials.shared.preload() }
+        }
         // Lịch hẹn: nhận nút trên thông báo, đăng ký nút Gọi / Báo lại / Xong, đặt lại lời nhắc
         UNUserNotificationCenter.current().delegate = NotificationHandler.shared
         Reminders.registerCategories(settings.strings)

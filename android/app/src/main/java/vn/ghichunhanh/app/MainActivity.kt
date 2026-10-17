@@ -28,6 +28,7 @@ import com.google.android.play.core.install.model.UpdateAvailability
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import vn.ghichunhanh.app.ads.AdsInit
+import vn.ghichunhanh.app.ads.Interstitials
 import vn.ghichunhanh.app.ui.AppTheme
 import vn.ghichunhanh.app.ui.EditorScreen
 import vn.ghichunhanh.app.ui.UpdateDialog
@@ -70,7 +71,10 @@ class MainActivity : ComponentActivity() {
         // Khởi tạo AdMob ở luồng nền để app mở nhanh.
         // Xong thì callback chạy trên luồng chính → mới bắt đầu tải banner.
         lifecycleScope.launch(Dispatchers.IO) {
-            MobileAds.initialize(this@MainActivity) { AdsInit.ready = true }
+            MobileAds.initialize(this@MainActivity) {
+                AdsInit.ready = true
+                Interstitials.preload(this@MainActivity)
+            }
         }
 
         if (savedInstanceState == null) handleIntent(intent)
@@ -244,7 +248,10 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handleIntent(intent: Intent?) {
-        if (intent?.action == ACTION_NEW_NOTE) store.newNote()
+        if (intent?.action == ACTION_NEW_NOTE) {
+            store.newNote()
+            Interstitials.onNoteCreated(this)
+        }
         // Bấm vào thông báo lịch hẹn: mở đúng ghi chú, hoặc bảng lịch hẹn
         val noteId = intent?.getLongExtra(Reminders.EXTRA_OPEN_NOTE, 0L) ?: 0L
         if (noteId != 0L && store.notes.any { it.id == noteId }) store.select(noteId)

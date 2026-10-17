@@ -131,6 +131,8 @@ import vn.ghichunhanh.app.DockMode
 import vn.ghichunhanh.app.EditorPrefs
 import vn.ghichunhanh.app.Reminders
 import vn.ghichunhanh.app.ads.AdSlot
+import vn.ghichunhanh.app.ads.Interstitials
+import vn.ghichunhanh.app.findActivity
 import vn.ghichunhanh.app.ads.rememberAdHolder
 import vn.ghichunhanh.app.ads.rememberAdSize
 import vn.ghichunhanh.app.displayTitle
@@ -286,7 +288,11 @@ fun EditorScreen(
             selectedId = current.id,
             untitled = untitled,
             onSelect = { store.select(it) },
-            onAdd = { store.newNote() },
+            onAdd = {
+                store.newNote()
+                // Mỗi 3 ghi chú mới → 1 quảng cáo toàn trang
+                context.findActivity()?.let { Interstitials.onNoteCreated(it) }
+            },
         ) {
             Box {
                 IconButton(onClick = { menuOpen = true }) {
