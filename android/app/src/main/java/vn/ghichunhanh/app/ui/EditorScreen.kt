@@ -346,6 +346,8 @@ fun EditorScreen(
                 .windowInsetsPadding(WindowInsets.safeDrawing)
         ) {
             // maxHeight đã trừ bàn phím. Chia bố cục theo chỗ thực có:
+            val screenW = maxWidth
+            val screenH = maxHeight
             val wide = maxWidth >= 720.dp                         // máy tính bảng, điện thoại gập mở, ngang màn hình rộng
             val compactHeader = imeVisible || maxHeight < 520.dp  // đang gõ hoặc màn hình thấp → đồng hồ 1 dòng
             val showTabs = !imeVisible || maxHeight >= 400.dp
@@ -393,7 +395,7 @@ fun EditorScreen(
                     }
                     Column(
                         Modifier
-                            .width(if (maxWidth >= 1000.dp) 380.dp else 330.dp)
+                            .width(if (screenW >= 1000.dp) 380.dp else 330.dp)
                             .fillMaxHeight()
                             .padding(top = 10.dp, end = 12.dp, bottom = 10.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -421,7 +423,7 @@ fun EditorScreen(
                         if (!imeVisible) {
                             if (calcOpen) {
                                 // Màn hình thấp: máy tính không chiếm quá ~60% chiều cao, cuộn được.
-                                Box(Modifier.heightIn(max = maxHeight * 0.62f).verticalScroll(rememberScrollState())) {
+                                Box(Modifier.heightIn(max = screenH * 0.62f).verticalScroll(rememberScrollState())) {
                                     calcPanel(true)
                                 }
                             } else {
