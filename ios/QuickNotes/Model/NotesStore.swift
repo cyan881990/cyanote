@@ -80,11 +80,8 @@ final class NotesStore: ObservableObject {
     }
 
     /// Mở tab mới; nếu đã có tab trống thì chuyển sang tab đó.
+    /// Luôn tạo ghi chú mới (tạo liên tục nhiều ghi chú được).
     func newNote() {
-        if let empty = notes.first(where: { $0.content.isEmpty && $0.title.trimmingCharacters(in: .whitespaces).isEmpty }) {
-            select(empty.id)
-            return
-        }
         let id = max(nowMillis(), (notes.map(\.id).max() ?? 0) + 1)
         notes.append(Note(id: id, title: "", content: "", updatedAt: nowMillis()))
         selectedId = id

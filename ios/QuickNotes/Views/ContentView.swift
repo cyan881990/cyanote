@@ -464,6 +464,8 @@ struct ContentView: View {
             Button(role: .destructive) {
                 if current.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { store.delete(current.id) } else { deleting = current }
             } label: { Label(s("menu_close"), systemImage: "xmark") }
+            Divider()
+            Text("cyanote++ " + appVersionString)
         } label: {
             Image(systemName: "ellipsis")
                 .rotationEffect(.degrees(90))
@@ -523,6 +525,7 @@ struct HeaderView: View {
                     HStack(spacing: 7) {
                         Image("LogoMark").resizable().frame(width: 24, height: 24)
                         Text(s("app_name")).font(.system(size: 14, weight: .bold)).foregroundColor(p.ink).lineLimit(1)
+                        Text("v" + appVersionString).font(.system(size: 11, weight: .medium)).foregroundColor(p.muted).lineLimit(1).fixedSize()
                     }
                     .frame(height: 36)
                     HStack(alignment: .lastTextBaseline, spacing: 6) {
@@ -715,6 +718,13 @@ struct HeaderView: View {
 struct RecordingBox: Identifiable {
     let recorder: VoiceRecorder
     var id: ObjectIdentifier { ObjectIdentifier(recorder) }
+}
+
+/// Phiên bản đang cài, ví dụ "1.1 (40)".
+var appVersionString: String {
+    let v = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
+    let b = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? ""
+    return b.isEmpty ? v : "\(v) (\(b))"
 }
 
 // MARK: - Thanh tab

@@ -130,6 +130,11 @@ import vn.ghichunhanh.app.AttachmentsStore
 import vn.ghichunhanh.app.DockMode
 import vn.ghichunhanh.app.EditorPrefs
 import vn.ghichunhanh.app.Reminders
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import vn.ghichunhanh.app.ads.AdSlot
 import vn.ghichunhanh.app.ads.Interstitials
 import vn.ghichunhanh.app.findActivity
@@ -396,6 +401,18 @@ fun EditorScreen(
                             if (current.content.isBlank()) store.delete(current.id) else deleteTarget = current
                         },
                     )
+                    HorizontalDivider()
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                "cyanote++ " + appVersion(),
+                                fontSize = 13.sp,
+                                color = scheme.onSurfaceVariant,
+                            )
+                        },
+                        enabled = false,
+                        onClick = {},
+                    )
                 }
             }
         }
@@ -462,6 +479,18 @@ fun EditorScreen(
                         .weight(1f)
                         .fillMaxWidth()
                         .onSizeChanged { viewportPx = it.height; viewportWpx = it.width }
+                        // Bấm vào bất kỳ chỗ nào trong vùng ghi chú → luôn hiện bàn phím
+                        // (chỉ "nghe" thao tác chạm, không chặn việc đặt con trỏ / cuộn của ô chữ)
+                        .pointerInput(Unit) {
+                            awaitEachGesture {
+                                val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                                val up = waitForUpOrCancellation(pass = PointerEventPass.Initial)
+                                if (up != null && (up.position - down.position).getDistance() < viewConfiguration.touchSlop) {
+                                    runCatching { focusRequester.requestFocus() }
+                                    keyboard?.show()
+                                }
+                            }
+                        }
                         .verticalScroll(scroll)
                         .then(if (wrap) Modifier else Modifier.horizontalScroll(hScroll))
                 ) {
@@ -866,6 +895,15 @@ fun EditorScreen(
 @Composable
 private fun currentLocale(): Locale = LocalConfiguration.current.locales[0]
 
+/** Phiên bản đang cài (versionName), ví dụ "1.1.40". */
+@Composable
+internal fun appVersion(): String {
+    val context = LocalContext.current
+    return remember {
+        runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull() ?: ""
+    }
+}
+
 /** Logo nhỏ của app (luôn hiện ở đầu màn hình). */
 @Composable
 private fun AppLogo(size: Dp) {
@@ -1051,6 +1089,15 @@ private fun ClockHeader(
                     letterSpacing = 0.2.sp,
                     color = scheme.onBackground,
                     maxLines = 1,
+                )
+                // Phiên bản app, ví dụ "v1.1.40"
+                Text(
+                    "v" + appVersion(),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = scheme.onSurfaceVariant,
+                    maxLines = 1,
+                    softWrap = false,
                 )
             }
             Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(6.dp)) {

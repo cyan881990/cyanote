@@ -17,7 +17,7 @@ android {
         // Trên GitHub Actions, số build tự tăng mỗi lần chạy → dùng làm versionCode để app biết có bản mới.
         val runNumber = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull()
         versionCode = runNumber ?: 1
-        versionName = if (runNumber != null) "1.0.$runNumber" else "1.0"
+        versionName = if (runNumber != null) "1.1.$runNumber" else "1.1"
     }
 
     // Ký bản phát hành bằng keystore của bạn (dùng khi đăng Google Play).

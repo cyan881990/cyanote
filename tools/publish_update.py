@@ -18,13 +18,13 @@ def main(site_dir: str, platform: str, number: str) -> None:
     if platform == "android":
         data["android"] = {
             "versionCode": n,
-            "versionName": f"1.0.{n}",
+            "versionName": f"1.1.{n}",
             "url": f"{DOWNLOAD}/cyanote-android.apk",
         }
     elif platform == "ios":
         data["ios"] = {
             "build": n,
-            "version": f"1.0 ({n})",
+            "version": f"1.1 ({n})",
             "url": f"{DOWNLOAD}/cyanote-ios-unsigned.ipa",
         }
     else:
