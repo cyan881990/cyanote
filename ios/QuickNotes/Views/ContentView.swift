@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import PhotosUI
 
 struct ContentView: View {
     @EnvironmentObject private var store: NotesStore
@@ -20,6 +21,18 @@ struct ContentView: View {
     @State private var available: IOSUpdateInfo? = UpdateChecker.cached()   // nhãn ở đầu màn hình
     @State private var upToDate = false
     @Environment(\.openURL) private var openURL
+    @ObservedObject private var prefs = EditorPrefs.shared
+    @ObservedObject private var appts = AppointmentsStore.shared
+    @ObservedObject private var attachments = AttachmentsStore.shared
+    @State private var editing: Appointment?
+    @State private var editingIsNew = false
+    @State private var editingFromNote = false
+    @State private var showAttachments = false
+    @State private var showCamera = false
+    @State private var recording: VoiceRecorder?
+    @State private var viewing: URL?
+    @State private var photoItems: [PhotosPickerItem] = []
+    @State private var showPhotoPicker = false
 
     private var s: Strings { settings.strings }
     private var p: Palette { Palette.of(colorScheme) }
@@ -51,16 +64,23 @@ struct ContentView: View {
                         if typing { BannerAdView(width: adWidth).padding(.horizontal, 12).padding(.bottom, 6) }
                         if showTabs { TabBarView(menu: AnyView(menu(current))) }
                         editorCard(current, showHideKeyboard: typing)
+                        if !prefs.dockVisible && !typing { BannerAdView(width: min(w - 24, 480)).padding(.horizontal, 12).padding(.top, 8) }
                         Spacer().frame(height: 10)
                     }
+                    if prefs.dockVisible {
                     VStack(spacing: 8) {
-                        // Đủ cao: phím giãn lấp kín cột (không chừa khoảng trống); thấp: cuộn.
-                        ViewThatFits(in: .vertical) {
-                            CalculatorPanel(calc: store.calc, onCollapse: nil, fill: true) { text in insert(text, into: current) }
-                                .frame(maxHeight: .infinity)
-                            ScrollView {
-                                CalculatorPanel(calc: store.calc, onCollapse: nil) { text in insert(text, into: current) }
+                        if prefs.dockMode == "CALC" {
+                            DockSwitcher(showLabels: true)
+                            // Đủ cao: phím giãn lấp kín cột (không chừa khoảng trống); thấp: cuộn.
+                            ViewThatFits(in: .vertical) {
+                                CalculatorPanel(calc: store.calc, onCollapse: nil, fill: true) { text in insert(text, into: current) }
+                                    .frame(maxHeight: .infinity)
+                                ScrollView {
+                                    CalculatorPanel(calc: store.calc, onCollapse: nil) { text in insert(text, into: current) }
+                                }
                             }
+                        } else {
+                            apptsPanel(current, collapse: nil).frame(maxHeight: .infinity)
                         }
                         if !typing {
                             // Đủ cao: khung 300×250 lấp chỗ trống dưới máy tính; không thì banner.
@@ -71,6 +91,7 @@ struct ContentView: View {
                     .padding(.top, 10)
                     .padding(.trailing, 12)
                     .padding(.bottom, 6)
+                    }
                 }
             } else {
                 VStack(spacing: 0) {
@@ -78,30 +99,42 @@ struct ContentView: View {
                     // Đang gõ: quảng cáo lên đầu màn hình, xa bàn phím.
                     if typing { BannerAdView(width: adWidth).padding(.horizontal, 12).padding(.bottom, 6) }
                     if showTabs { TabBarView(menu: AnyView(menu(current))) }
-                    editorCard(current)
+                    editorCard(current, showHideKeyboard: typing && !prefs.dockVisible)
                     VStack(spacing: 8) {
                         if !typing {
-                            if calcOpen {
-                                // Màn hình thấp: máy tính tối đa ~60% chiều cao, cuộn được.
-                                ViewThatFits(in: .vertical) {
-                                    calcPanel(current)
-                                    ScrollView { calcPanel(current) }
-                                }
-                                .frame(maxHeight: h * 0.62)
-                                .transition(.move(edge: .bottom).combined(with: .opacity))
-                            } else {
-                                CalculatorBar(calc: store.calc) {
-                                    hideKeyboard()
-                                    withAnimation(.easeOut(duration: 0.2)) { calcOpen = true }
+                            if prefs.dockVisible {
+                                if calcOpen {
+                                    if prefs.dockMode == "CALC" {
+                                        DockSwitcher(showLabels: true).frame(maxWidth: .infinity, alignment: .leading)
+                                        // Màn hình thấp: máy tính tối đa ~60% chiều cao, cuộn được.
+                                        ViewThatFits(in: .vertical) {
+                                            calcPanel(current)
+                                            ScrollView { calcPanel(current) }
+                                        }
+                                        .frame(maxHeight: h * 0.58)
+                                    } else {
+                                        apptsPanel(current, collapse: { withAnimation(.easeOut(duration: 0.2)) { calcOpen = false } })
+                                            .frame(height: min(h * 0.55, 420))
+                                    }
+                                } else {
+                                    HStack(spacing: 8) {
+                                        DockSwitcher(showLabels: false, height: 60, showHide: false)
+                                        if prefs.dockMode == "CALC" {
+                                            CalculatorBar(calc: store.calc, hideIcon: true) { openDock() }
+                                        } else {
+                                            AppointmentBar(hideIcon: true) { openDock() }
+                                        }
+                                    }
                                 }
                             }
                             BannerAdView(width: adWidth)
                         }
-                        if typingCalcRow {
+                        if typingCalcRow && prefs.dockVisible {
                             HStack(spacing: 8) {
-                                CalculatorBar(calc: store.calc, compact: true) {
-                                    hideKeyboard()
-                                    withAnimation(.easeOut(duration: 0.2)) { calcOpen = true }
+                                if prefs.dockMode == "CALC" {
+                                    CalculatorBar(calc: store.calc, compact: true) { openDock() }
+                                } else {
+                                    AppointmentBar(compact: true) { openDock() }
                                 }
                                 Button(action: hideKeyboard) {
                                     Image(systemName: "keyboard.chevron.compact.down")
@@ -168,6 +201,53 @@ struct ContentView: View {
         } message: {
             Text(s.f("update_message", update?.version ?? ""))
         }
+        .sheet(item: $editing) { a in
+            AppointmentEditorSheet(
+                initial: a,
+                isNew: editingIsNew,
+                noteTitle: editingFromNote ? store.current.displayTitle(untitled: s("untitled")) : nil,
+                onSave: { saved, tag in
+                    appts.upsert(saved)
+                    if tag { insert(appointmentTag(saved, s.locale) + " ", into: store.current) }
+                    Reminders.requestPermission()
+                },
+                onDelete: editingIsNew ? nil : { appts.delete(a.id) }
+            )
+            .environmentObject(settings)
+        }
+        .sheet(isPresented: $showAttachments) {
+            AttachmentsSheet(
+                noteId: current.id,
+                noteTitle: current.displayTitle(untitled: s("untitled")),
+                onTakePhoto: { DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { showCamera = true } },
+                onRecord: { DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { startRecording(current) } }
+            )
+            .environmentObject(settings)
+        }
+        .fullScreenCover(isPresented: $showCamera) {
+            CameraPicker { img in attachments.addImage(store.current.id, img) }.ignoresSafeArea()
+        }
+        .sheet(item: Binding(get: { recording.map { RecordingBox(recorder: $0) } }, set: { if $0 == nil { recording = nil } })) { box in
+            RecorderSheet(recorder: box.recorder) { attachments.changed() }.environmentObject(settings)
+        }
+        .fullScreenCover(item: Binding(get: { viewing.map(IdentifiedURL.init) }, set: { viewing = $0?.url })) { item in
+            PhotoViewer(url: item.url) { attachments.delete(item.url) }.environmentObject(settings)
+        }
+        .photosPicker(isPresented: $showPhotoPicker, selection: $photoItems, maxSelectionCount: 10, matching: .images)
+        .onChange(of: photoItems) { items in
+            let noteId = store.current.id
+            Task {
+                for item in items {
+                    if let data = try? await item.loadTransferable(type: Data.self), let img = UIImage(data: data) {
+                        await MainActor.run { _ = attachments.addImage(noteId, img) }
+                    }
+                }
+                await MainActor.run { photoItems = [] }
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .openNote)) { n in
+            if let id = (n.object as? NSNumber)?.int64Value, store.notes.contains(where: { $0.id == id }) { store.select(id) }
+        }
         .sheet(isPresented: $showMonth) { MonthCalendarView() }
         .sheet(isPresented: $showLanguages) { LanguageSheet() }
         .sheet(isPresented: $showBackup) { BackupSheet() }
@@ -195,47 +275,47 @@ struct ContentView: View {
                     font: font,
                     textColor: UIColor(p.ink),
                     tintColor: UIColor(p.accent),
-                    focusToken: focusToken
+                    focusToken: focusToken,
+                    lineNumbers: prefs.lineNumbers,
+                    wordWrap: prefs.wordWrap,
+                    gutterText: UIColor(p.muted),
+                    gutterBackground: UIColor(p.keyBg).withAlphaComponent(0.55)
                 )
                 .id(current.id)
                 if current.content.isEmpty {
                     Text(s("editor_hint"))
                         .font(.system(size: 16))
                         .foregroundColor(p.muted)
-                        .padding(.horizontal, 21)
+                        .padding(.leading, prefs.lineNumbers ? 40 : 21)
                         .padding(.vertical, 16)
                         .allowsHitTesting(false)
                 }
             }
-            Divider().overlay(p.line)
-            HStack(spacing: 6) {
-                let lines = current.content.isEmpty ? 1 : current.content.filter { $0 == "\n" }.count + 1
-                Text(s.f("status_counts", lines, (current.content as NSString).length))
-                    .foregroundColor(p.muted)
-                Spacer()
-                if store.isSaving {
-                    Text(s("status_saving")).foregroundColor(p.muted)
-                } else {
-                    Image(systemName: "checkmark").font(.system(size: 11, weight: .bold)).foregroundColor(p.accent)
-                    Text(s("status_saved")).foregroundColor(p.accent)
-                }
-                if showHideKeyboard {
-                    Button(action: hideKeyboard) {
-                        Image(systemName: "keyboard.chevron.compact.down")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(p.accent)
-                            .frame(width: 44, height: 30)
-                            .background(p.accentSoft)
-                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.leading, 6)
-                    .accessibilityLabel(s("hide_keyboard"))
+            // Lịch hẹn gắn với ghi chú này
+            let noteAppts = appts.items.filter { $0.noteId == current.id && !$0.done }
+            if !noteAppts.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 6) {
+                        ForEach(noteAppts) { a in
+                            Button { editingIsNew = false; editingFromNote = true; editing = a } label: {
+                                HStack(spacing: 5) {
+                                    Image(systemName: "alarm").font(.system(size: 12, weight: .semibold))
+                                    Text(appointmentTag(a, s.locale).dropFirst(3).dropLast()).font(.system(size: 12, weight: .bold))
+                                    if !a.title.isEmpty { Text(a.title).font(.system(size: 12)).foregroundColor(p.ink).lineLimit(1).frame(maxWidth: 160) }
+                                    if !a.phone.isEmpty { Image(systemName: "phone").font(.system(size: 11)) }
+                                }
+                                .foregroundColor(p.accent).padding(.horizontal, 10).padding(.vertical, 6)
+                                .background(p.accentSoft).clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                            }.buttonStyle(.plain)
+                        }
+                    }.padding(.horizontal, 14).padding(.top, 4)
                 }
             }
-            .font(.system(size: 12, weight: .medium))
-            .padding(.horizontal, 20)
-            .padding(.vertical, 9)
+            // Ảnh & ghi âm
+            let _ = attachments.version
+            AttachmentStrip(files: attachments.list(current.id), onOpenImage: { viewing = $0 }, onManage: { showAttachments = true })
+            Divider().overlay(p.line)
+            footerBar(current, showHideKeyboard: showHideKeyboard)
         }
         .background(p.surface)
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
@@ -243,10 +323,106 @@ struct ContentView: View {
         .padding(.horizontal, 12)
     }
 
+    private func openDock() {
+        hideKeyboard()
+        withAnimation(.easeOut(duration: 0.2)) { calcOpen = true }
+    }
+
+    private func apptsPanel(_ current: Note, collapse: (() -> Void)?) -> some View {
+        AppointmentsPanel(
+            noteTitleOf: { id in store.notes.first { $0.id == id }?.displayTitle(untitled: s("untitled")) },
+            onNew: { newAppointment() },
+            onEdit: { a in editingIsNew = false; editingFromNote = a.noteId == store.current.id; editing = a },
+            onOpenNote: { id in if store.notes.contains(where: { $0.id == id }) { store.select(id) } },
+            onCollapse: collapse,
+            header: AnyView(DockSwitcher(showLabels: true))
+        )
+    }
+
+    private func millisFrom(_ d: Date) -> Int64 { Int64(d.timeIntervalSince1970 * 1000) }
+
+    private func newAppointment() {
+        let start = Calendar.current.date(bySetting: .minute, value: 0, of: Date().addingTimeInterval(3600)) ?? Date()
+        editingIsNew = true; editingFromNote = false
+        editing = Appointment(id: millisFrom(Date()), title: "", time: millisFrom(start))
+    }
+
+    /// ⏰ trong ghi chú: lấy dòng đang gõ làm nội dung, tự nhận số điện thoại.
+    private func tagAppointment(_ current: Note) {
+        let ns = current.content as NSString
+        let sel = selections[current.id] ?? NSRange(location: ns.length, length: 0)
+        let line = ns.length == 0 ? "" : ns.substring(with: ns.lineRange(for: NSRange(location: min(sel.location, ns.length), length: 0)))
+        let clean = line.replacingOccurrences(of: #"\[⏰[^\]]*\]"#, with: "", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        var start = Date().addingTimeInterval(3600)
+        let minute = Calendar.current.component(.minute, from: start)
+        start = Calendar.current.date(bySetting: .second, value: 0, of: start) ?? start
+        start = start.addingTimeInterval(TimeInterval(((minute < 30 ? 30 : 60) - minute) * 60))
+        editingIsNew = true; editingFromNote = true
+        editing = Appointment(id: millisFrom(Date()), title: String(clean.prefix(120)), time: millisFrom(start),
+                              phone: Appointment.findPhone(clean), noteId: current.id)
+    }
+
+    private func startRecording(_ current: Note) {
+        recording = VoiceRecorder(url: attachments.newRecordingURL(current.id))
+    }
+
     private func calcPanel(_ current: Note) -> some View {
         CalculatorPanel(calc: store.calc, onCollapse: { withAnimation(.easeOut(duration: 0.2)) { calcOpen = false } }) { text in
             insert(text, into: current)
         }
+    }
+
+    /// Thanh công cụ dưới ghi chú: 📷 🎤 ⏰ · số dòng/ký tự · số dòng · tự xuống dòng · ẩn bảng.
+    private func footerBar(_ current: Note, showHideKeyboard: Bool) -> some View {
+        let lines = current.content.isEmpty ? 1 : current.content.filter { $0 == "\n" }.count + 1
+        func tool(_ icon: String, _ label: String, active: Bool = false, _ action: @escaping () -> Void) -> some View {
+            Button(action: action) {
+                Image(systemName: icon).font(.system(size: 15, weight: .medium))
+                    .foregroundColor(active ? p.accent : p.muted)
+                    .frame(width: 32, height: 32)
+                    .background(active ? p.accentSoft : Color.clear)
+                    .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(label)
+        }
+        return HStack(spacing: 2) {
+            Menu {
+                Button { showCamera = true } label: { Label(s("photo_take"), systemImage: "camera") }
+                Button { showPhotoPicker = true } label: { Label(s("photo_pick"), systemImage: "photo.on.rectangle") }
+            } label: {
+                Image(systemName: "camera").font(.system(size: 15, weight: .medium)).foregroundColor(p.muted).frame(width: 32, height: 32)
+            }
+            .accessibilityLabel(s("photo_take"))
+            tool("mic", s("rec_record")) { startRecording(current) }
+            tool("alarm", s("appt_add")) { tagAppointment(current) }
+            Text("\(lines) · \((current.content as NSString).length)")
+                .font(.system(size: 12, weight: .medium)).foregroundColor(p.muted).lineLimit(1)
+                .padding(.leading, 6)
+            Spacer(minLength: 2)
+            if store.isSaving {
+                Text("…").font(.system(size: 12)).foregroundColor(p.muted)
+            } else {
+                Image(systemName: "checkmark").font(.system(size: 11, weight: .bold)).foregroundColor(p.accent)
+            }
+            tool("list.number", s("line_numbers"), active: prefs.lineNumbers) { prefs.lineNumbers.toggle() }
+            tool("arrow.uturn.left", s("word_wrap"), active: prefs.wordWrap) { prefs.wordWrap.toggle() }
+            tool(prefs.dockVisible ? "rectangle.bottomhalf.inset.filled" : "rectangle.bottomhalf.filled",
+                 s(prefs.dockVisible ? "dock_hide" : "dock_show"), active: !prefs.dockVisible) { prefs.dockVisible.toggle() }
+            if showHideKeyboard {
+                Button(action: hideKeyboard) {
+                    Image(systemName: "keyboard.chevron.compact.down")
+                        .font(.system(size: 14, weight: .semibold)).foregroundColor(p.accent)
+                        .frame(width: 40, height: 30).background(p.accentSoft)
+                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(s("hide_keyboard"))
+            }
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
     }
 
     // MARK: Menu ⋮
@@ -261,6 +437,13 @@ struct ContentView: View {
             ShareLink(item: current.content, subject: Text(current.displayTitle(untitled: s("untitled")))) {
                 Label(s("menu_share"), systemImage: "square.and.arrow.up")
             }
+            Button {
+                hideKeyboard(); prefs.dockMode = "APPOINTMENTS"; prefs.dockVisible = true
+                withAnimation { calcOpen = true }
+            } label: { Label(s("appt_screen"), systemImage: "alarm") }
+            Button { showAttachments = true } label: { Label(s("att_manage"), systemImage: "photo.on.rectangle.angled") }
+            Toggle(isOn: $prefs.wordWrap) { Label(s("word_wrap"), systemImage: "arrow.uturn.left") }
+            Toggle(isOn: $prefs.lineNumbers) { Label(s("line_numbers"), systemImage: "list.number") }
             Button { showMonth = true } label: { Label(s("menu_calendar"), systemImage: "calendar") }
             Button { showLanguages = true } label: { Label(s("language"), systemImage: "globe") }
             Button {
@@ -523,6 +706,12 @@ struct HeaderView: View {
     }
 
     private func langCode(_ code: String) -> String { code.uppercased() }
+}
+
+/// Bọc VoiceRecorder để dùng với .sheet(item:)
+struct RecordingBox: Identifiable {
+    let recorder: VoiceRecorder
+    var id: ObjectIdentifier { ObjectIdentifier(recorder) }
 }
 
 // MARK: - Thanh tab

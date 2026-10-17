@@ -59,6 +59,9 @@ targets:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
         ITSAppUsesNonExemptEncryption: false
+        NSCameraUsageDescription: cyanote++ uses the camera so you can snap a photo straight into a note.
+        NSMicrophoneUsageDescription: cyanote++ uses the microphone to record voice notes you attach to a note.
+        NSPhotoLibraryUsageDescription: cyanote++ lets you pick photos to attach to a note.
         # ID ứng dụng AdMob THỬ NGHIỆM của Google — thay bằng ID thật trước khi phát hành
         GADApplicationIdentifier: ca-app-pub-3940256099942544~1458002511
         SKAdNetworkItems:

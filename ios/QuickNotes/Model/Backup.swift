@@ -9,6 +9,9 @@ struct BackupData {
     var monospace: Bool?
     var theme: String?
     var language: String?
+    var appointments: Data?
+    /// (id ghi chú cũ, tên file, dữ liệu)
+    var attachments: [(Int64, String, Data)] = []
 }
 
 /// Sao lưu & khôi phục bằng file .zip — cùng định dạng với bản Android:
@@ -28,7 +31,14 @@ enum Backup {
     }
 
     static func makeZip(json: Data, notes: [Note], untitled: String) -> Data {
-        var entries: [(String, Data)] = [("notes.json", json)]
+        // Kèm lịch hẹn (trong notes.json) và ảnh, ghi âm (attachments/<id>/<file>)
+        var root = (try? JSONSerialization.jsonObject(with: json)) as? [String: Any] ?? [:]
+        root["appointments"] = AppointmentsStore.shared.jsonArray()
+        let fullJSON = (try? JSONSerialization.data(withJSONObject: root, options: [.prettyPrinted])) ?? json
+        var entries: [(String, Data)] = [("notes.json", fullJSON)]
+        for (noteId, url) in AttachmentsStore.shared.all() {
+            if let d = try? Data(contentsOf: url) { entries.append(("attachments/\(noteId)/\(url.lastPathComponent)", d)) }
+        }
         var used = Set<String>()
         for (i, n) in notes.enumerated() {
             var base = safeFileName(n.displayTitle(untitled: untitled))
@@ -59,9 +69,15 @@ enum Backup {
         let entries = try Zip.read(data, maxEntryBytes: maxEntryBytes)
         var json: Data?
         var textNotes: [Note] = []
+        var files: [(Int64, String, Data)] = []
         for (path, bytes) in entries {
-            let name = (path.replacingOccurrences(of: "\\", with: "/") as NSString).lastPathComponent
-            if name == "notes.json" && json == nil {
+            let clean = path.replacingOccurrences(of: "\\", with: "/")
+            let name = (clean as NSString).lastPathComponent
+            let parts = clean.split(separator: "/")
+            if parts.count == 3, parts[0] == "attachments", let id = Int64(parts[1]),
+               name.hasSuffix(".jpg") || name.hasSuffix(".m4a") {
+                files.append((id, name, bytes))
+            } else if name == "notes.json" && json == nil {
                 json = bytes
             } else if name.lowercased().hasSuffix(".txt") && !name.hasPrefix(".") {
                 var title = String(name.dropLast(4))
@@ -69,7 +85,13 @@ enum Backup {
                 textNotes.append(Note(id: 0, title: title, content: String(decoding: bytes, as: UTF8.self), updatedAt: millis()))
             }
         }
-        if let json, let parsed = try? parseJSON(json), !parsed.notes.isEmpty { return parsed }
+        if let json, var parsed = try? parseJSON(json), !parsed.notes.isEmpty {
+            parsed.attachments = files
+            if let root = try? JSONSerialization.jsonObject(with: json) as? [String: Any], let arr = root["appointments"] {
+                parsed.appointments = try? JSONSerialization.data(withJSONObject: arr)
+            }
+            return parsed
+        }
         if !textNotes.isEmpty { return BackupData(notes: textNotes) }
         throw ReadError()
     }

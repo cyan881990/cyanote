@@ -238,6 +238,11 @@ struct BackupSheet: View {
     private func apply(replace: Bool) {
         guard let data = pending else { return }
         let added = store.importBackup(data, replace: replace)
+        let idMap = store.lastImportIdMap
+        for (oldId, name, bytes) in data.attachments {
+            if let newId = idMap[oldId] { AttachmentsStore.shared.putRaw(newId, name: name, data: bytes) }
+        }
+        AppointmentsStore.shared.importFrom(data.appointments, idMap: idMap, replace: replace)
         if replace {
             if let theme = data.theme, ["SYSTEM", "LIGHT", "DARK"].contains(theme) { settings.themeMode = theme }
             if let lang = data.language, lang.isEmpty || appLanguages.contains(where: { $0.tag == lang }) {

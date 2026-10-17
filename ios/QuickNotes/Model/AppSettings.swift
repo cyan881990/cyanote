@@ -23,6 +23,29 @@ struct Strings {
     }
 
     var zodiac: [String] { (0..<12).map { self("zodiac_\($0)") } }
+
+    /// Chuỗi theo ngôn ngữ đang lưu (dùng ngoài giao diện, ví dụ nội dung thông báo).
+    static var current: Strings {
+        AppSettings.makeStrings(UserDefaults.standard.string(forKey: "language") ?? AppSettings.defaultLanguage)
+    }
+}
+
+/// Tuỳ chọn trình soạn thảo (giống EditorPrefs của Android).
+final class EditorPrefs: ObservableObject {
+    static let shared = EditorPrefs()
+    private let d = UserDefaults.standard
+    @Published var wordWrap: Bool { didSet { d.set(wordWrap, forKey: "word_wrap") } }
+    @Published var lineNumbers: Bool { didSet { d.set(lineNumbers, forKey: "line_numbers") } }
+    @Published var dockVisible: Bool { didSet { d.set(dockVisible, forKey: "dock_visible") } }
+    /// "CALC" | "APPOINTMENTS"
+    @Published var dockMode: String { didSet { d.set(dockMode, forKey: "dock_mode") } }
+
+    private init() {
+        wordWrap = d.object(forKey: "word_wrap") as? Bool ?? true
+        lineNumbers = d.object(forKey: "line_numbers") as? Bool ?? true
+        dockVisible = d.object(forKey: "dock_visible") as? Bool ?? true
+        dockMode = d.string(forKey: "dock_mode") ?? "CALC"
+    }
 }
 
 /// Cài đặt nhỏ: ngôn ngữ (mặc định tiếng Anh) và sáng/tối.

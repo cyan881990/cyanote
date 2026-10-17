@@ -105,6 +105,7 @@ final class NotesStore: ObservableObject {
     }
 
     func delete(_ id: Int64) {
+        AttachmentsStore.shared.deleteAll(id)
         guard let i = notes.firstIndex(where: { $0.id == id }) else { return }
         notes.remove(at: i)
         if notes.isEmpty {
@@ -135,7 +136,11 @@ final class NotesStore: ObservableObject {
 
     /// replace = false: thêm vào, bỏ qua ghi chú trùng y hệt. replace = true: thay toàn bộ.
     @discardableResult
+    /// id ghi chú cũ → mới sau lần nhập gần nhất (để gắn lại lịch hẹn, ảnh).
+    private(set) var lastImportIdMap: [Int64: Int64] = [:]
+
     func importBackup(_ data: BackupData, replace: Bool) -> Int {
+        var idMap: [Int64: Int64] = [:]
         var nextId = max(nowMillis(), (notes.map(\.id).max() ?? 0) + 1)
         if replace { notes.removeAll() }
         var existing = Set(notes.map { "\($0.title)\u{1}\($0.content)" })
@@ -143,9 +148,13 @@ final class NotesStore: ObservableObject {
         var added = 0
         for n in data.notes {
             let key = "\(n.title)\u{1}\(n.content)"
-            if !replace && existing.contains(key) { continue }
+            if !replace && existing.contains(key) {
+                if let same = notes.first(where: { $0.title == n.title && $0.content == n.content }) { idMap[n.id] = same.id }
+                continue
+            }
             var copy = n
             copy.id = nextId
+            idMap[n.id] = nextId
             nextId += 1
             notes.append(copy)
             existing.insert(key)
@@ -162,6 +171,7 @@ final class NotesStore: ObservableObject {
             selectedId = firstAdded ?? selectedId
             if !notes.contains(where: { $0.id == selectedId }) { selectedId = notes[0].id }
         }
+        lastImportIdMap = idMap
         markChanged()
         saveNow()
         return added

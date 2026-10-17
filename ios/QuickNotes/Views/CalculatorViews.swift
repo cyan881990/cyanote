@@ -19,6 +19,7 @@ struct CalculatorBar: View {
     @EnvironmentObject private var settings: AppSettings
     @Environment(\.colorScheme) private var colorScheme
     var compact: Bool = false
+    var hideIcon: Bool = false
     var onExpand: () -> Void
 
     var body: some View {
@@ -26,12 +27,14 @@ struct CalculatorBar: View {
         let p = Palette.of(colorScheme)
         Button(action: onExpand) {
             HStack(spacing: 12) {
-                Image(systemName: "plus.forwardslash.minus")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundColor(p.accent)
-                    .frame(width: compact ? 32 : 40, height: compact ? 32 : 40)
-                    .background(p.accentSoft)
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                if !hideIcon {
+                    Image(systemName: "plus.forwardslash.minus")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(p.accent)
+                        .frame(width: compact ? 32 : 40, height: compact ? 32 : 40)
+                        .background(p.accentSoft)
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                }
                 VStack(alignment: .leading, spacing: 1) {
                     if !compact {
                         Text(s("calc_holding")).font(.system(size: 12, weight: .medium)).foregroundColor(p.muted).lineLimit(1)
