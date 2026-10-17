@@ -5,7 +5,7 @@ import json
 import os
 import sys
 
-DOWNLOAD = "https://github.com/cyan881990/cyan881990.github.io/releases/download/latest-test"
+DOWNLOAD = "https://cyan881990.github.io/download"
 
 
 def main(site_dir: str, platform: str, number: str) -> None:
