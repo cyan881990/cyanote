@@ -41,7 +41,9 @@ jobs:
           CYANOTE_KEY_PASSWORD: ${{ secrets.CYANOTE_KEY_PASSWORD }}
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon assembleDebug bundleRelease
+          set -o pipefail
+          ./gradlew --no-daemon assembleDebug bundleRelease 2>&1 | tee "$RUNNER_TEMP/gradle.log" || {
+            bash ../.github/scripts/report-errors.sh "$RUNNER_TEMP/gradle.log" Gradle; exit 1; }
 
       - name: Đổi tên file
         run: |
