@@ -74,7 +74,7 @@ private fun keyDescription(key: String): String = when (key) {
 
 /** Thanh máy tính thu gọn: luôn hiện phép tính đang giữ, bấm để mở rộng. */
 @Composable
-fun CalculatorBar(calc: CalcState, onExpand: () -> Unit, compact: Boolean = false) {
+fun CalculatorBar(calc: CalcState, onExpand: () -> Unit, compact: Boolean = false, hideIcon: Boolean = false) {
     val scheme = MaterialTheme.colorScheme
     val extra = LocalExtraColors.current
     val openLabel = stringResource(R.string.calc_open)
@@ -93,7 +93,7 @@ fun CalculatorBar(calc: CalcState, onExpand: () -> Unit, compact: Boolean = fals
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Box(
+            if (!hideIcon) Box(
                 modifier = Modifier
                     .size(if (compact) 32.dp else 40.dp)
                     .clip(RoundedCornerShape(if (compact) 10.dp else 12.dp))

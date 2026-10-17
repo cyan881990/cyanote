@@ -22,6 +22,9 @@ data class BackupData(
     val monospace: Boolean? = null,
     val theme: String? = null,
     val language: String? = null,
+    val appointmentsJson: String? = null,
+    /** Ảnh & ghi âm: (id ghi chú cũ, tên file, dữ liệu). */
+    val attachments: List<Triple<Long, String, ByteArray>> = emptyList(),
 )
 
 /**
@@ -39,6 +42,7 @@ data class BackupData(
 object Backup {
     const val FORMAT = "cyanote-backup-v1"
     private const val NOTES_ENTRY = "notes.json"
+    private const val ATTACH_DIR = "attachments"
     private const val MAX_ENTRY_BYTES = 20L * 1024 * 1024 // chặn file nén "bom" hoặc quá lớn
     private const val MAX_ENTRIES = 5000
 
@@ -54,11 +58,19 @@ object Backup {
         "cyanote-backup-" + now.format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmm")) + ".zip"
 
     /** Ghi file .zip. [json] lấy từ NotesStore.backupJson. Không đóng [out] hộ người gọi trước khi xong. */
-    fun write(out: OutputStream, json: String, notes: List<Note>, untitled: String) {
+    fun write(out: OutputStream, json: String, notes: List<Note>, untitled: String, files: List<Pair<Long, java.io.File>> = emptyList()) {
         ZipOutputStream(BufferedOutputStream(out)).use { zip ->
             zip.putNextEntry(ZipEntry(NOTES_ENTRY))
             zip.write(json.toByteArray(Charsets.UTF_8))
             zip.closeEntry()
+
+            // Ảnh & ghi âm: attachments/<id ghi chú>/<tên file>
+            for ((noteId, f) in files) {
+                if (!f.isFile) continue
+                zip.putNextEntry(ZipEntry("$ATTACH_DIR/$noteId/${f.name}"))
+                f.inputStream().use { it.copyTo(zip) }
+                zip.closeEntry()
+            }
 
             val used = HashSet<String>()
             notes.forEachIndexed { i, n ->
@@ -91,6 +103,7 @@ object Backup {
     private fun readZip(input: InputStream): BackupData {
         var json: String? = null
         val textNotes = mutableListOf<Note>()
+        val files = mutableListOf<Triple<Long, String, ByteArray>>()
         var count = 0
         ZipInputStream(input).use { zip ->
             while (true) {
@@ -99,7 +112,11 @@ object Backup {
                 if (entry.isDirectory) continue
                 val path = entry.name.replace('\\', '/')
                 val name = path.substringAfterLast('/')
+                val parts = path.split('/')
                 when {
+                    parts.size == 3 && parts[0] == ATTACH_DIR && parts[1].toLongOrNull() != null &&
+                        (name.endsWith(".jpg") || name.endsWith(".m4a")) ->
+                        files.add(Triple(parts[1].toLong(), name, readLimited(zip)))
                     name == NOTES_ENTRY && json == null ->
                         json = String(readLimited(zip), Charsets.UTF_8)
                     name.endsWith(".txt", ignoreCase = true) && !name.startsWith(".") -> {
@@ -113,7 +130,7 @@ object Backup {
         }
         val parsed = json?.let { runCatching { parseJson(it) }.getOrNull() }
         return when {
-            parsed != null && parsed.notes.isNotEmpty() -> parsed
+            parsed != null && parsed.notes.isNotEmpty() -> parsed.copy(attachments = files)
             textNotes.isNotEmpty() -> BackupData(textNotes)
             else -> throw IOException("No notes found")
         }
@@ -151,6 +168,7 @@ object Backup {
             monospace = if (root.has("monospace")) root.optBoolean("monospace") else null,
             theme = if (root.has("theme")) root.optString("theme") else null,
             language = if (root.has("language")) root.optString("language") else null,
+            appointmentsJson = root.optJSONArray("appointments")?.toString(),
         )
     }
 

@@ -109,6 +109,28 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.runtime.SideEffect
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import android.Manifest
+import android.content.pm.PackageManager
+import java.io.File
+import vn.ghichunhanh.app.Appointment
+import vn.ghichunhanh.app.AppointmentsStore
+import vn.ghichunhanh.app.AttachmentsStore
+import vn.ghichunhanh.app.DockMode
+import vn.ghichunhanh.app.EditorPrefs
+import vn.ghichunhanh.app.Reminders
 import vn.ghichunhanh.app.ads.AdSlot
 import vn.ghichunhanh.app.ads.rememberAdHolder
 import vn.ghichunhanh.app.ads.rememberAdSize
@@ -133,6 +155,8 @@ fun EditorScreen(
     updateLabel: String? = null,
     onUpdateClick: () -> Unit = {},
     onCheckUpdates: () -> Unit = {},
+    openAppointmentsRequest: Boolean = false,
+    onAppointmentsRequestHandled: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val keyboard = LocalSoftwareKeyboardController.current
@@ -172,10 +196,88 @@ fun EditorScreen(
         if (current.content.isEmpty()) runCatching { focusRequester.requestFocus() }
     }
 
+    // ----- Lịch hẹn, ảnh, ghi âm -----
+    val appts = remember { AppointmentsStore.get(context) }
+    val attachments = remember { AttachmentsStore.get(context) }
+    val noteFiles = attachments.list(current.id)
+    var editingAppt by remember { mutableStateOf<Appointment?>(null) }
+    var editingIsNew by remember { mutableStateOf(false) }
+    var editingFromNote by remember { mutableStateOf(false) }
+    var viewerFile by remember { mutableStateOf<File?>(null) }
+    var showAttachments by remember { mutableStateOf(false) }
+    var recorderFile by remember { mutableStateOf<File?>(null) }
+    var cameraFile by remember { mutableStateOf<File?>(null) }
+    val locale = currentLocale()
+    val noteTitleOf: (Long) -> String? = { id -> notes.firstOrNull { it.id == id }?.displayTitle(untitled) }
+
+    val notifPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    val micPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) recorderFile = attachments.newRecordingFile(current.id)
+    }
+    val takePicture = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
+        val f = cameraFile
+        if (ok && f != null && f.length() > 0) attachments.add(current.id, android.net.Uri.fromFile(f))
+        f?.delete()
+        cameraFile = null
+    }
+    val pickPhoto = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) attachments.add(current.id, uri)
+    }
+    val startCamera = {
+        val f = attachments.newCameraFile()
+        cameraFile = f
+        runCatching { takePicture.launch(FileProvider.getUriForFile(context, "app.cyanote.files", f)) }
+    }
+    val startPick = {
+        runCatching { pickPhoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
+    }
+    val startRecord = {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            recorderFile = attachments.newRecordingFile(current.id)
+        } else {
+            micPermission.launch(Manifest.permission.RECORD_AUDIO)
+        }
+    }
+    /** ⏰ trong ghi chú: lấy dòng đang gõ làm nội dung, tự nhận số điện thoại. */
+    val tagAppointment = {
+        val line = currentLine(value).replace(Regex("""\[⏰[^\]]*]"""), "").trim()
+        val start = LocalDateTime.now().plusHours(1).withSecond(0).withNano(0)
+        val rounded = start.withMinute(if (start.minute < 30) 30 else 0).let { if (start.minute >= 30) it.plusHours(1) else it }
+        editingAppt = Appointment(
+            id = System.currentTimeMillis(),
+            title = line.take(120),
+            time = rounded.atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli(),
+            phone = Appointment.findPhone(line),
+            noteId = current.id,
+        )
+        editingIsNew = true
+        editingFromNote = true
+    }
+    val newAppointment = {
+        val start = LocalDateTime.now().plusHours(1).withMinute(0).withSecond(0).withNano(0)
+        editingAppt = Appointment(
+            id = System.currentTimeMillis(),
+            title = "",
+            time = start.atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli(),
+        )
+        editingIsNew = true
+        editingFromNote = false
+    }
+    // Mở từ thông báo: hiện bảng lịch hẹn
+    LaunchedEffect(openAppointmentsRequest) {
+        if (openAppointmentsRequest) {
+            EditorPrefs.setDockMode(context, DockMode.APPOINTMENTS)
+            EditorPrefs.setDockVisible(context, true)
+            calcOpen = true
+            onAppointmentsRequestHandled()
+        }
+    }
+
     // Nút ẩn bàn phím ở dòng trạng thái của ghi chú (dùng khi 2 cột, vì không có thanh máy tính dưới)
     var wideTyping by remember { mutableStateOf(false) }
     // ----- Các khối giao diện (ghép lại theo kích thước màn hình bên dưới) -----
     val hideKeyboard = { keyboard?.hide(); focusManager.clearFocus() }
+    val hideKeyboardNow = hideKeyboard
     val openCalc = { hideKeyboard(); calcOpen = true }
     val tabBar: @Composable () -> Unit = {
         TabBar(
@@ -234,6 +336,36 @@ fun EditorScreen(
                         onClick = { menuOpen = false; showBackup = true },
                     )
                     DropdownMenuItem(
+                        text = { Text(stringResource(R.string.appt_screen)) },
+                        leadingIcon = { Icon(AlarmIcon, contentDescription = null, modifier = Modifier.size(20.dp)) },
+                        onClick = {
+                            menuOpen = false
+                            hideKeyboardNow()
+                            EditorPrefs.setDockMode(context, DockMode.APPOINTMENTS)
+                            EditorPrefs.setDockVisible(context, true)
+                            calcOpen = true
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.att_manage) + if (noteFiles.isNotEmpty()) " (${noteFiles.size})" else "") },
+                        leadingIcon = { Icon(CameraIcon, contentDescription = null, modifier = Modifier.size(20.dp)) },
+                        onClick = { menuOpen = false; showAttachments = true },
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.word_wrap)) },
+                        trailingIcon = { Checkbox(checked = EditorPrefs.wordWrap, onCheckedChange = null) },
+                        onClick = { EditorPrefs.setWordWrap(context, !EditorPrefs.wordWrap) },
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.line_numbers)) },
+                        trailingIcon = { Checkbox(checked = EditorPrefs.lineNumbers, onCheckedChange = null) },
+                        onClick = { EditorPrefs.setLineNumbers(context, !EditorPrefs.lineNumbers) },
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(if (EditorPrefs.dockVisible) R.string.dock_hide else R.string.dock_show)) },
+                        onClick = { menuOpen = false; EditorPrefs.setDockVisible(context, !EditorPrefs.dockVisible) },
+                    )
+                    DropdownMenuItem(
                         text = { Text(stringResource(R.string.check_updates)) },
                         trailingIcon = {
                             if (updateLabel != null) {
@@ -278,9 +410,14 @@ fun EditorScreen(
                     fontFamily = if (store.monospace) FontFamily.Monospace else FontFamily.Default,
                 )
                 val hint = stringResource(R.string.editor_hint)
+                val extra = LocalExtraColors.current
+                val wrap = EditorPrefs.wordWrap
+                val showNums = EditorPrefs.lineNumbers
                 // Tự cuộn tới chỗ đang gõ (kể cả khi bàn phím vừa bật làm vùng ghi chú thu nhỏ).
                 val scroll = rememberScrollState()
+                val hScroll = rememberScrollState()
                 var viewportPx by remember { mutableStateOf(0) }
+                var viewportWpx by remember { mutableStateOf(0) }
                 var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
                 val density = LocalDensity.current
                 val padTopPx = with(density) { 16.dp.toPx() }
@@ -299,22 +436,56 @@ fun EditorScreen(
                     }
                     scroll.animateScrollTo(target.coerceIn(0, scroll.maxValue.coerceAtLeast(target)))
                 }
+                // Số dòng (như Notepad++): cột trái, đánh số theo dòng thật (dòng dài tự xuống vẫn 1 số).
+                val lineCount = if (value.text.isEmpty()) 1 else value.text.count { it == '\n' } + 1
+                val gutter = if (showNums) (lineCount.toString().length * 9 + 16).dp else 0.dp
+                val measurer = rememberTextMeasurer()
+                val numStyle = TextStyle(
+                    color = scheme.onSurfaceVariant.copy(alpha = 0.65f),
+                    fontSize = 12.sp,
+                    fontFamily = FontFamily.Monospace,
+                )
+                val gutterBg = extra.keyBg.copy(alpha = 0.55f)
+                val gutterLine = scheme.outlineVariant
+                val availW = with(density) { viewportWpx.toDp() }
                 Box(
                     Modifier
                         .weight(1f)
                         .fillMaxWidth()
-                        .onSizeChanged { viewportPx = it.height }
+                        .onSizeChanged { viewportPx = it.height; viewportWpx = it.width }
                         .verticalScroll(scroll)
+                        .then(if (wrap) Modifier else Modifier.horizontalScroll(hScroll))
                 ) {
                     BasicTextField(
                         value = value,
                         onValueChange = { applyValue(it) },
                         onTextLayout = { layout = it },
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .then(if (wrap) Modifier.fillMaxWidth() else Modifier.defaultMinSize(minWidth = availW))
                             .defaultMinSize(minHeight = with(density) { viewportPx.toDp() })
                             .focusRequester(focusRequester)
-                            .padding(horizontal = 20.dp, vertical = 16.dp),
+                            .drawBehind {
+                                if (!showNums) return@drawBehind
+                                val gw = gutter.toPx()
+                                drawRect(gutterBg, size = Size(gw, size.height))
+                                drawLine(gutterLine, Offset(gw, 0f), Offset(gw, size.height), strokeWidth = 1f)
+                                val l = layout ?: return@drawBehind
+                                val text = l.layoutInput.text.text
+                                var startIdx = 0
+                                var n = 1
+                                while (true) {
+                                    val line = l.getLineForOffset(startIdx.coerceAtMost(text.length))
+                                    val top = padTopPx + l.getLineTop(line)
+                                    val h = l.getLineBottom(line) - l.getLineTop(line)
+                                    val res = measurer.measure(n.toString(), numStyle)
+                                    drawText(res, topLeft = Offset(gw - res.size.width - 6.dp.toPx(), top + (h - res.size.height) / 2f))
+                                    val nl = text.indexOf('\n', startIdx)
+                                    if (nl < 0 || n > 20000) break
+                                    startIdx = nl + 1
+                                    n++
+                                }
+                            }
+                            .padding(start = if (showNums) gutter + 10.dp else 20.dp, end = 20.dp, top = 16.dp, bottom = 16.dp),
                         textStyle = textStyle,
                         cursorBrush = SolidColor(scheme.primary),
                         decorationBox = { inner ->
@@ -327,8 +498,43 @@ fun EditorScreen(
                         },
                     )
                 }
+                // Lịch hẹn gắn với ghi chú này
+                val noteAppts = appts.items.filter { it.noteId == current.id && !it.done }
+                if (noteAppts.isNotEmpty()) {
+                    LazyRow(
+                        Modifier.fillMaxWidth().padding(top = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        contentPadding = PaddingValues(horizontal = 14.dp),
+                    ) {
+                        items(noteAppts, key = { it.id }) { a ->
+                            Surface(
+                                onClick = { editingAppt = a; editingIsNew = false; editingFromNote = true },
+                                shape = RoundedCornerShape(10.dp),
+                                color = extra.accentSoft,
+                                contentColor = scheme.primary,
+                            ) {
+                                Row(Modifier.padding(horizontal = 10.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                                    Icon(AlarmIcon, contentDescription = null, modifier = Modifier.size(14.dp))
+                                    Text(formatDayShort(a.time, locale) + " " + formatTime(a.time, locale), fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                                    if (a.title.isNotBlank()) Text(a.title, fontSize = 12.sp, color = scheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.widthIn(max = 160.dp))
+                                    if (a.phone.isNotBlank()) Icon(PhoneIcon, contentDescription = null, modifier = Modifier.size(13.dp))
+                                }
+                            }
+                        }
+                    }
+                }
+                // Ảnh & ghi âm của ghi chú
+                AttachmentStrip(noteFiles, onOpenImage = { viewerFile = it }, onManage = { showAttachments = true })
                 HorizontalDivider(color = scheme.outlineVariant)
-                StatusRow(text = value.text, saving = store.isSaving, onHideKeyboard = if (wideTyping) hideKeyboard else null)
+                EditorFooter(
+                    text = value.text,
+                    saving = store.isSaving,
+                    onCamera = startCamera,
+                    onPick = startPick,
+                    onRecord = startRecord,
+                    onAppointment = tagAppointment,
+                    onHideKeyboard = if (wideTyping || (imeVisible && !EditorPrefs.dockVisible)) hideKeyboard else null,
+                )
             }
         }
 
@@ -429,26 +635,54 @@ fun EditorScreen(
                 if (adOnTop) Box(Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, bottom = 6.dp)) { banner() }
             }
 
+            val dockOn = EditorPrefs.dockVisible
+            val calcMode = EditorPrefs.dockMode == DockMode.CALC
+            val setCalc = { EditorPrefs.setDockMode(context, DockMode.CALC) }
+            val setAppts = { EditorPrefs.setDockMode(context, DockMode.APPOINTMENTS) }
+            val hideDock = { EditorPrefs.setDockVisible(context, false) }
+            val apptsPanel: @Composable (Modifier, (() -> Unit)?) -> Unit = { mod, collapse ->
+                AppointmentsPanel(
+                    store = appts,
+                    noteTitleOf = noteTitleOf,
+                    onNew = newAppointment,
+                    onEdit = { a -> editingAppt = a; editingIsNew = false; editingFromNote = a.noteId == current.id },
+                    onOpenNote = { id -> if (notes.any { it.id == id }) store.select(id) },
+                    modifier = mod,
+                    onCollapse = collapse,
+                    header = { DockSwitcher(calcMode, setCalc, setAppts, hideDock, showLabels = screenW >= 360.dp) },
+                )
+            }
+
             if (wide) {
-                // Hai cột: ghi chú bên trái, máy tính luôn mở bên phải.
+                // Hai cột: ghi chú bên trái, máy tính / lịch hẹn bên phải (ẩn được để ghi chú rộng hết màn hình).
                 Row(Modifier.fillMaxSize()) {
                     Column(Modifier.weight(1f).fillMaxHeight()) {
                         header()
                         topAd()
                         if (showTabs) tabBar()
                         editorCard(Modifier.weight(1f))
+                        if (!dockOn && !adOnTop) {
+                            Box(Modifier.padding(start = 12.dp, end = 12.dp, top = 8.dp)) { banner() }
+                        }
                         Spacer(Modifier.height(10.dp))
                     }
-                    Column(
-                        Modifier
-                            .width(sideWidth)
-                            .fillMaxHeight()
-                            .padding(top = 10.dp, end = 12.dp, bottom = 10.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        sideCalc(Modifier.weight(1f).fillMaxWidth())
-                        if (!adOnTop) {
-                            if (useMrec) AdSlot(mrecHolder, mrecSize) else banner()
+                    if (dockOn) {
+                        Column(
+                            Modifier
+                                .width(sideWidth)
+                                .fillMaxHeight()
+                                .padding(top = 10.dp, end = 12.dp, bottom = 10.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            if (calcMode) {
+                                DockSwitcher(calcMode, setCalc, setAppts, hideDock, showLabels = true)
+                                sideCalc(Modifier.weight(1f).fillMaxWidth())
+                            } else {
+                                apptsPanel(Modifier.weight(1f), null)
+                            }
+                            if (!adOnTop) {
+                                if (useMrec) AdSlot(mrecHolder, mrecSize) else banner()
+                            }
                         }
                     }
                 }
@@ -466,23 +700,37 @@ fun EditorScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         if (!imeVisible) {
-                            if (calcOpen) {
-                                // Màn hình thấp: máy tính không chiếm quá ~60% chiều cao, cuộn được.
-                                Box(Modifier.heightIn(max = screenH * 0.62f).verticalScroll(rememberScrollState())) {
-                                    calcPanel(true)
+                            if (dockOn) {
+                                if (calcOpen) {
+                                    if (calcMode) {
+                                        DockSwitcher(calcMode, setCalc, setAppts, hideDock, showLabels = true)
+                                        // Màn hình thấp: máy tính không chiếm quá ~60% chiều cao, cuộn được.
+                                        Box(Modifier.heightIn(max = screenH * 0.58f).verticalScroll(rememberScrollState())) {
+                                            calcPanel(true)
+                                        }
+                                    } else {
+                                        apptsPanel(Modifier.heightIn(max = screenH * 0.6f), { calcOpen = false })
+                                    }
+                                } else {
+                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        DockSwitcher(calcMode, setCalc, setAppts, null, showLabels = false, height = 60.dp)
+                                        Box(Modifier.weight(1f)) {
+                                            if (calcMode) CalculatorBar(calc = store.calc, onExpand = openCalc, hideIcon = true)
+                                            else AppointmentBar(appts, onExpand = openCalc, hideIcon = true)
+                                        }
+                                    }
                                 }
-                            } else {
-                                CalculatorBar(calc = store.calc, onExpand = openCalc)
                             }
                             banner()
                         }
-                        if (typingCalcRow) {
+                        if (typingCalcRow && dockOn) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                             ) {
                                 Box(Modifier.weight(1f)) {
-                                    CalculatorBar(calc = store.calc, onExpand = openCalc, compact = true)
+                                    if (calcMode) CalculatorBar(calc = store.calc, onExpand = openCalc, compact = true)
+                                    else AppointmentBar(appts, onExpand = openCalc, compact = true)
                                 }
                                 hideKeyboardButton(48.dp)
                             }
@@ -491,6 +739,47 @@ fun EditorScreen(
                 }
             }
         }
+    }
+
+    // ----- Hộp thoại lịch hẹn / ảnh / ghi âm -----
+    editingAppt?.let { a ->
+        AppointmentEditorDialog(
+            initial = a,
+            isNew = editingIsNew,
+            noteTitle = if (editingFromNote) current.displayTitle(untitled) else null,
+            onSave = { saved, insertTag ->
+                appts.upsert(saved)
+                if (insertTag) applyValue(insertAtCursor(value, appointmentTag(saved, locale) + " "))
+                if (!Reminders.canNotify(context) && Build.VERSION.SDK_INT >= 33) {
+                    notifPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+                editingAppt = null
+            },
+            onDelete = if (editingIsNew) null else ({ appts.delete(a.id); editingAppt = null }),
+            onDismiss = { editingAppt = null },
+        )
+    }
+    if (showAttachments) {
+        AttachmentsDialog(
+            noteTitle = current.displayTitle(untitled),
+            files = noteFiles,
+            onOpenImage = { viewerFile = it },
+            onDelete = { attachments.delete(current.id, it) },
+            onTakePhoto = { showAttachments = false; startCamera() },
+            onPickPhoto = { showAttachments = false; startPick() },
+            onRecord = { showAttachments = false; startRecord() },
+            onDismiss = { showAttachments = false },
+        )
+    }
+    viewerFile?.let { f ->
+        PhotoViewer(f, onDelete = { attachments.delete(current.id, f); viewerFile = null }, onDismiss = { viewerFile = null })
+    }
+    recorderFile?.let { f ->
+        RecorderDialog(
+            outFile = f,
+            onSaved = { attachments.refresh(current.id); recorderFile = null },
+            onCancel = { attachments.refresh(current.id); recorderFile = null },
+        )
     }
 
     renameTarget?.let { target ->
@@ -972,36 +1261,91 @@ private fun TabBar(
 }
 
 @Composable
-private fun StatusRow(text: String, saving: Boolean, onHideKeyboard: (() -> Unit)? = null) {
+private fun EditorFooter(
+    text: String,
+    saving: Boolean,
+    onCamera: () -> Unit,
+    onPick: () -> Unit,
+    onRecord: () -> Unit,
+    onAppointment: () -> Unit,
+    onHideKeyboard: (() -> Unit)?,
+) {
+    val context = LocalContext.current
     val scheme = MaterialTheme.colorScheme
+    val extra = LocalExtraColors.current
     val lines = if (text.isEmpty()) 1 else text.count { it == '\n' } + 1
+    var photoMenu by remember { mutableStateOf(false) }
+
+    @Composable
+    fun tool(icon: ImageVector, label: String, active: Boolean = false, onClick: () -> Unit) {
+        Surface(
+            onClick = onClick,
+            shape = RoundedCornerShape(9.dp),
+            color = if (active) extra.accentSoft else Color.Transparent,
+            contentColor = if (active) scheme.primary else scheme.onSurfaceVariant,
+            modifier = Modifier.size(32.dp),
+        ) {
+            Box(contentAlignment = Alignment.Center) { Icon(icon, contentDescription = label, modifier = Modifier.size(18.dp)) }
+        }
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 9.dp),
+            .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
     ) {
+        Box {
+            tool(CameraIcon, stringResource(R.string.photo_take)) { photoMenu = true }
+            DropdownMenu(expanded = photoMenu, onDismissRequest = { photoMenu = false }) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.photo_take)) },
+                    leadingIcon = { Icon(CameraIcon, contentDescription = null, modifier = Modifier.size(20.dp)) },
+                    onClick = { photoMenu = false; onCamera() },
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.photo_pick)) },
+                    leadingIcon = { Icon(GalleryGlyph, contentDescription = null, modifier = Modifier.size(20.dp)) },
+                    onClick = { photoMenu = false; onPick() },
+                )
+            }
+        }
+        tool(MicIcon, stringResource(R.string.rec_record), onClick = onRecord)
+        tool(AlarmIcon, stringResource(R.string.appt_add), onClick = onAppointment)
         Text(
-            stringResource(R.string.status_counts, lines, text.length),
+            "$lines · ${text.length}",
             fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
             color = scheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f).padding(start = 6.dp),
         )
-        Spacer(Modifier.weight(1f))
         if (saving) {
-            Text(stringResource(R.string.status_saving), fontSize = 12.sp, fontWeight = FontWeight.Medium, color = scheme.onSurfaceVariant)
+            Text("…", fontSize = 12.sp, color = scheme.onSurfaceVariant)
         } else {
-            Icon(Icons.Filled.Check, contentDescription = null, tint = scheme.primary, modifier = Modifier.size(14.dp))
-            Spacer(Modifier.width(4.dp))
-            Text(stringResource(R.string.status_saved), fontSize = 12.sp, fontWeight = FontWeight.Medium, color = scheme.primary)
+            Icon(Icons.Filled.Check, contentDescription = stringResource(R.string.status_saved), tint = scheme.primary, modifier = Modifier.size(14.dp))
         }
+        Spacer(Modifier.width(4.dp))
+        tool(LineNumbersIcon, stringResource(R.string.line_numbers), active = EditorPrefs.lineNumbers) {
+            EditorPrefs.setLineNumbers(context, !EditorPrefs.lineNumbers)
+        }
+        tool(WrapIcon, stringResource(R.string.word_wrap), active = EditorPrefs.wordWrap) {
+            EditorPrefs.setWordWrap(context, !EditorPrefs.wordWrap)
+        }
+        tool(
+            if (EditorPrefs.dockVisible) PanelHideIcon else PanelShowIcon,
+            stringResource(if (EditorPrefs.dockVisible) R.string.dock_hide else R.string.dock_show),
+            active = !EditorPrefs.dockVisible,
+        ) { EditorPrefs.setDockVisible(context, !EditorPrefs.dockVisible) }
         if (onHideKeyboard != null) {
-            Spacer(Modifier.width(10.dp))
+            Spacer(Modifier.width(2.dp))
             Surface(
                 onClick = onHideKeyboard,
                 shape = RoundedCornerShape(10.dp),
-                color = LocalExtraColors.current.accentSoft,
-                modifier = Modifier.size(width = 44.dp, height = 30.dp),
+                color = extra.accentSoft,
+                modifier = Modifier.size(width = 40.dp, height = 30.dp),
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(KeyboardHideIcon, contentDescription = stringResource(R.string.hide_keyboard), tint = scheme.primary, modifier = Modifier.size(18.dp))
@@ -1009,6 +1353,15 @@ private fun StatusRow(text: String, saving: Boolean, onHideKeyboard: (() -> Unit
             }
         }
     }
+}
+
+/** Dòng chứa con trỏ (để lấy nội dung lịch hẹn khi bấm ⏰). */
+private fun currentLine(v: TextFieldValue): String {
+    val t = v.text
+    val pos = v.selection.start.coerceIn(0, t.length)
+    val start = t.lastIndexOf('\n', (pos - 1).coerceAtLeast(0)).let { if (it < 0 || pos == 0) 0 else it + 1 }
+    val end = t.indexOf('\n', pos).let { if (it < 0) t.length else it }
+    return if (start <= end) t.substring(start, end) else ""
 }
 
 /** Chọn ngôn ngữ: "Theo hệ thống" + 13 ngôn ngữ (tên viết bằng chính ngôn ngữ đó). */

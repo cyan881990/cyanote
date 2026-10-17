@@ -44,6 +44,7 @@ class MainActivity : ComponentActivity() {
     private var fileUpdate by mutableStateOf<UpdateInfo?>(null)      // có bản mới (hiện nhãn ở đầu màn hình)
     private var showUpdateDialog by mutableStateOf(false)
     private var playUpdateAvailable by mutableStateOf<AppUpdateInfo?>(null)
+    private var openAppointments by mutableStateOf(false)
     private val playUpdateLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { }
     private val installListener = InstallStateUpdatedListener { state ->
         if (state.installStatus() == InstallStatus.DOWNLOADED) {
@@ -61,6 +62,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         AppSettings.load(this)
+        EditorPrefs.load(this)
+        // Lịch hẹn: tạo kênh thông báo & đặt lại lời nhắc (phòng khi máy vừa đổi giờ / cập nhật app)
+        Reminders.ensureChannels(this)
+        Reminders.rescheduleAll(this)
 
         // Khởi tạo AdMob ở luồng nền để app mở nhanh.
         // Xong thì callback chạy trên luồng chính → mới bắt đầu tải banner.
@@ -112,6 +117,8 @@ class MainActivity : ComponentActivity() {
                         },
                         onUpdateClick = { onUpdateClick() },
                         onCheckUpdates = { checkUpdatesNow() },
+                        openAppointmentsRequest = openAppointments,
+                        onAppointmentsRequestHandled = { openAppointments = false },
                         onLanguageChosen = { tag ->
                             if (tag != AppSettings.languageTag(this@MainActivity)) {
                                 store.saveNow()
@@ -238,6 +245,10 @@ class MainActivity : ComponentActivity() {
 
     private fun handleIntent(intent: Intent?) {
         if (intent?.action == ACTION_NEW_NOTE) store.newNote()
+        // Bấm vào thông báo lịch hẹn: mở đúng ghi chú, hoặc bảng lịch hẹn
+        val noteId = intent?.getLongExtra(Reminders.EXTRA_OPEN_NOTE, 0L) ?: 0L
+        if (noteId != 0L && store.notes.any { it.id == noteId }) store.select(noteId)
+        if (intent?.getBooleanExtra(Reminders.EXTRA_OPEN_APPOINTMENTS, false) == true) openAppointments = true
     }
 
     companion object {

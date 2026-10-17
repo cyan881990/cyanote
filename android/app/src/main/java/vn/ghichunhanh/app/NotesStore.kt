@@ -45,6 +45,7 @@ fun Note.displayTitle(untitled: String): String {
  * - Ghi file kiểu "atomic": nếu đang ghi mà sập, file cũ vẫn còn nguyên.
  */
 class NotesStore private constructor(context: Context, welcomeTitle: String, welcomeText: String) {
+    private val appContext = context.applicationContext
     private val file = AtomicFile(File(context.filesDir, "notes.json"))
     private val lock = Any()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -113,6 +114,7 @@ class NotesStore private constructor(context: Context, welcomeTitle: String, wel
         val i = notes.indexOfFirst { it.id == id }
         if (i < 0) return
         notes.removeAt(i)
+        AttachmentsStore.get(appContext).deleteAll(id)   // xoá luôn ảnh của ghi chú
         if (notes.isEmpty()) {
             newNote()
             return
@@ -145,15 +147,24 @@ class NotesStore private constructor(context: Context, welcomeTitle: String, wel
      * - replace = true: thay toàn bộ ghi chú, phép tính và kiểu chữ bằng dữ liệu trong file.
      * Trả về số ghi chú đã thêm.
      */
+    /** Ghi chú cũ → id mới sau lần nhập gần nhất (để gắn lại lịch hẹn, ảnh). */
+    var lastImportIdMap: Map<Long, Long> = emptyMap()
+        private set
+
     fun importBackup(data: BackupData, replace: Boolean): Int {
+        val idMap = HashMap<Long, Long>()
         var nextId = maxOf(System.currentTimeMillis(), (notes.maxOfOrNull { it.id } ?: 0L) + 1)
         if (replace) notes.clear()
         val existing = notes.map { it.title to it.content }.toHashSet()
         var firstAddedId: Long? = null
         var added = 0
         for (n in data.notes) {
-            if (!replace && (n.title to n.content) in existing) continue
+            if (!replace && (n.title to n.content) in existing) {
+                notes.firstOrNull { it.title == n.title && it.content == n.content }?.let { idMap[n.id] = it.id }
+                continue
+            }
             val id = nextId++
+            idMap[n.id] = id
             notes.add(n.copy(id = id))
             existing.add(n.title to n.content)
             if (firstAddedId == null) firstAddedId = id
@@ -169,6 +180,7 @@ class NotesStore private constructor(context: Context, welcomeTitle: String, wel
             selectedId = firstAddedId ?: selectedId
             if (notes.none { it.id == selectedId }) selectedId = notes.first().id
         }
+        lastImportIdMap = idMap
         markChanged()
         saveNow()
         return added
@@ -270,6 +282,12 @@ class NotesStore private constructor(context: Context, welcomeTitle: String, wel
 
     companion object {
         private const val SAVE_DELAY_MS = 400L
+
+        /** Tên hiển thị của một ghi chú (dùng trong thông báo lịch hẹn). */
+        fun peekTitle(context: Context, id: Long): String? {
+            val ctx = AppSettings.wrapWithLanguage(context)
+            return get(ctx).notes.firstOrNull { it.id == id }?.displayTitle(ctx.getString(R.string.untitled))
+        }
 
         @Volatile
         private var instance: NotesStore? = null

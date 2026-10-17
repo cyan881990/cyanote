@@ -40,6 +40,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import vn.ghichunhanh.app.APP_LANGUAGES
 import vn.ghichunhanh.app.AppSettings
+import vn.ghichunhanh.app.AppointmentsStore
+import vn.ghichunhanh.app.AttachmentsStore
 import vn.ghichunhanh.app.Backup
 import vn.ghichunhanh.app.BackupData
 import vn.ghichunhanh.app.NotesStore
@@ -70,14 +72,18 @@ fun BackupDialog(
     ) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
         // Chụp dữ liệu trên luồng chính, ghi file ở luồng nền.
-        val json = store.backupJson(AppSettings.themeMode.name, currentLanguage)
+        // Kèm lịch hẹn, ảnh và ghi âm
+        val json = org.json.JSONObject(store.backupJson(AppSettings.themeMode.name, currentLanguage))
+            .put("appointments", AppointmentsStore.get(context).toJsonArray())
+            .toString(2)
         val notes = store.notes.toList()
+        val files = AttachmentsStore.get(context).all()
         busy = true
         scope.launch {
             val ok = withContext(Dispatchers.IO) {
                 runCatching {
                     val out = context.contentResolver.openOutputStream(uri) ?: throw IOException("No output")
-                    out.use { Backup.write(it, json, notes, untitled) }
+                    out.use { Backup.write(it, json, notes, untitled, files) }
                 }.isSuccess
             }
             busy = false
@@ -110,6 +116,14 @@ fun BackupDialog(
 
     fun applyImport(data: BackupData, replace: Boolean) {
         val added = store.importBackup(data, replace)
+        val idMap = store.lastImportIdMap
+        val attachments = AttachmentsStore.get(context)
+        for ((oldId, name, bytes) in data.attachments) {
+            idMap[oldId]?.let { attachments.putRaw(it, name, bytes) }
+        }
+        data.appointmentsJson?.let {
+            runCatching { AppointmentsStore.get(context).importFrom(org.json.JSONArray(it), idMap, replace) }
+        }
         if (replace) {
             data.theme
                 ?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() }

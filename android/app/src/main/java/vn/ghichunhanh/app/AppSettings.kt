@@ -29,6 +29,43 @@ val APP_LANGUAGES: List<Pair<String, String>> = listOf(
     "ru" to "Русский",
 )
 
+enum class DockMode { CALC, APPOINTMENTS }
+
+/** Tuỳ chọn trình soạn thảo (lưu lại giữa các lần mở app). */
+object EditorPrefs {
+    private const val PREFS = "settings"
+    var wordWrap by mutableStateOf(true)        // mặc định: tự xuống dòng
+        private set
+    var lineNumbers by mutableStateOf(true)     // số dòng bên trái như Notepad++
+        private set
+    var dockVisible by mutableStateOf(true)     // bảng máy tính / lịch hẹn ở dưới
+        private set
+    var dockMode by mutableStateOf(DockMode.CALC)
+        private set
+    private var loaded = false
+
+    fun load(context: Context) {
+        if (loaded) return
+        loaded = true
+        val p = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        wordWrap = p.getBoolean("word_wrap", true)
+        lineNumbers = p.getBoolean("line_numbers", true)
+        dockVisible = p.getBoolean("dock_visible", true)
+        dockMode = runCatching { DockMode.valueOf(p.getString("dock_mode", "CALC")!!) }.getOrDefault(DockMode.CALC)
+    }
+
+    private fun put(context: Context, key: String, v: Any) {
+        val e = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+        when (v) { is Boolean -> e.putBoolean(key, v); is String -> e.putString(key, v) }
+        e.apply()
+    }
+
+    fun setWordWrap(c: Context, v: Boolean) { wordWrap = v; put(c, "word_wrap", v) }
+    fun setLineNumbers(c: Context, v: Boolean) { lineNumbers = v; put(c, "line_numbers", v) }
+    fun setDockVisible(c: Context, v: Boolean) { dockVisible = v; put(c, "dock_visible", v) }
+    fun setDockMode(c: Context, v: DockMode) { dockMode = v; put(c, "dock_mode", v.name) }
+}
+
 /**
  * Cài đặt nhỏ lưu trong SharedPreferences: ngôn ngữ app và chế độ sáng/tối.
  * Ngôn ngữ được áp dụng trong MainActivity.attachBaseContext.

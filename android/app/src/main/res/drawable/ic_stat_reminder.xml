@@ -1,0 +1,15 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="#FFFFFFFF">
+    <!-- Biểu tượng thông báo lịch hẹn: đồng hồ báo thức (một màu, theo quy định Android) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M12,21a8,8 0,1 0,0 -16a8,8 0,1 0,0 16z M12,9v4l2.5,2 M5,3L2,6 M19,3l3,3" />
+</vector>
