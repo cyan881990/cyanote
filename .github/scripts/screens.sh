@@ -54,6 +54,7 @@ for i in $(seq 1 30); do adb shell dumpsys notification --noredact | grep -q "G�
 adb shell cmd statusbar expand-notifications; shot 05-notification 3
 tap "Xong"; sleep 2
 adb shell cmd statusbar collapse; sleep 2
+adb shell am start -n $PKG/vn.ghichunhanh.app.MainActivity; sleep 3
 # Ảnh & ghi âm
 tap "Tùy chọn"; sleep 1; tap "Ảnh & ghi âm (3)"; shot 06-attachments 4
 adb shell input keyevent 4; sleep 1
