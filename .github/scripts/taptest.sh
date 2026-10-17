@@ -13,6 +13,22 @@ push seed/appointments.json files/appointments.json
 push seed/settings.xml shared_prefs/settings.xml
 adb shell am start -W -n $PKG/vn.ghichunhanh.app.MainActivity; sleep 12
 mkdir -p smoke-out/tap
+# Đóng hộp thoại "… isn't responding" của hệ thống (máy ảo chậm) nếu có
+dismiss() {
+  for i in 1 2 3; do
+    adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1; adb pull /sdcard/ui.xml ui.xml >/dev/null 2>&1
+    xy=$(python3 - <<'PY'
+import re, xml.etree.ElementTree as ET
+for n in ET.parse("ui.xml").getroot().iter("node"):
+    if n.get("text") in ("Wait", "Close app") and n.get("text") == "Wait":
+        x1, y1, x2, y2 = map(int, re.findall(r"\d+", n.get("bounds"))); print((x1+x2)//2, (y1+y2)//2); break
+PY
+)
+    [ -z "$xy" ] && return
+    adb shell input tap $xy; sleep 3
+  done
+}
+sleep 20; dismiss
 ime() { adb shell dumpsys input_method | grep -E "mInputShown|mIsInputViewShown|isInputViewShown|mServedView|mCurFocusedWindowClient" | head -6 | tr '\n' ' '; }
 edit_xy() {
   adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1; adb pull /sdcard/ui.xml ui.xml >/dev/null 2>&1
@@ -26,7 +42,7 @@ else:
     print("NONE")
 PY
 }
-r1=$(edit_xy); set -- $r1
+dismiss; r1=$(edit_xy); set -- $r1
 echo "::warning title=edit bounds::$r1"
 adb shell input tap $1 $2; sleep 3
 adb exec-out screencap -p > smoke-out/tap/1-after-tap.png
@@ -39,7 +55,7 @@ adb exec-out screencap -p > smoke-out/tap/2-after-second-tap.png
 echo "::warning title=3 after second tap::$(ime) || $(edit_xy)"
 # Mở máy tính rồi bấm vào ghi chú
 adb shell input keyevent 4; sleep 2
-r3=$(edit_xy); set -- $r3
+dismiss; r3=$(edit_xy); set -- $r3
 adb shell input tap $(( $1 )) $(( $2 + 300 )); sleep 3
 adb exec-out screencap -p > smoke-out/tap/3-tap-lower.png
 echo "::warning title=4 tap lower area::$(ime) || $(edit_xy)"
