@@ -64,6 +64,7 @@ struct CalculatorPanel: View {
     @EnvironmentObject private var settings: AppSettings
     @Environment(\.colorScheme) private var colorScheme
     var onCollapse: (() -> Void)?   // nil: không có nút Thu gọn (màn hình rộng)
+    var fill: Bool = false           // true: phím giãn lấp kín chiều cao cột
     var onInsert: (String) -> Void
 
     var body: some View {
@@ -117,7 +118,7 @@ struct CalculatorPanel: View {
             ForEach(keyRows, id: \.self) { row in
                 HStack(spacing: 6) {
                     ForEach(row, id: \.self) { key in
-                        CalcKey(key: key, label: s(keyLabelKeys[key] ?? key)) {
+                        CalcKey(key: key, label: s(keyLabelKeys[key] ?? key), fill: fill) {
                             UIImpactFeedbackGenerator(style: .light).impactOccurred()
                             calc.press(key)
                         }
@@ -157,6 +158,7 @@ struct CalculatorPanel: View {
 private struct CalcKey: View {
     let key: String
     let label: String
+    var fill: Bool = false
     let action: () -> Void
     @Environment(\.colorScheme) private var colorScheme
 
@@ -173,7 +175,7 @@ private struct CalcKey: View {
                 .font(.system(size: 19, weight: .semibold))
                 .foregroundColor(fg)
                 .frame(maxWidth: .infinity)
-                .frame(height: 44)
+                .frame(minHeight: 44, maxHeight: fill ? .infinity : 44)
                 .background(bg)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }

@@ -30,11 +30,11 @@ struct ContentView: View {
             let h = geo.size.height                       // đã trừ bàn phím
             let typing = keyboard.isVisible
             let wide = w >= 720 || (w > h && w >= 560)    // iPad, iPhone xoay ngang → 2 cột
-            let sideWidth: CGFloat = w >= 1000 ? 380 : (w >= 720 ? 330 : 320)
+            let sideWidth: CGFloat = w >= 1000 ? 392 : (w >= 720 ? 344 : 332)
             let compactHeader = typing || h < 520
             let showTabs = !typing || h >= 400
             let typingCalcRow = typing && !wide && h >= 300
-            let adWidth: CGFloat = wide ? sideWidth : min(w - 24, 480)
+            let adWidth: CGFloat = wide ? sideWidth - 12 : min(w - 24, 480)
             let header = HeaderView(
                 onLanguage: { showLanguages = true },
                 onCalendar: { showMonth = true },
@@ -53,12 +53,17 @@ struct ContentView: View {
                         Spacer().frame(height: 10)
                     }
                     VStack(spacing: 8) {
-                        ScrollView {
-                            CalculatorPanel(calc: store.calc, onCollapse: nil) { text in insert(text, into: current) }
+                        // Đủ cao: phím giãn lấp kín cột (không chừa khoảng trống); thấp: cuộn.
+                        ViewThatFits(in: .vertical) {
+                            CalculatorPanel(calc: store.calc, onCollapse: nil, fill: true) { text in insert(text, into: current) }
+                                .frame(maxHeight: .infinity)
+                            ScrollView {
+                                CalculatorPanel(calc: store.calc, onCollapse: nil) { text in insert(text, into: current) }
+                            }
                         }
                         if !typing { BannerAdView(width: adWidth) }
                     }
-                    .frame(width: sideWidth)
+                    .frame(width: sideWidth - 12)
                     .padding(.top, 10)
                     .padding(.trailing, 12)
                     .padding(.bottom, 6)
