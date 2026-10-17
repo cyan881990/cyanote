@@ -9,8 +9,8 @@ Ghi chú nhiều tab kiểu Notepad, tự lưu, có máy tính thu gọn đượ
 | `tools/i18n/` | Bản dịch gốc 13 ngôn ngữ + script sinh file chữ cho Android và iOS |
 | `tools/icon/` | Script vẽ logo và xuất mọi cỡ biểu tượng |
 | `store/` | Biểu tượng 512, ảnh bìa Google Play, logo |
-| `docs/` | Trang web + Chính sách bảo mật (GitHub Pages) |
-| `.github/workflows/` | Build tự động Android, iOS, trang web |
+| (kho riêng) | Trang web + Chính sách bảo mật: https://github.com/cyan881990/cyan881990.github.io |
+| `.github/workflows/` | Build tự động Android, iOS |
 
 ## Tải bản thử
 
@@ -55,4 +55,4 @@ Biểu tượng Android là vector trong `android/app/src/main/res/drawable/ic_l
 
 - Thay mã AdMob thử nghiệm: Android (`AndroidManifest.xml`, `ads/BannerAd.kt`), iOS (`ios/project.yml` → `GADApplicationIdentifier`, `Views/Sheets.swift` → `AdConfig`).
 - Thêm hộp thoại đồng ý quảng cáo (Google UMP) nếu phát hành ở châu Âu/Anh.
-- Chính sách bảo mật: `https://cyan881990.github.io/cyanote/privacy.html` (sau khi workflow "Trang web" chạy).
+- Chính sách bảo mật: https://cyan881990.github.io/privacy.html (kho cyan881990.github.io).
