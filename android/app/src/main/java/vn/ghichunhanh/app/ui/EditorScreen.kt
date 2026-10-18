@@ -747,6 +747,7 @@ fun EditorScreen(
                 )
             }
 
+            val shortWide = wide && screenH < 440.dp
             if (wide) {
                 // Hai cột: ghi chú bên trái, máy tính / lịch hẹn bên phải (ẩn được để ghi chú rộng hết màn hình).
                 Row(Modifier.fillMaxSize()) {
@@ -755,7 +756,8 @@ fun EditorScreen(
                         topAd()
                         if (showTabs) tabBar()
                         editorCard(Modifier.weight(1f))
-                        if (!dockOn && !adOnTop) {
+                        // Màn thấp (điện thoại xoay ngang): banner nằm dưới ghi chú để cột máy tính đủ cao.
+                        if ((!dockOn || shortWide) && !adOnTop) {
                             Box(Modifier.padding(start = 12.dp, end = 12.dp, top = 8.dp)) { banner() }
                         }
                         Spacer(Modifier.height(10.dp))
@@ -774,7 +776,7 @@ fun EditorScreen(
                             } else {
                                 apptsPanel(Modifier.weight(1f), null)
                             }
-                            if (!adOnTop) {
+                            if (!adOnTop && !shortWide) {
                                 if (useMrec) AdSlot(mrecHolder, mrecSize) else banner()
                             }
                         }

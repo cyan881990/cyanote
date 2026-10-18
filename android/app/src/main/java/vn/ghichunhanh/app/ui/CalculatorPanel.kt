@@ -1,5 +1,10 @@
 package vn.ghichunhanh.app.ui
 
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.Dp
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.foundation.BorderStroke
@@ -166,6 +171,33 @@ fun CalculatorPanel(
         // Khi lấp theo chiều cao có sẵn: cho phép phím thấp hơn 48dp để luôn hiện đủ 5 hàng phím
         // (màn hình thấp, xoay ngang) thay vì bị cắt mất hàng dưới.
         CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides if (fill) 0.dp else LocalMinimumInteractiveComponentSize.current) {
+        BoxWithConstraints {
+        // Rất thấp (điện thoại xoay ngang): đưa 2 nút "Chèn" lên cạnh màn số để phím đủ cao.
+        val tight = fill && maxHeight < 330.dp
+        val insertFull: @Composable (Modifier, Dp, TextUnit) -> Unit = { m, h, fs ->
+            OutlinedButton(
+                onClick = { full?.let(onInsert) },
+                enabled = full != null,
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.5.dp, if (full != null) scheme.primary else scheme.outlineVariant),
+                contentPadding = PaddingValues(horizontal = 6.dp),
+                modifier = m.height(h),
+            ) {
+                Text(stringResource(R.string.calc_insert_full), fontSize = fs, lineHeight = fs * 1.15f, fontWeight = FontWeight.SemiBold, maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
+            }
+        }
+        val insertResult: @Composable (Modifier, Dp, TextUnit) -> Unit = { m, h, fs ->
+            Button(
+                onClick = { result?.let(onInsert) },
+                enabled = result != null,
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = scheme.primary, contentColor = scheme.onPrimary),
+                contentPadding = PaddingValues(horizontal = 6.dp),
+                modifier = m.height(h),
+            ) {
+                Text(stringResource(R.string.calc_insert_result), fontSize = fs, lineHeight = fs * 1.15f, fontWeight = FontWeight.SemiBold, maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
+            }
+        }
         Column(
             modifier = Modifier.padding(8.dp).then(if (fill) Modifier.fillMaxHeight() else Modifier),
             verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -204,6 +236,10 @@ fun CalculatorPanel(
                         overflow = TextOverflow.Ellipsis,
                         style = LocalTextStyle.current.copy(fontFeatureSettings = "tnum"),
                     )
+                }
+                if (tight) {
+                    insertFull(Modifier.width(78.dp).fillMaxHeight(), Dp.Unspecified, 11.sp)
+                    insertResult(Modifier.width(78.dp).fillMaxHeight(), Dp.Unspecified, 11.sp)
                 }
                 if (onCollapse != null) Surface(
                     onClick = onCollapse,
@@ -245,42 +281,12 @@ fun CalculatorPanel(
                 }
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                OutlinedButton(
-                    onClick = { full?.let(onInsert) },
-                    enabled = full != null,
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.5.dp, if (full != null) scheme.primary else scheme.outlineVariant),
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(btnHeight),
-                ) {
-                    Text(
-                        stringResource(R.string.calc_insert_full),
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-                Button(
-                    onClick = { result?.let(onInsert) },
-                    enabled = result != null,
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = scheme.primary, contentColor = scheme.onPrimary),
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(btnHeight),
-                ) {
-                    Text(
-                        stringResource(R.string.calc_insert_result),
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
+            if (!tight) Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                insertFull(Modifier.weight(1f), btnHeight, 13.sp)
+                insertResult(Modifier.weight(1f), btnHeight, 13.sp)
             }
+        }
+        }
         }
         }
     }
