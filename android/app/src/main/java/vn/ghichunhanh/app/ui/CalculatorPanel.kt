@@ -288,7 +288,6 @@ fun CalculatorPanel(
         }
         }
         }
-        }
     }
 }
 
