@@ -106,7 +106,7 @@ fun BackupDialog(
                 runCatching {
                     val name = displayName(context, uri)
                     val input = context.contentResolver.openInputStream(uri) ?: throw IOException("No input")
-                    input.use { Backup.read(it, name) }
+                    input.use { Backup.read(it, name, java.io.File(context.cacheDir, "restore").apply { deleteRecursively() }) }
                 }.getOrNull()
             }
             busy = false
@@ -118,9 +118,10 @@ fun BackupDialog(
         val added = store.importBackup(data, replace)
         val idMap = store.lastImportIdMap
         val attachments = AttachmentsStore.get(context)
-        for ((oldId, name, bytes) in data.attachments) {
-            idMap[oldId]?.let { attachments.putRaw(it, name, bytes) }
+        for ((oldId, name, file) in data.attachments) {
+            idMap[oldId]?.let { attachments.putFile(it, name, file) }
         }
+        java.io.File(context.cacheDir, "restore").deleteRecursively()
         data.appointmentsJson?.let {
             runCatching { AppointmentsStore.get(context).importFrom(org.json.JSONArray(it), idMap, replace) }
         }

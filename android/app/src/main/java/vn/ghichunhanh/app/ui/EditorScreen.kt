@@ -496,7 +496,7 @@ fun EditorScreen(
                 // Số dòng (như Notepad++): cột trái, đánh số theo dòng thật (dòng dài tự xuống vẫn 1 số).
                 val lineCount = if (value.text.isEmpty()) 1 else value.text.count { it == '\n' } + 1
                 val gutter = if (showNums) (lineCount.toString().length * 9 + 16).dp else 0.dp
-                val measurer = rememberTextMeasurer()
+                val measurer = rememberTextMeasurer(cacheSize = 256)
                 val numStyle = androidx.compose.ui.text.TextStyle(
                     color = scheme.onSurfaceVariant.copy(alpha = 0.65f),
                     fontSize = 12.sp,
@@ -543,16 +543,25 @@ fun EditorScreen(
                                 drawLine(gutterLine, Offset(gw, 0f), Offset(gw, size.height), strokeWidth = 1f)
                                 val l = layout ?: return@drawBehind
                                 val text = l.layoutInput.text.text
-                                var startIdx = 0
+                                // Chỉ vẽ số của các dòng đang nằm trong màn hình (ghi chú dài vẫn mượt)
+                                val visTop = scroll.value - padTopPx - 200f
+                                val visBottom = scroll.value + viewportPx + 200f
+                                val firstVisual = l.getLineForVerticalPosition(visTop.coerceAtLeast(0f))
+                                var startIdx = l.getLineStart(firstVisual).let { off ->
+                                    if (off == 0) 0 else text.lastIndexOf('\n', off - 1) + 1
+                                }
                                 var n = 1
+                                for (i in 0 until startIdx) if (text[i] == '\n') n++
                                 while (true) {
                                     val line = l.getLineForOffset(startIdx.coerceAtMost(text.length))
-                                    val top = padTopPx + l.getLineTop(line)
-                                    val h = l.getLineBottom(line) - l.getLineTop(line)
+                                    val lineTop = l.getLineTop(line)
+                                    if (lineTop > visBottom) break
+                                    val top = padTopPx + lineTop
+                                    val h = l.getLineBottom(line) - lineTop
                                     val res = measurer.measure(n.toString(), numStyle)
                                     drawText(res, topLeft = Offset(gw - res.size.width - 6.dp.toPx(), top + (h - res.size.height) / 2f))
                                     val nl = text.indexOf('\n', startIdx)
-                                    if (nl < 0 || n > 20000) break
+                                    if (nl < 0) break
                                     startIdx = nl + 1
                                     n++
                                 }

@@ -83,6 +83,15 @@ class NotesStore private constructor(context: Context, welcomeTitle: String, wel
     }
 
     /** Mở tab mới. Nếu đã có một tab trống thì chuyển sang tab đó thay vì tạo thêm. */
+    /** Tạo ghi chú mới có sẵn nội dung (nhận chữ chia sẻ từ app khác). */
+    fun addNote(content: String, title: String = "") {
+        val now = System.currentTimeMillis()
+        val id = maxOf(now, (notes.maxOfOrNull { it.id } ?: 0L) + 1)
+        notes.add(Note(id, title.take(80), content, now))
+        selectedId = id
+        markChanged()
+    }
+
     /** Luôn tạo ghi chú mới (tạo liên tục nhiều ghi chú được). */
     fun newNote() {
         val now = System.currentTimeMillis()

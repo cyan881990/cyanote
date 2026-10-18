@@ -53,6 +53,13 @@ android {
                 "proguard-rules.pro"
             )
         }
+        // Bản kiểm thử giống hệt bản phát hành (R8 thu gọn, tối ưu) nhưng ký bằng khoá thử để cài được trên máy ảo
+        create("qa") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("release")
+            isProfileable = true
+        }
     }
 
     compileOptions {
@@ -84,6 +91,8 @@ dependencies {
     // Play Core / AdMob kéo theo Fragment cũ; cần >= 1.3 cho ActivityResult API
     implementation("androidx.fragment:fragment-ktx:1.8.8")
     implementation("androidx.exifinterface:exifinterface:1.4.1")
+    // Cài sẵn hồ sơ tối ưu (Baseline Profile) của Compose → mở app và cuộn mượt hơn ngay lần đầu
+    implementation("androidx.profileinstaller:profileinstaller:1.4.1")
 
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.foundation:foundation")

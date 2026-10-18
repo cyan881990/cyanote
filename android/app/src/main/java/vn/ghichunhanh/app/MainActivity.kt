@@ -255,6 +255,12 @@ class MainActivity : ComponentActivity() {
             store.newNote()
             Interstitials.onNoteCreated(this)
         }
+        // Nhận chữ chia sẻ từ app khác (Chrome, Zalo, Messenger…) → thành ghi chú mới
+        if (intent?.action == Intent.ACTION_SEND && intent.type?.startsWith("text/") == true) {
+            val text = intent.getStringExtra(Intent.EXTRA_TEXT).orEmpty()
+            val subject = intent.getStringExtra(Intent.EXTRA_SUBJECT).orEmpty()
+            if (text.isNotBlank()) store.addNote(text, subject)
+        }
         // Bấm vào thông báo lịch hẹn: mở đúng ghi chú, hoặc bảng lịch hẹn
         val noteId = intent?.getLongExtra(Reminders.EXTRA_OPEN_NOTE, 0L) ?: 0L
         if (noteId != 0L && store.notes.any { it.id == noteId }) store.select(noteId)

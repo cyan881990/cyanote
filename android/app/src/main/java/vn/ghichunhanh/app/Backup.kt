@@ -23,8 +23,8 @@ data class BackupData(
     val theme: String? = null,
     val language: String? = null,
     val appointmentsJson: String? = null,
-    /** Ảnh & ghi âm: (id ghi chú cũ, tên file, dữ liệu). */
-    val attachments: List<Triple<Long, String, ByteArray>> = emptyList(),
+    /** Ảnh, video, ghi âm, tệp: (id ghi chú cũ, tên file, file tạm đã giải nén). */
+    val attachments: List<Triple<Long, String, java.io.File>> = emptyList(),
 )
 
 /**
@@ -90,7 +90,9 @@ object Backup {
      * [fileName] dùng làm tên ghi chú khi nhập file .txt rời.
      * Ném IOException nếu không đọc được hoặc không có ghi chú nào.
      */
-    fun read(input: InputStream, fileName: String?): BackupData {
+    /** [tempDir]: nơi giải nén tạm ảnh/video (không nạp cả vào RAM, tránh tràn bộ nhớ với video lớn). */
+    fun read(input: InputStream, fileName: String?, tempDir: java.io.File? = null): BackupData {
+        tmp = tempDir
         val buffered = BufferedInputStream(input)
         buffered.mark(4)
         val b1 = buffered.read()
@@ -100,10 +102,30 @@ object Backup {
         return if (isZip) readZip(buffered) else readPlainText(buffered, fileName)
     }
 
+    private var tmp: java.io.File? = null
+
+    /** Chép một mục trong zip ra file tạm, giới hạn dung lượng. */
+    private fun extractToTemp(input: InputStream, name: String): java.io.File {
+        val dir = (tmp ?: throw IOException("No temp dir")).apply { mkdirs() }
+        val out = java.io.File.createTempFile("att", "_" + name.takeLast(40).filter { it.isLetterOrDigit() || it == '.' }, dir)
+        var total = 0L
+        val buf = ByteArray(64 * 1024)
+        out.outputStream().use { o ->
+            while (true) {
+                val n = input.read(buf)
+                if (n < 0) break
+                total += n
+                if (total > MAX_ENTRY_BYTES) { o.close(); out.delete(); throw IOException("Entry too large") }
+                o.write(buf, 0, n)
+            }
+        }
+        return out
+    }
+
     private fun readZip(input: InputStream): BackupData {
         var json: String? = null
         val textNotes = mutableListOf<Note>()
-        val files = mutableListOf<Triple<Long, String, ByteArray>>()
+        val files = mutableListOf<Triple<Long, String, java.io.File>>()
         var count = 0
         ZipInputStream(input).use { zip ->
             while (true) {
@@ -115,7 +137,7 @@ object Backup {
                 val parts = path.split('/')
                 when {
                     parts.size == 3 && parts[0] == ATTACH_DIR && parts[1].toLongOrNull() != null && !name.startsWith(".") ->
-                        files.add(Triple(parts[1].toLong(), name, readLimited(zip)))
+                        if (tmp != null) files.add(Triple(parts[1].toLong(), name, extractToTemp(zip, name)))
                     name == NOTES_ENTRY && json == null ->
                         json = String(readLimited(zip), Charsets.UTF_8)
                     name.endsWith(".txt", ignoreCase = true) && !name.startsWith(".") -> {

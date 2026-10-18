@@ -76,6 +76,16 @@ class AttachmentsStore private constructor(private val appContext: Context) {
         out
     }.getOrNull()
 
+    /** Đưa file tạm (giải nén từ sao lưu) vào ghi chú. */
+    fun putFile(noteId: Long, name: String, src: File) {
+        val d = dir(noteId).apply { mkdirs() }
+        val safe = sanitize(name.substringAfterLast('/'))
+        if (safe.isEmpty() || safe.startsWith(".")) return
+        val dst = File(d, safe)
+        if (!src.renameTo(dst)) { src.copyTo(dst, overwrite = true); src.delete() }
+        refresh(noteId)
+    }
+
     /** Chép nguyên file (dùng khi khôi phục sao lưu). */
     fun putRaw(noteId: Long, name: String, bytes: ByteArray) {
         val d = dir(noteId).apply { mkdirs() }
