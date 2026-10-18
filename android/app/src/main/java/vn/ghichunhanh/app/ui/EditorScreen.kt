@@ -640,7 +640,7 @@ fun EditorScreen(
     // Cột máy tính bên phải: đủ cao thì phím giãn lấp kín cột (không chừa khoảng trống), thấp thì cuộn.
     val sideCalc: @Composable (Modifier) -> Unit = { modifier ->
         BoxWithConstraints(modifier) {
-            if (maxHeight >= 220.dp) {
+            if (maxHeight >= 170.dp) {
                 CalculatorPanel(
                     calc = store.calc,
                     onCollapse = null,

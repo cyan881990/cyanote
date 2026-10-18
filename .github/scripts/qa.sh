@@ -21,6 +21,8 @@ steps=""
 log() { steps="$steps%0A$1"; echo "$1"; }
 
 adb wait-for-device
+# Màn hình giống máy tầm trung/cao hiện nay (1080×2400, 420dpi ≈ 411×915dp: Galaxy A5x, Pixel 7…)
+adb shell wm size 1080x2400; adb shell wm density 420; sleep 3
 adb install -r app-qa.apk >/dev/null && log "install ok"
 [ "$api" -ge 33 ] && adb shell pm grant $PKG android.permission.POST_NOTIFICATIONS 2>/dev/null
 adb logcat -c
