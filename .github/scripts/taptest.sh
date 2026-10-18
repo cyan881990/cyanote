@@ -59,6 +59,24 @@ dismiss; r3=$(edit_xy); set -- $r3
 adb shell input tap $(( $1 + 150 )) $(( $2 - 120 )); sleep 3
 adb exec-out screencap -p > smoke-out/tap/3-tap-lower.png
 echo "::warning title=4 tap lower area::$(ime) || $(edit_xy)"
+# Quảng cáo toàn trang: tạo 6 ghi chú mới (cách nhau 20 giây) → phải hiện 2 lần
+adb shell input keyevent 4; sleep 2
+addxy=$(adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1; adb pull /sdcard/ui.xml ui.xml >/dev/null 2>&1; python3 - <<'PY'
+import re, xml.etree.ElementTree as ET
+for n in ET.parse("ui.xml").getroot().iter("node"):
+    if n.get("content-desc") == "New tab":
+        x1, y1, x2, y2 = map(int, re.findall(r"\d+", n.get("bounds"))); print((x1+x2)//2, (y1+y2)//2); break
+PY
+)
+shown=0
+for i in 1 2 3 4 5 6; do
+  adb shell input tap $addxy; sleep 6
+  top=$(adb shell dumpsys activity activities | grep -E "topResumedActivity|mResumedActivity" | head -1)
+  echo "note $i: $top"
+  if echo "$top" | grep -q "AdActivity"; then shown=$((shown+1)); adb exec-out screencap -p > smoke-out/tap/ad-$i.png; adb shell input keyevent 4; sleep 3; fi
+  sleep 14
+done
+echo "::warning title=interstitials shown::$shown (expected 2) add=$addxy"
 adb logcat -d | grep -E "FATAL|InputMethod|IME|ImeTracker" | tail -30 | cut -c1-200 > smoke-out/tap/log.txt
 echo "::warning title=ime log::$(tail -25 smoke-out/tap/log.txt | awk 'BEGIN{ORS="%0A"}{print}')"
 hdr=$(git config --get http.https://github.com/.extraheader)
