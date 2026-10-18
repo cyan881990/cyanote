@@ -1,0 +1,30 @@
+10-18 04:14:33.097  3987  4054 I BugleRcsEngine: handleMessage processing message:[NOTIFY_UPTIME_IGNORE_STATE_CHANGED] with [non-null]:RcsEngineImpl reference [CONTEXT log_prefix="RcsEngineImpl[DUAL_R
+10-18 04:14:34.090  2421  2421 I ImeTracker: app.cyanote:e4510e2c: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT_BY_INSETS_API fromUser false
+10-18 04:14:34.090  2421  2421 I ImeTracker: app.cyanote:e4510e2c: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+10-18 04:14:34.090  2421  2421 I ImeTracker: app.cyanote:ac2fe590: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+10-18 04:14:34.091  2421  2421 D InputMethodManager: showSoftInput() view=androidx.compose.ui.platform.AndroidComposeView{ac68d2d VFED..... .F...... 0,0-1080,1920 aid=1073741824} flags=0 reason=SHOW_S
+10-18 04:14:34.093  2421  2421 I ImeTracker: app.cyanote:ac2fe590: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+10-18 04:14:34.197  2421  2421 I ImeTracker: app.cyanote:c1313652: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT_BY_INSETS_API fromUser false
+10-18 04:14:34.197  2421  2421 I ImeTracker: app.cyanote:c1313652: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+10-18 04:14:34.198  2421  2421 I ImeTracker: app.cyanote:1b4162f1: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+10-18 04:14:34.198  2421  2421 D InputMethodManager: showSoftInput() view=androidx.compose.ui.platform.AndroidComposeView{ac68d2d VFED..... .F...... 0,0-1080,1920 aid=1073741824} flags=0 reason=SHOW_S
+10-18 04:14:34.201  2421  2421 I ImeTracker: app.cyanote:4a9c6d88: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+10-18 04:14:34.202  2421  2421 D InputMethodManager: showSoftInput() view=androidx.compose.ui.platform.AndroidComposeView{ac68d2d VFED..... .F...... 0,0-1080,1920 aid=1073741824} flags=0 reason=SHOW_S
+10-18 04:14:34.205   567  1248 D ImeInsetsSourceProvider: showImePostLayout cancelled, isScheduledAndReadyToShowIme: true, mImeRequester: Window{dcba654 u0 app.cyanote/vn.ghichunhanh.app.MainActivity}
+10-18 04:14:34.210   567  1248 I ImeTracker: app.cyanote:1b4162f1: onCancelled at PHASE_WM_SHOW_IME_RUNNER
+10-18 04:14:34.217  2421  2421 I ImeTracker: app.cyanote:4a9c6d88: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+10-18 04:14:42.110  3987  4054 I BugleRcsEngine: handleMessage processing message:[NOTIFY_UPTIME_IGNORE_STATE_CHANGED] with [non-null]:RcsEngineImpl reference [CONTEXT log_prefix="RcsEngineImpl[DUAL_R
+10-18 04:14:54.140  2421  2421 I ImeTracker: app.cyanote:751574ff: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT_BY_INSETS_API fromUser false
+10-18 04:14:54.140  2421  2421 I ImeTracker: app.cyanote:751574ff: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+10-18 04:14:54.140  2421  2421 I ImeTracker: app.cyanote:dda0016d: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+10-18 04:14:54.140  2421  2421 D InputMethodManager: showSoftInput() view=androidx.compose.ui.platform.AndroidComposeView{ac68d2d VFED..... .F...... 0,0-1080,1920 aid=1073741824} flags=0 reason=SHOW_S
+10-18 04:14:54.142  2421  2421 I ImeTracker: app.cyanote:dda0016d: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+10-18 04:14:54.247  2421  2421 I ImeTracker: app.cyanote:e5d0f000: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT_BY_INSETS_API fromUser false
+10-18 04:14:54.247  2421  2421 I ImeTracker: app.cyanote:e5d0f000: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+10-18 04:14:54.248  2421  2421 I ImeTracker: app.cyanote:7b8e0d03: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+10-18 04:14:54.248  2421  2421 D InputMethodManager: showSoftInput() view=androidx.compose.ui.platform.AndroidComposeView{ac68d2d VFED..... .F...... 0,0-1080,1920 aid=1073741824} flags=0 reason=SHOW_S
+10-18 04:14:54.248  2421  2421 I ImeTracker: app.cyanote:47bb81df: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+10-18 04:14:54.248  2421  2421 D InputMethodManager: showSoftInput() view=androidx.compose.ui.platform.AndroidComposeView{ac68d2d VFED..... .F...... 0,0-1080,1920 aid=1073741824} flags=0 reason=SHOW_S
+10-18 04:14:54.249   567  1031 D ImeInsetsSourceProvider: showImePostLayout cancelled, isScheduledAndReadyToShowIme: true, mImeRequester: Window{dcba654 u0 app.cyanote/vn.ghichunhanh.app.MainActivity}
+10-18 04:14:54.250   567  1031 I ImeTracker: app.cyanote:7b8e0d03: onCancelled at PHASE_WM_SHOW_IME_RUNNER
+10-18 04:14:54.251  2421  2421 I ImeTracker: app.cyanote:47bb81df: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
