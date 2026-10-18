@@ -571,12 +571,13 @@ struct HeaderView: View {
                         // Nhãn "Có bản mới" cùng tông với thẻ âm lịch
                         if let updateLabel {
                             Button(action: onUpdate) {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "arrow.down.to.line").font(.system(size: 13, weight: .bold))
-                                    // iPhone hẹp: chỉ biểu tượng
-                                    if UIScreen.main.bounds.width >= 380 {
-                                        Text(updateLabel).font(.system(size: 12, weight: .bold)).lineLimit(1)
+                                // Đủ chỗ thì hiện cả chữ, không thì chỉ biểu tượng (không bao giờ bị cắt "U…")
+                                ViewThatFits(in: .horizontal) {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "arrow.down.to.line").font(.system(size: 13, weight: .bold))
+                                        Text(updateLabel).font(.system(size: 12, weight: .bold)).lineLimit(1).fixedSize()
                                     }
+                                    Image(systemName: "arrow.down.to.line").font(.system(size: 13, weight: .bold))
                                 }
                                 .foregroundColor(p.accent)
                                 .padding(.leading, 8)
