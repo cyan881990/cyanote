@@ -1,0 +1,58 @@
+name: QA iOS simulator (iPhone + iPad)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sim:
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: ios
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build (Release, simulator)
+        run: |
+          brew install xcodegen >/dev/null
+          xcodegen generate
+          set +e
+          xcodebuild -project Cyanote.xcodeproj -scheme Cyanote -configuration Release \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO build > build.log 2>&1
+          code=$?
+          ../.github/scripts/report-errors.sh build.log "Simulator Release"
+          exit $code
+      - name: Run on iPhone and iPad simulators
+        run: |
+          APP=build/Build/Products/Release-iphonesimulator/Cyanote.app
+          mkdir -p ../qa-ios
+          xcrun simctl list devices available | grep -E "iPhone|iPad" | head -20
+          summary=""
+          for NAME in "iPhone 16 Pro" "iPhone SE (3rd generation)" "iPad Pro 13-inch (M4)" "iPad Air 11-inch (M2)"; do
+            UDID=$(xcrun simctl list devices available | grep -F "$NAME (" | head -1 | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/')
+            [ -z "$UDID" ] && { summary="$summary%0A$NAME: not available"; continue; }
+            xcrun simctl boot "$UDID" || true
+            xcrun simctl bootstatus "$UDID" -b >/dev/null 2>&1
+            xcrun simctl install "$UDID" "$APP"
+            xcrun simctl privacy "$UDID" grant all app.cyanote 2>/dev/null || true
+            t0=$(date +%s)
+            xcrun simctl launch "$UDID" app.cyanote > /dev/null
+            sleep 20
+            safe=$(echo "$NAME" | tr ' ()' '___')
+            xcrun simctl io "$UDID" screenshot "../qa-ios/$safe-portrait.png" >/dev/null 2>&1
+            # xoay ngang (chỉ có tác dụng nếu app hỗ trợ): dùng phím tắt không có trong simctl → bỏ qua, chỉ kiểm tra còn chạy
+            running=$(xcrun simctl spawn "$UDID" launchctl list | grep -c "UIKitApplication:app.cyanote")
+            crashes=$(ls ~/Library/Logs/DiagnosticReports 2>/dev/null | grep -ci cyanote)
+            summary="$summary%0A$NAME: running=$running crashReports=$crashes"
+            xcrun simctl shutdown "$UDID" || true
+          done
+          echo "::warning title=iOS QA::$summary"
+      - name: Push screenshots
+        run: |
+          hdr=$(git config --get http.https://github.com/.extraheader)
+          cd ../qa-ios && git init -q && git checkout -q -b qa-ios && git add -A \
+            && git -c user.name=cyanote-bot -c user.email=actions@users.noreply.github.com commit -qm "qa ios" \
+            && git -c http.extraheader="$hdr" push -qf "https://github.com/$GITHUB_REPOSITORY" qa-ios || true
