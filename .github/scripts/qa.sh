@@ -40,6 +40,7 @@ adb shell input keyevent 4; sleep 1
 tap "Open calculator" && sleep 2 && log "calculator opened"
 for k in 7 "×" 8 "="; do tap "$k" >/dev/null; sleep 0.5; done
 adb exec-out screencap -p > $out/2-calculator.png
+tap "Collapse" >/dev/null; sleep 1
 # Ghi chú dài 1500 dòng (nhận qua "Chia sẻ")
 TXT=$(python3 -c "print('\\\\n'.join(f'Line {i}: the quick brown fox jumps over the lazy dog {i*7}' for i in range(1,1501)))")
 adb shell "am start -a android.intent.action.SEND -t text/plain -n $PKG/vn.ghichunhanh.app.MainActivity --es android.intent.extra.TEXT \"$(python3 -c "print('\\n'.join(f'Line {i}: the quick brown fox jumps over the lazy dog {i*7}' for i in range(1,1501)))" | sed 's/"/\\"/g')\"" >/dev/null 2>&1

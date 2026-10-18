@@ -1,5 +1,7 @@
 package vn.ghichunhanh.app.ui
 
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -160,6 +162,10 @@ fun CalculatorPanel(
         modifier = modifier.fillMaxWidth(),
     ) {
         val keyHeight = if (fill) Modifier.fillMaxHeight() else Modifier.height(44.dp)
+        val btnHeight = if (fill) 38.dp else 44.dp
+        // Khi lấp theo chiều cao có sẵn: cho phép phím thấp hơn 48dp để luôn hiện đủ 5 hàng phím
+        // (màn hình thấp, xoay ngang) thay vì bị cắt mất hàng dưới.
+        CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides if (fill) 0.dp else LocalMinimumInteractiveComponentSize.current) {
         Column(
             modifier = Modifier.padding(8.dp).then(if (fill) Modifier.fillMaxHeight() else Modifier),
             verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -247,7 +253,7 @@ fun CalculatorPanel(
                     border = BorderStroke(1.5.dp, if (full != null) scheme.primary else scheme.outlineVariant),
                     modifier = Modifier
                         .weight(1f)
-                        .height(44.dp),
+                        .height(btnHeight),
                 ) {
                     Text(
                         stringResource(R.string.calc_insert_full),
@@ -264,7 +270,7 @@ fun CalculatorPanel(
                     colors = ButtonDefaults.buttonColors(containerColor = scheme.primary, contentColor = scheme.onPrimary),
                     modifier = Modifier
                         .weight(1f)
-                        .height(44.dp),
+                        .height(btnHeight),
                 ) {
                     Text(
                         stringResource(R.string.calc_insert_result),
@@ -275,6 +281,7 @@ fun CalculatorPanel(
                     )
                 }
             }
+        }
         }
     }
 }

@@ -640,7 +640,7 @@ fun EditorScreen(
     // Cột máy tính bên phải: đủ cao thì phím giãn lấp kín cột (không chừa khoảng trống), thấp thì cuộn.
     val sideCalc: @Composable (Modifier) -> Unit = { modifier ->
         BoxWithConstraints(modifier) {
-            if (maxHeight >= 360.dp) {
+            if (maxHeight >= 220.dp) {
                 CalculatorPanel(
                     calc = store.calc,
                     onCollapse = null,
@@ -798,12 +798,18 @@ fun EditorScreen(
                                 if (calcOpen) {
                                     if (calcMode) {
                                         DockSwitcher(calcMode, setCalc, setAppts, hideDock, showLabels = true)
-                                        // Màn hình thấp: máy tính không chiếm quá ~60% chiều cao, cuộn được.
-                                        Box(Modifier.heightIn(max = screenH * 0.56f).verticalScroll(rememberScrollState())) {
-                                            calcPanel(true)
-                                        }
+                                        // Máy tính co theo chỗ trống, luôn chừa cho ghi chú ≥ ~150dp:
+                                        // máy cao → phím 44dp đầy đủ; máy thấp → phím thấp lại nhưng vẫn đủ 5 hàng.
+                                        val calcH = minOf(360.dp, screenH - 400.dp).coerceAtLeast(220.dp)
+                                        CalculatorPanel(
+                                            calc = store.calc,
+                                            onCollapse = { calcOpen = false },
+                                            onInsert = { text -> applyValue(insertAtCursor(value, text)) },
+                                            modifier = Modifier.height(calcH),
+                                            fill = true,
+                                        )
                                     } else {
-                                        apptsPanel(Modifier.heightIn(max = screenH * 0.5f), { calcOpen = false })
+                                        apptsPanel(Modifier.heightIn(max = minOf(screenH * 0.5f, (screenH - 400.dp).coerceAtLeast(200.dp))), { calcOpen = false })
                                     }
                                 } else {
                                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
