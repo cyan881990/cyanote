@@ -26,6 +26,7 @@ jobs:
           ../.github/scripts/report-errors.sh build.log "Simulator Release"
           exit $code
       - name: Run on iPhone and iPad simulators
+        shell: bash {0}
         run: |
           APP=build/Build/Products/Release-iphonesimulator/Cyanote.app
           mkdir -p ../qa-ios
@@ -36,17 +37,17 @@ jobs:
             [ -z "$UDID" ] && { summary="$summary%0A$NAME: not available"; continue; }
             xcrun simctl boot "$UDID" || true
             xcrun simctl bootstatus "$UDID" -b >/dev/null 2>&1
-            xcrun simctl install "$UDID" "$APP"
+            inst=$(xcrun simctl install "$UDID" "$APP" 2>&1 | tail -1)
             xcrun simctl privacy "$UDID" grant all app.cyanote 2>/dev/null || true
             t0=$(date +%s)
-            xcrun simctl launch "$UDID" app.cyanote > /dev/null
+            lout=$(xcrun simctl launch "$UDID" app.cyanote 2>&1 | tail -1)
             sleep 20
             safe=$(echo "$NAME" | tr ' ()' '___')
             xcrun simctl io "$UDID" screenshot "../qa-ios/$safe-portrait.png" >/dev/null 2>&1
             # xoay ngang (chỉ có tác dụng nếu app hỗ trợ): dùng phím tắt không có trong simctl → bỏ qua, chỉ kiểm tra còn chạy
-            running=$(xcrun simctl spawn "$UDID" launchctl list | grep -c "UIKitApplication:app.cyanote")
-            crashes=$(ls ~/Library/Logs/DiagnosticReports 2>/dev/null | grep -ci cyanote)
-            summary="$summary%0A$NAME: running=$running crashReports=$crashes"
+            running=$(xcrun simctl spawn "$UDID" launchctl list | grep -c "UIKitApplication:app.cyanote" || true)
+            crashes=$(ls ~/Library/Logs/DiagnosticReports 2>/dev/null | grep -ci cyanote || true)
+            summary="$summary%0A$NAME: running=$running crashReports=$crashes launch=[$lout] install=[$inst]"
             xcrun simctl shutdown "$UDID" || true
           done
           echo "::warning title=iOS QA::$summary"
