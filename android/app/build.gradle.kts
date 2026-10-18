@@ -51,12 +51,14 @@ android {
             buildConfigField("String", "AD_BANNER", "\"ca-app-pub-3940256099942544/9214589741\"")
             buildConfigField("String", "AD_MREC", "\"ca-app-pub-3940256099942544/6300978111\"")
             buildConfigField("String", "AD_INTERSTITIAL", "\"ca-app-pub-3940256099942544/1033173712\"")
+            buildConfigField("boolean", "SELF_UPDATE", "true")
         }
         release {
             manifestPlaceholders["admobAppId"] = "ca-app-pub-4415627801655056~2996924261"
             buildConfigField("String", "AD_BANNER", "\"ca-app-pub-4415627801655056/5647138339\"")
             buildConfigField("String", "AD_MREC", "\"ca-app-pub-4415627801655056/5647138339\"")
             buildConfigField("String", "AD_INTERSTITIAL", "\"ca-app-pub-4415627801655056/6286441744\"")
+            buildConfigField("boolean", "SELF_UPDATE", "false")
             if (keystorePath != null) signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
@@ -75,6 +77,7 @@ android {
             buildConfigField("String", "AD_BANNER", "\"ca-app-pub-3940256099942544/9214589741\"")
             buildConfigField("String", "AD_MREC", "\"ca-app-pub-3940256099942544/6300978111\"")
             buildConfigField("String", "AD_INTERSTITIAL", "\"ca-app-pub-3940256099942544/1033173712\"")
+            buildConfigField("boolean", "SELF_UPDATE", "false")
         }
     }
 

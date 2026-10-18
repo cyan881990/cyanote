@@ -82,7 +82,9 @@ class MainActivity : ComponentActivity() {
 
         if (savedInstanceState == null) handleIntent(intent)
 
-        fromPlay = UpdateChecker.installedFromPlay(this)
+        // Bản phát hành (AAB đăng Google Play) chỉ cập nhật qua Google Play, không bao giờ tải APK từ web
+        // (chính sách Play cấm tự cập nhật ngoài Play). File APK thử vẫn tự cập nhật qua trang web.
+        fromPlay = UpdateChecker.installedFromPlay(this) || !BuildConfig.SELF_UPDATE
         if (fromPlay) {
             appUpdateManager.registerListener(installListener)
             checkPlayUpdate()
