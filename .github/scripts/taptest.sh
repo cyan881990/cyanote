@@ -72,11 +72,15 @@ shown=0
 for i in 1 2 3 4 5 6; do
   adb shell input tap $addxy; sleep 6
   top=$(adb shell dumpsys activity activities | grep -E "topResumedActivity|mResumedActivity" | head -1)
-  echo "note $i: $top"
+  echo "note $i: $top"; tops="$tops%0A$i: $(echo $top | cut -c1-140)"
   if echo "$top" | grep -q "AdActivity"; then shown=$((shown+1)); adb exec-out screencap -p > smoke-out/tap/ad-$i.png; adb shell input keyevent 4; sleep 3; fi
   sleep 14
 done
-echo "::warning title=interstitials shown::$shown (expected 2) add=$addxy"
+echo "::warning title=interstitials shown::$shown (expected 2) add=$addxy $tops"
+adlog=$(adb logcat -d | grep -iE " Ads |Ads  |interstitial|AdActivity|notes_created" | tail -25 | cut -c1-200 | awk 'BEGIN{ORS="%0A"}{print}')
+echo "::warning title=ads log::$adlog"
+cnt=$(adb shell "run-as $PKG cat shared_prefs/settings.xml" | grep -E "notes_created|interstitial" | tr '\n' ' ')
+echo "::warning title=ad prefs::$cnt"
 adb logcat -d | grep -E "FATAL|InputMethod|IME|ImeTracker" | tail -30 | cut -c1-200 > smoke-out/tap/log.txt
 echo "::warning title=ime log::$(tail -25 smoke-out/tap/log.txt | awk 'BEGIN{ORS="%0A"}{print}')"
 hdr=$(git config --get http.https://github.com/.extraheader)
