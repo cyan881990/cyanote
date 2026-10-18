@@ -426,6 +426,11 @@ struct ContentView: View {
             }
             tool("list.number", s("line_numbers"), active: prefs.lineNumbers) { prefs.lineNumbers.toggle() }
             tool("arrow.uturn.left", s("word_wrap"), active: prefs.wordWrap) { prefs.wordWrap.toggle() }
+            // Copy nhanh toàn bộ nội dung ghi chú
+            tool("doc.on.doc", s("menu_copy")) {
+                UIPasteboard.general.string = current.content
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+            }
             tool(prefs.dockVisible ? "rectangle.bottomhalf.inset.filled" : "rectangle.bottomhalf.filled",
                  s(prefs.dockVisible ? "dock_hide" : "dock_show"), active: !prefs.dockVisible) { prefs.dockVisible.toggle() }
             if showHideKeyboard {

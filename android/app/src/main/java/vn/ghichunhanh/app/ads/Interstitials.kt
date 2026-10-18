@@ -12,13 +12,13 @@ import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 /**
  * Quảng cáo toàn trang: cứ mỗi 3 ghi chú tạo mới (cộng dồn, kể cả qua nhiều lần mở app)
  * thì hiện một lần, ngay sau khi bấm "+" (lúc chuyển sang ghi chú mới, không chen ngang lúc đang gõ).
- * Giới hạn: cách nhau tối thiểu 90 giây; chưa đủ thì dời sang lần tạo ghi chú kế tiếp.
+ * Cứ đủ 3 ghi chú mới là hiện (quảng cáo được tải sẵn ngay sau mỗi lần hiện).
  */
 object Interstitials {
     /** ID THỬ NGHIỆM của Google. Thay bằng ID thật trước khi phát hành. */
     const val UNIT_ID = "ca-app-pub-3940256099942544/1033173712"
     private const val EVERY = 3
-    private const val MIN_GAP_MS = 90_000L
+    private const val MIN_GAP_MS = 15_000L   // chỉ chặn hiện 2 lần dính nhau
     private const val PREFS = "settings"
     private const val KEY_COUNT = "notes_created_since_ad"
     private const val KEY_LAST = "interstitial_last_shown"
@@ -49,6 +49,7 @@ object Interstitials {
             }
             current.show(activity)
             ad = null
+            preload(activity)   // tải sẵn quảng cáo cho lần kế tiếp
             prefs.edit().putInt(KEY_COUNT, 0).putLong(KEY_LAST, now).apply()
         } else {
             prefs.edit().putInt(KEY_COUNT, count).apply()

@@ -195,3 +195,11 @@ val LineNumbersIcon: ImageVector by lazy {
         moveTo(10.5f, 17.5f); lineTo(20f, 17.5f)
     }
 }
+
+/** Copy (hai tờ giấy chồng nhau). */
+val CopyIcon: ImageVector by lazy {
+    strokeIcon("Copy") {
+        moveTo(9f, 9f); horizontalLineTo(19f); verticalLineTo(20f); horizontalLineTo(9f); close()
+        moveTo(5f, 15f); verticalLineTo(5f); arcTo(1f, 1f, 0f, false, true, 6f, 4f); horizontalLineTo(15f)
+    }
+}

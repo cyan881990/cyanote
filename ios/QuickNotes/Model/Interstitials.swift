@@ -9,7 +9,7 @@ final class Interstitials: NSObject, GADFullScreenContentDelegate {
     /// ID THỬ NGHIỆM của Google. Thay bằng ID thật trước khi phát hành.
     static let unitID = "ca-app-pub-3940256099942544/4411468910"
     private let every = 3
-    private let minGap: TimeInterval = 90
+    private let minGap: TimeInterval = 15   // chỉ chặn hiện 2 lần dính nhau
     private var ad: GADInterstitialAd?
     private var loading = false
     private let d = UserDefaults.standard
@@ -31,6 +31,7 @@ final class Interstitials: NSObject, GADFullScreenContentDelegate {
         if due, let ad, let root = Self.topController() {
             ad.present(fromRootViewController: root)
             self.ad = nil
+            preload()
             d.set(0, forKey: "notes_created_since_ad")
             d.set(now, forKey: "interstitial_last_shown")
         } else {

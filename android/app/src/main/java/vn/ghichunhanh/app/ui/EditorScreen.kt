@@ -1444,6 +1444,12 @@ private fun EditorFooter(
         tool(WrapIcon, stringResource(R.string.word_wrap), active = EditorPrefs.wordWrap) {
             EditorPrefs.setWordWrap(context, !EditorPrefs.wordWrap)
         }
+        // Copy nhanh toàn bộ nội dung ghi chú
+        val clipLabel = stringResource(R.string.clip_label)
+        val copiedMsg = stringResource(R.string.copied)
+        tool(CopyIcon, stringResource(R.string.menu_copy)) {
+            copyToClipboard(context, text, clipLabel, copiedMsg)
+        }
         tool(
             if (EditorPrefs.dockVisible) PanelHideIcon else PanelShowIcon,
             stringResource(if (EditorPrefs.dockVisible) R.string.dock_hide else R.string.dock_show),
