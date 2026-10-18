@@ -44,7 +44,19 @@ android {
     }
 
     buildTypes {
+        // Quảng cáo: bản debug/qa dùng ID THỬ của Google (an toàn khi tự bấm thử);
+        // chỉ bản release (đăng Google Play) dùng ID AdMob thật của cyanote++.
+        getByName("debug") {
+            manifestPlaceholders["admobAppId"] = "ca-app-pub-3940256099942544~3347511713"
+            buildConfigField("String", "AD_BANNER", "\"ca-app-pub-3940256099942544/9214589741\"")
+            buildConfigField("String", "AD_MREC", "\"ca-app-pub-3940256099942544/6300978111\"")
+            buildConfigField("String", "AD_INTERSTITIAL", "\"ca-app-pub-3940256099942544/1033173712\"")
+        }
         release {
+            manifestPlaceholders["admobAppId"] = "ca-app-pub-4415627801655056~2996924261"
+            buildConfigField("String", "AD_BANNER", "\"ca-app-pub-4415627801655056/5647138339\"")
+            buildConfigField("String", "AD_MREC", "\"ca-app-pub-4415627801655056/5647138339\"")
+            buildConfigField("String", "AD_INTERSTITIAL", "\"ca-app-pub-4415627801655056/6286441744\"")
             if (keystorePath != null) signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
@@ -59,6 +71,10 @@ android {
             signingConfig = signingConfigs.getByName("debug")
             matchingFallbacks += listOf("release")
             isProfileable = true
+            manifestPlaceholders["admobAppId"] = "ca-app-pub-3940256099942544~3347511713"
+            buildConfigField("String", "AD_BANNER", "\"ca-app-pub-3940256099942544/9214589741\"")
+            buildConfigField("String", "AD_MREC", "\"ca-app-pub-3940256099942544/6300978111\"")
+            buildConfigField("String", "AD_INTERSTITIAL", "\"ca-app-pub-3940256099942544/1033173712\"")
         }
     }
 
@@ -73,6 +89,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     // Tự tạo danh sách ngôn ngữ để Android 13+ cho chọn ngôn ngữ riêng cho app trong Cài đặt.

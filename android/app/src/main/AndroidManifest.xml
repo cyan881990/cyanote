@@ -25,10 +25,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GhiChuNhanh">
 
-        <!-- ID ứng dụng AdMob THỬ NGHIỆM của Google. Thay bằng ID thật trước khi phát hành. -->
+        <!-- ID ứng dụng AdMob: đặt theo loại bản build trong app/build.gradle.kts (debug = thử, release = thật). -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713" />
+            android:value="${admobAppId}" />
 
         <activity
             android:name=".MainActivity"

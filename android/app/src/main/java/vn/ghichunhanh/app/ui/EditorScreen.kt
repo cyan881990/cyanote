@@ -67,6 +67,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -525,6 +527,41 @@ fun EditorScreen(
                                 }
                             }
                         }
+                        // Cột số dòng vẽ ở khung nhìn (ngoài vùng cuộn): cuộn chỉ dịch lớp chữ đã vẽ sẵn,
+                        // không phải vẽ lại cả ghi chú mỗi khung hình → ghi chú dài cuộn mượt.
+                        .drawWithContent {
+                            drawContent()
+                            if (!showNums) return@drawWithContent
+                            val gw = gutter.toPx()
+                            drawRect(gutterBg.compositeOver(scheme.surface), size = Size(gw, size.height))
+                            drawLine(gutterLine, Offset(gw, 0f), Offset(gw, size.height), strokeWidth = 1f)
+                            val l = layout ?: return@drawWithContent
+                            val text = l.layoutInput.text.text
+                            val sy = scroll.value.toFloat()
+                            val visTop = sy - padTopPx - 100f
+                            val visBottom = sy + size.height + 100f
+                            val firstVisual = l.getLineForVerticalPosition(visTop.coerceAtLeast(0f))
+                            var startIdx = l.getLineStart(firstVisual).let { off ->
+                                if (off == 0) 0 else text.lastIndexOf('\n', off - 1) + 1
+                            }
+                            var n = 1
+                            for (i in 0 until startIdx) if (text[i] == '\n') n++
+                            clipRect(right = gw) {
+                                while (true) {
+                                    val line = l.getLineForOffset(startIdx.coerceAtMost(text.length))
+                                    val lineTop = l.getLineTop(line)
+                                    if (lineTop > visBottom) break
+                                    val top = padTopPx + lineTop - sy
+                                    val h = l.getLineBottom(line) - lineTop
+                                    val res = measurer.measure(n.toString(), numStyle)
+                                    drawText(res, topLeft = Offset(gw - res.size.width - 6.dp.toPx(), top + (h - res.size.height) / 2f))
+                                    val nl = text.indexOf('\n', startIdx)
+                                    if (nl < 0) break
+                                    startIdx = nl + 1
+                                    n++
+                                }
+                            }
+                        }
                         .verticalScroll(scroll)
                         .then(if (wrap) Modifier else Modifier.horizontalScroll(hScroll))
                 ) {
@@ -536,36 +573,6 @@ fun EditorScreen(
                             .then(if (wrap) Modifier.fillMaxWidth() else Modifier.defaultMinSize(minWidth = availW))
                             .defaultMinSize(minHeight = with(density) { viewportPx.toDp() })
                             .focusRequester(focusRequester)
-                            .drawBehind {
-                                if (!showNums) return@drawBehind
-                                val gw = gutter.toPx()
-                                drawRect(gutterBg, size = Size(gw, size.height))
-                                drawLine(gutterLine, Offset(gw, 0f), Offset(gw, size.height), strokeWidth = 1f)
-                                val l = layout ?: return@drawBehind
-                                val text = l.layoutInput.text.text
-                                // Chỉ vẽ số của các dòng đang nằm trong màn hình (ghi chú dài vẫn mượt)
-                                val visTop = scroll.value - padTopPx - 200f
-                                val visBottom = scroll.value + viewportPx + 200f
-                                val firstVisual = l.getLineForVerticalPosition(visTop.coerceAtLeast(0f))
-                                var startIdx = l.getLineStart(firstVisual).let { off ->
-                                    if (off == 0) 0 else text.lastIndexOf('\n', off - 1) + 1
-                                }
-                                var n = 1
-                                for (i in 0 until startIdx) if (text[i] == '\n') n++
-                                while (true) {
-                                    val line = l.getLineForOffset(startIdx.coerceAtMost(text.length))
-                                    val lineTop = l.getLineTop(line)
-                                    if (lineTop > visBottom) break
-                                    val top = padTopPx + lineTop
-                                    val h = l.getLineBottom(line) - lineTop
-                                    val res = measurer.measure(n.toString(), numStyle)
-                                    drawText(res, topLeft = Offset(gw - res.size.width - 6.dp.toPx(), top + (h - res.size.height) / 2f))
-                                    val nl = text.indexOf('\n', startIdx)
-                                    if (nl < 0) break
-                                    startIdx = nl + 1
-                                    n++
-                                }
-                            }
                             .padding(start = if (showNums) gutter + 10.dp else 20.dp, end = 20.dp, top = 16.dp, bottom = 16.dp),
                         textStyle = textStyle,
                         cursorBrush = SolidColor(scheme.primary),

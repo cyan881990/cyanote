@@ -16,7 +16,7 @@ import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
  */
 object Interstitials {
     /** ID THỬ NGHIỆM của Google. Thay bằng ID thật trước khi phát hành. */
-    const val UNIT_ID = "ca-app-pub-3940256099942544/1033173712"
+    val UNIT_ID: String = vn.ghichunhanh.app.BuildConfig.AD_INTERSTITIAL
     private const val EVERY = 3
     private const val MIN_GAP_MS = 15_000L   // chỉ chặn hiện 2 lần dính nhau
     private const val PREFS = "settings"

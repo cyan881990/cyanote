@@ -29,14 +29,9 @@ object AdsInit {
 }
 
 object AdConfig {
-    /**
-     * ID THỬ NGHIỆM của Google (luôn hiện quảng cáo mẫu, không tính tiền).
-     * Trước khi đăng Play Store: tạo ứng dụng + đơn vị quảng cáo trong AdMob
-     * rồi thay các chuỗi này và APPLICATION_ID trong AndroidManifest.xml.
-     * KHÔNG tự bấm vào quảng cáo thật của mình.
-     */
-    const val BANNER_AD_UNIT_ID = "ca-app-pub-3940256099942544/9214589741"   // banner thích ứng
-    const val MREC_AD_UNIT_ID = "ca-app-pub-3940256099942544/6300978111"     // khung 300×250
+    /** debug/qa: ID thử của Google; release: ID thật (xem app/build.gradle.kts). KHÔNG tự bấm quảng cáo thật. */
+    val BANNER_AD_UNIT_ID: String = vn.ghichunhanh.app.BuildConfig.AD_BANNER   // banner thích ứng
+    val MREC_AD_UNIT_ID: String = vn.ghichunhanh.app.BuildConfig.AD_MREC       // khung 300×250 (cùng đơn vị biểu ngữ)
 }
 
 /** Một quảng cáo giữ nguyên suốt phiên: đổi chỗ trên màn hình chỉ gắn sang chỗ mới, không tải lại. */
